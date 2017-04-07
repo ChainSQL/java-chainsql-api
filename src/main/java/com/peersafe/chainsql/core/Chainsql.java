@@ -253,6 +253,18 @@ public class Chainsql extends TopLevel {
 		
 	}
 	
+	public void getTransactions(String address,Callback cb){
+		Request req = this.connection.client.getTransactions(address,(data)->{
+			Response response = (Response) data;
+			if( !"error".equals(response.status)){
+				cb.called(response.message);
+			}else{
+				cb.called(response.error_message);
+			}
+		});
+		
+	}
+	
 	private void onValidated(ManagedTxn managed) {
 		TransactionResult tr = managed.result;
 		//cb.called(tr.toJSON());

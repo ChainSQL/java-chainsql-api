@@ -1155,6 +1155,36 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	 	}
      	 return request;	
      }
+    
+    public  Request getTransactions(String address,events cb){   	
+    	 Request request = newRequest(Command.account_tx);
+    	 JSONObject txjson = new JSONObject();
+       	 txjson.put("account", address);
+       	 txjson.put("ledger_index_min", 1);
+       	 txjson.put("ledger_index_max", 10);
+       	 txjson.put("binary", false);
+       	 txjson.put("count", false);
+       	 txjson.put("limit", 10);
+       	 txjson.put("forward", false);
+       	 request.json("tx_json", txjson);
+         request.once(Request.OnResponse.class, new Request.OnResponse() {
+ 	            public  void called(Response response) {
+ 	                if (response.succeeded) {
+ 	                	System.out.println("response:" + response.message.toString());
+ 	                	cb.called(response);
+ 	                }
+ 	            }
+ 	        });
+         request.request();
+         while(request.response==null){
+        	 try {
+ 				Thread.sleep(100);
+ 			} catch (InterruptedException e) {
+ 				e.printStackTrace();
+ 			}  
+   	 	}
+    	 return request;	
+    }
 
     public Request ping() {
         return newRequest(Command.ping);

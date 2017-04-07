@@ -25,10 +25,11 @@ public class Test {
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
 		  Test test =new Test();
+		  	test.getTransactions();
 		  	//test.getLedgerVersion();
 		  	//test.getLedge();
 			// test.testCreateTable();
-			 test.testinsert();
+			 //test.testinsert();
 			 //test.testUpdateTable();
 			 //test.testdelete();
 			 // test.testrename();
@@ -67,6 +68,11 @@ public class Test {
 			 System.out.println("creat------"+data);
 		 });
 	}
+	public void getTransactions(){
+		c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",(data)->{
+			 System.out.println("creat------"+data);
+		 });
+	}	
     public void testCreateTable() {
     	 c.createTable("test1a",c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"

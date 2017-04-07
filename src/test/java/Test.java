@@ -25,6 +25,8 @@ public class Test {
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
 		  Test test =new Test();
+		  	//test.getLedgerVersion();
+		  	//test.getLedge();
 			// test.testCreateTable();
 			 test.testinsert();
 			 //test.testUpdateTable();
@@ -48,6 +50,23 @@ public class Test {
 		
 	    }
 	  
+	public void getLedge(){
+		JSONObject option = new JSONObject();
+		option.put("ledger_index", "validated");
+		option.put("expand", false);
+		option.put("transactions", true);
+		option.put("accounts", true);
+		
+		c.getLedger(option,(data)->{
+			 System.out.println("creat------"+data);
+		 });
+	}
+	public void getLedgerVersion(){
+		
+		c.getLedgerVersion((data)->{
+			 System.out.println("creat------"+data);
+		 });
+	}
     public void testCreateTable() {
     	 c.createTable("test1a",c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
@@ -77,7 +96,9 @@ public class Test {
 	  }
 	  
 	  public void testrename(){
-		  c.reName("test", "TableBww");
+		  c.reName("test", "TableBww",(data)->{
+	 			 System.out.println("test1wqw------"+data);
+	 		 });
 	  }
 	  
 	  public void testget(){
@@ -93,13 +114,19 @@ public class Test {
 	  }
 	  
 	  public void testassign(){
-		  c.assign("test", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array(c.perm.lsfDelete, c.perm.lsfSelect,c.perm.lsfUpdate));
+		  c.assign("test", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array(c.perm.lsfDelete, c.perm.lsfSelect,c.perm.lsfUpdate),(data)->{
+	 			 System.out.println("test1wqw------"+data);
+	 		 });
 	  }
 	  public void testcelassign(){
-		  c.assignCancle("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("lsfDelete", "lsfSelect","lsfUpdate"));
+		  c.assignCancle("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("lsfDelete", "lsfSelect","lsfUpdate"),(data)->{
+	 			 System.out.println("test1wqw------"+data);
+	 		 });
 	  }
 	public void testdrop(){
-		c.drop("dc_universe1");
+		c.drop("dc_universe1",(data)->{
+			 System.out.println("test1wqw------"+data);
+		 });
 	}
 	public ArrayList<String> select(String tableName,String filterWith,String whereCond){
 		ArrayList<String> cond=new ArrayList<String>();

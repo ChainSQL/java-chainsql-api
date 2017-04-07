@@ -1114,6 +1114,47 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
   	 	}
    	 return request;	
    }
+    public  Request getLedger(JSONObject option,events cb){   	
+      	 Request request = newRequest(Command.ledger);
+      	 request.json("tx_json", option);
+           request.once(Request.OnResponse.class, new Request.OnResponse() {
+   	            public  void called(Response response) {
+   	                if (response.succeeded) {
+   	                	System.out.println("response:" + response.message.toString());
+   	                	cb.called(response);
+   	                }
+   	            }
+   	        });
+           request.request();
+           while(request.response==null){
+          	 try {
+   				Thread.sleep(100);
+   			} catch (InterruptedException e) {
+   				e.printStackTrace();
+   			}  
+     	 	}
+      	 return request;	
+      }
+    public  Request getLedgerVersion(events cb){   	
+     	 Request request = newRequest(Command.ledger_current);
+          request.once(Request.OnResponse.class, new Request.OnResponse() {
+  	            public  void called(Response response) {
+  	                if (response.succeeded) {
+  	                	System.out.println("response:" + response.message.toString());
+  	                	cb.called(response);
+  	                }
+  	            }
+  	        });
+          request.request();
+          while(request.response==null){
+         	 try {
+  				Thread.sleep(100);
+  			} catch (InterruptedException e) {
+  				e.printStackTrace();
+  			}  
+    	 	}
+     	 return request;	
+     }
 
     public Request ping() {
         return newRequest(Command.ping);

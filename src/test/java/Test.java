@@ -25,12 +25,12 @@ public class Test {
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
 		  Test test =new Test();
-			 //test.testCreateTable();
-			 //test.testinsert();
+			// test.testCreateTable();
+			 test.testinsert();
 			 //test.testUpdateTable();
 			 //test.testdelete();
 			 // test.testrename();
-			test.testget();
+			//test.testget();
 			  //test.testdrop();
 			 //test.testassign();
 		     //test.testcelassign();
@@ -49,7 +49,7 @@ public class Test {
 	    }
 	  
     public void testCreateTable() {
-    	 c.createTable("test1wqw",c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+    	 c.createTable("test1a",c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
 	    		 ),(data)->{
 	    			 System.out.println("creat------"+data);
@@ -57,7 +57,7 @@ public class Test {
 	   }
 	 
 	 public void testinsert(){
-		 c.table("test1wqw").insert(c.array("{'name': 'peera1','age': 222}","{'name': 'peerb1','age': 231}")).submit((data)->{
+		 c.table("test1a").insert(c.array("{'name': 'peera1','age': 222}","{'name': 'peerb1','age': 231}")).submit((data)->{
  			 System.out.println("creat------"+data);
  		 });
 	 }
@@ -84,7 +84,7 @@ public class Test {
 		 // table = c.table("testcas").get(c.array("{'name':'peerb1'}")).limit("{index:0,total:10}").filterWith("[]").submit();
 		  
 		/*  table = c.table("testcas").get(c.array("{'name':'peerb1'}")).order(c.array("{age:-1}")).filterWith("[]").submit();*/
-		  table = c.table("test1wqw").get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).filterWith("[]").submit((data)->{
+		  table = c.table("test1wqw").get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
 		  //System.out.println(table.getData());
@@ -105,7 +105,7 @@ public class Test {
 		ArrayList<String> cond=new ArrayList<String>();
 		cond.add(whereCond);
 		Table t=c.table(tableName)
-				.filterWith(filterWith).get(cond).submit((data)->{
+				.withFields(filterWith).get(cond).submit((data)->{
 		 			 System.out.println("creat------"+data);
 		 		 });
 		System.out.println(t.getData().getClass());

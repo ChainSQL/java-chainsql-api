@@ -87,6 +87,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+	public Client OnMessage(OnMessage cb) {
+        on(OnMessage.class, cb);
+        return this;
+    } 
+	
     public Client onConnected(OnConnected onConnected) {
         this.on(OnConnected.class, onConnected);
         return this;
@@ -495,10 +500,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     emit(OnPathFind.class, msg);
                     break;
                 case singleTransaction:
-                	emit(OnTXMessage.class,msg);
+                	emit(OnMessage.class,msg);
                 	break;
                 case table:
-                	emit(OnTBMessage.class,msg);
+                	emit(OnMessage.class,msg);
                 	break;
                 default:
                     unhandledMessage(msg);

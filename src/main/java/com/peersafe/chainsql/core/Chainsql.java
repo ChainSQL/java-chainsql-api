@@ -90,7 +90,7 @@ public class Chainsql extends TopLevel {
 		try {
 			JSONUtil.checkinsert(strraw);
 		} catch (Exception e) {
-			table.message = e.getLocalizedMessage();
+			//table.message = e.getLocalizedMessage();
 			System.out.println("Exception:" + e.getLocalizedMessage());
 			//e.printStackTrace();
 		}
@@ -98,13 +98,13 @@ public class Chainsql extends TopLevel {
 
 	}
 
-	public Chainsql create(String name, String raw, Callback<JSONObject> cb) {
+	private Chainsql create(String name, String raw, Callback<JSONObject> cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return create(name, raw, map, cb);
 	}
 
-	public Chainsql create(String name, String raw, Map map, Callback<JSONObject> cb) {
+	private Chainsql create(String name, String raw, Map map, Callback<JSONObject> cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		TableListSet payment = new TableListSet();
@@ -131,7 +131,7 @@ public class Chainsql extends TopLevel {
 
 	}
 
-	public Chainsql drop(String name, Map map) {
+	private Chainsql drop(String name, Map map) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -154,7 +154,7 @@ public class Chainsql extends TopLevel {
 		return reName(oldName, newName, map);
 	}
 
-	public Chainsql reName(String oldName, String newName, Map map) {
+	private Chainsql reName(String oldName, String newName, Map map) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(oldName) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\",\"TableNewName\":\"" + JSONUtil.toHexString(newName) + "\"}}";
@@ -178,7 +178,7 @@ public class Chainsql extends TopLevel {
 		return assign(name, user, flag, map);
 	}
 
-	public Chainsql assign(String name, String user, List flag, Map map) {
+	private Chainsql assign(String name, String user, List flag, Map map) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -205,7 +205,7 @@ public class Chainsql extends TopLevel {
 		return assignCancle(name, raw, flag, map);
 	}
 
-	public Chainsql assignCancle(String name, String user, List flag, Map map) {
+	private Chainsql assignCancle(String name, String user, List flag, Map map) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -225,7 +225,14 @@ public class Chainsql extends TopLevel {
 		submit(tm, signed, cb);
 		return this;
 	}
-
+	public void getLedger(){
+		
+	}
+	
+	public void getLedgerVersion(){
+		
+	}
+	
 	private void onValidated(ManagedTxn managed) {
 		TransactionResult tr = managed.result;
 		cb.called(tr.toJSON());

@@ -81,7 +81,7 @@ public class Chainsql extends TopLevel {
 		return tab;
 	}
 
-	public Chainsql createTable(String name, List<String> raw, Callback<JSONObject> cb) {
+	public Chainsql createTable(String name, List<String> raw, Callback cb) {
 		use(this.connection.address);
 		List<JSONObject> strraw = new ArrayList<JSONObject>();
 		for (String s : raw) {
@@ -99,13 +99,13 @@ public class Chainsql extends TopLevel {
 
 	}
 
-	private Chainsql create(String name, String raw, Callback<JSONObject> cb) {
+	private Chainsql create(String name, String raw, Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return create(name, raw, map, cb);
 	}
 
-	private Chainsql create(String name, String raw, Map map, Callback<JSONObject> cb) {
+	private Chainsql create(String name, String raw, Map map, Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		TableListSet payment = new TableListSet();
@@ -125,14 +125,14 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql drop(String name,Callback<JSONObject> cb) {
+	public Chainsql drop(String name,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return drop(name, map,cb);
 
 	}
 
-	private Chainsql drop(String name, Map map,Callback<JSONObject> cb) {
+	private Chainsql drop(String name, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -149,13 +149,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql reName(String oldName, String newName,Callback<JSONObject> cb) {
+	public Chainsql reName(String oldName, String newName,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
 		return reName(oldName, newName, map,cb);
 	}
 
-	private Chainsql reName(String oldName, String newName, Map map,Callback<JSONObject> cb) {
+	private Chainsql reName(String oldName, String newName, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(oldName) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\",\"TableNewName\":\"" + JSONUtil.toHexString(newName) + "\"}}";
@@ -173,13 +173,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql assign(String name, String user, List flag,Callback<JSONObject> cb) {
+	public Chainsql assign(String name, String user, List flag,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return assign(name, user, flag, map,cb);
 	}
 
-	private Chainsql assign(String name, String user, List flag, Map map,Callback<JSONObject> cb) {
+	private Chainsql assign(String name, String user, List flag, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -200,13 +200,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql assignCancle(String name, String raw, List flag,Callback<JSONObject> cb) {
+	public Chainsql assignCancle(String name, String raw, List flag,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return assignCancle(name, raw, flag, map,cb);
 	}
 
-	private Chainsql assignCancle(String name, String user, List flag, Map map,Callback<JSONObject> cb) {
+	private Chainsql assignCancle(String name, String user, List flag, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";

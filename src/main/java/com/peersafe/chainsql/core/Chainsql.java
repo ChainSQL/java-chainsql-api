@@ -149,13 +149,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql reName(String oldName, String newName,Callback cb) {
+	public Chainsql rename(String oldName, String newName,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
 		return reName(oldName, newName, map,cb);
 	}
 
-	private Chainsql reName(String oldName, String newName, Map map,Callback cb) {
+	private Chainsql rename(String oldName, String newName, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(oldName) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\",\"TableNewName\":\"" + JSONUtil.toHexString(newName) + "\"}}";

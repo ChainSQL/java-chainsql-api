@@ -152,7 +152,7 @@ public class Chainsql extends TopLevel {
 	public Chainsql rename(String oldName, String newName,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
-		return reName(oldName, newName, map,cb);
+		return rename(oldName, newName, map,cb);
 	}
 
 	private Chainsql rename(String oldName, String newName, Map map,Callback cb) {

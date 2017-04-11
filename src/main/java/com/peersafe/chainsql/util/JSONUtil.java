@@ -1,6 +1,7 @@
 package com.peersafe.chainsql.util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.json.JSONException;
@@ -90,8 +91,14 @@ public class JSONUtil {
      * @throws JSONException
      * @throws IOException
      */
-	public static String toHexString(String s)
-		{
+	public static String toHexString(String s){
+		String strr = "";
+		try {
+			strr = new String(s.getBytes("gb2312"),"utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		System.out.println(strr);
 		String str="";
 		for (int i=0;i<s.length();i++)
 		{

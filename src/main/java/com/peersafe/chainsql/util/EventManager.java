@@ -1,38 +1,36 @@
 package com.peersafe.chainsql.util;
 
+import java.util.HashMap;
+
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
-import com.ripple.client.pubsub.Publisher;
 import com.ripple.client.pubsub.Publisher.Callback;
-import com.ripple.client.transport.TransportEventHandler;
 
 public class EventManager {
 	public Connection connection;
-	public JSONObject cache;
 	public boolean onMessage;
-	private static Callback cb;
+	private HashMap<String,Callback> mapCache;
+	public JSONObject result;
 
 	public EventManager(Connection connection) {
 		super();
 		this.connection = connection;
-		this.cache = new JSONObject();
+		this.mapCache = new HashMap<String,Callback>();
 		this.onMessage = false;
 	}
-
+	
 	public void subTable(String name, String owner ,Callback cb) {
-		this.cb = cb;
  		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("owner", owner);
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
 		if (!this.onMessage) {
-			// _onMessage( this , callback);
-			this.connection.client.OnTBMessage(EventManager::OnMessage);
+			 _onMessage(this);
 			this.onMessage = true;
 		}
-		//cb.called(EventManager::OnMessage);
+		this.mapCache.put(name + owner,cb);
 	}
 
 	public void subTx(String id,Callback cb) {
@@ -42,10 +40,10 @@ public class EventManager {
 		messageTx.put("transaction", id);
 		this.connection.client.subscriptions.addMessage(messageTx);
 		if (!this.onMessage) {
-			this.connection.client.OnTXMessage(EventManager::OnMessage);
+			 _onMessage(this);
 			this.onMessage = true;
 		}
-		this.cache.put(id, true);
+		this.mapCache.put(id, cb);
 
 	}
 
@@ -57,10 +55,10 @@ public class EventManager {
 		this.connection.client.subscriptions.addMessage(messageTx);
 		
 		if (!this.onMessage) {
-			this.connection.client.OnTBMessage(EventManager::OnMessage);
+			 _onMessage(this);
 			this.onMessage = true;
 		}
-		this.cache.remove(name);
+		this.mapCache.remove(name + owner);
 
 	}
 
@@ -71,17 +69,29 @@ public class EventManager {
 		
 		this.connection.client.subscriptions.addMessage(messageTx);
 		if (!this.onMessage) {
-			this.connection.client.OnTXMessage(EventManager::OnMessage);
+			 _onMessage(this);
 			this.onMessage = true;
 		}
-		this.cache.remove(id);
+		this.mapCache.remove(id);
 
 	}
-
-	  private static void OnMessage(JSONObject json) {
-	    	System.out.println(json.toString());
-	    	cb.called(json);
-	            
-	   }
-
+	private void _onMessage(EventManager em){
+		em.connection.client.OnMessage((data)->{
+			   if ( "table".equals(data.getString("type")) || "singleTransaction".equals(data.getString("type"))) {
+			      String key = null;
+			      if ("table".equals(data.getString("type"))) {
+			    	  key = data.getString("tablename") + data.getString("owner");
+			      };
+			      if ("singleTransaction".equals(data.getString("type"))) {
+			    	  key = ((JSONObject) data.get("transaction")).getString("hash");
+			      }
+			      if (em.mapCache.containsKey(key)) {
+		    	     em.mapCache.get(key).called(data);
+			        if ( !"validate_success".equals(data.getString("status"))) {
+			        	em.mapCache.remove(key);
+			        }
+			      }
+		    }
+		});
+	}
 }

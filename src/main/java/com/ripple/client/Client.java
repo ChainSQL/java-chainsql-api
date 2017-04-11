@@ -87,6 +87,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+	public Client OnMessage(OnMessage cb) {
+        on(OnMessage.class, cb);
+        return this;
+    } 
+	
     public Client onConnected(OnConnected onConnected) {
         this.on(OnConnected.class, onConnected);
         return this;
@@ -495,10 +500,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     emit(OnPathFind.class, msg);
                     break;
                 case singleTransaction:
-                	emit(OnTXMessage.class,msg);
+                	emit(OnMessage.class,msg);
                 	break;
                 case table:
-                	emit(OnTBMessage.class,msg);
+                	emit(OnMessage.class,msg);
                 	break;
                 default:
                     unhandledMessage(msg);
@@ -1109,6 +1114,77 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
   	 	}
    	 return request;	
    }
+    public  Request getLedger(JSONObject option,events cb){   	
+      	 Request request = newRequest(Command.ledger);
+      	 request.json("tx_json", option);
+           request.once(Request.OnResponse.class, new Request.OnResponse() {
+   	            public  void called(Response response) {
+   	                if (response.succeeded) {
+   	                	System.out.println("response:" + response.message.toString());
+   	                	cb.called(response);
+   	                }
+   	            }
+   	        });
+           request.request();
+           while(request.response==null){
+          	 try {
+   				Thread.sleep(100);
+   			} catch (InterruptedException e) {
+   				e.printStackTrace();
+   			}  
+     	 	}
+      	 return request;	
+      }
+    public  Request getLedgerVersion(events cb){   	
+     	 Request request = newRequest(Command.ledger_current);
+          request.once(Request.OnResponse.class, new Request.OnResponse() {
+  	            public  void called(Response response) {
+  	                if (response.succeeded) {
+  	                	System.out.println("response:" + response.message.toString());
+  	                	cb.called(response);
+  	                }
+  	            }
+  	        });
+          request.request();
+          while(request.response==null){
+         	 try {
+  				Thread.sleep(100);
+  			} catch (InterruptedException e) {
+  				e.printStackTrace();
+  			}  
+    	 	}
+     	 return request;	
+     }
+    
+    public  Request getTransactions(String address,events cb){   	
+    	 Request request = newRequest(Command.account_tx);
+    	 JSONObject txjson = new JSONObject();
+       	 txjson.put("account", address);
+       	 txjson.put("ledger_index_min", 1);
+       	 txjson.put("ledger_index_max", 10);
+       	 txjson.put("binary", false);
+       	 txjson.put("count", false);
+       	 txjson.put("limit", 10);
+       	 txjson.put("forward", false);
+       	 request.json("tx_json", txjson);
+         request.once(Request.OnResponse.class, new Request.OnResponse() {
+ 	            public  void called(Response response) {
+ 	                if (response.succeeded) {
+ 	                	System.out.println("response:" + response.message.toString());
+ 	                	cb.called(response);
+ 	                }
+ 	            }
+ 	        });
+         request.request();
+         while(request.response==null){
+        	 try {
+ 				Thread.sleep(100);
+ 			} catch (InterruptedException e) {
+ 				e.printStackTrace();
+ 			}  
+   	 	}
+    	 return request;	
+    }
 
     public Request ping() {
         return newRequest(Command.ping);

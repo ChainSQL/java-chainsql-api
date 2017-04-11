@@ -17,6 +17,8 @@ import com.peersafe.chainsql.util.TopLevel;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.Account;
 import com.ripple.client.pubsub.Publisher.Callback;
+import com.ripple.client.requests.Request;
+import com.ripple.client.responses.Response;
 import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.client.transactions.TransactionManager;
 import com.ripple.core.coretypes.AccountID;
@@ -37,7 +39,6 @@ public class Chainsql extends TopLevel {
 	public Operate perm;
 	public EventManager event;
 	public boolean strictMode;
-	public Callback<JSONObject> cb;
 
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -80,7 +81,7 @@ public class Chainsql extends TopLevel {
 		return tab;
 	}
 
-	public Chainsql createTable(String name, List<String> raw, Callback<JSONObject> cb) {
+	public Chainsql createTable(String name, List<String> raw, Callback cb) {
 		use(this.connection.address);
 		List<JSONObject> strraw = new ArrayList<JSONObject>();
 		for (String s : raw) {
@@ -90,7 +91,7 @@ public class Chainsql extends TopLevel {
 		try {
 			JSONUtil.checkinsert(strraw);
 		} catch (Exception e) {
-			table.message = e.getLocalizedMessage();
+			//table.message = e.getLocalizedMessage();
 			System.out.println("Exception:" + e.getLocalizedMessage());
 			//e.printStackTrace();
 		}
@@ -98,13 +99,13 @@ public class Chainsql extends TopLevel {
 
 	}
 
-	private Chainsql create(String name, String raw, Callback<JSONObject> cb) {
+	private Chainsql create(String name, String raw, Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return create(name, raw, map, cb);
 	}
 
-	private Chainsql create(String name, String raw, Map map, Callback<JSONObject> cb) {
+	private Chainsql create(String name, String raw, Map map, Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		TableListSet payment = new TableListSet();
@@ -124,14 +125,14 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql drop(String name) {
+	public Chainsql drop(String name,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return drop(name, map);
+		return drop(name, map,cb);
 
 	}
 
-	private Chainsql drop(String name, Map map) {
+	private Chainsql drop(String name, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -148,13 +149,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql rename(String oldName, String newName) {
+	public Chainsql rename(String oldName, String newName,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
-		return rename(oldName, newName, map);
+		return reName(oldName, newName, map,cb);
 	}
 
-	private Chainsql rename(String oldName, String newName, Map map) {
+	private Chainsql rename(String oldName, String newName, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(oldName) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\",\"TableNewName\":\"" + JSONUtil.toHexString(newName) + "\"}}";
@@ -172,13 +173,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql assign(String name, String user, List flag) {
+	public Chainsql assign(String name, String user, List flag,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return assign(name, user, flag, map);
+		return assign(name, user, flag, map,cb);
 	}
 
-	private Chainsql assign(String name, String user, List flag, Map map) {
+	private Chainsql assign(String name, String user, List flag, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -199,13 +200,13 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql assignCancle(String name, String raw, List flag) {
+	public Chainsql assignCancle(String name, String raw, List flag,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return assignCancle(name, raw, flag, map);
+		return assignCancle(name, raw, flag, map,cb);
 	}
 
-	private Chainsql assignCancle(String name, String user, List flag, Map map) {
+	private Chainsql assignCancle(String name, String user, List flag, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
@@ -225,10 +226,48 @@ public class Chainsql extends TopLevel {
 		submit(tm, signed, cb);
 		return this;
 	}
-
+	public void getLedger(JSONObject option,Callback cb){
+		Request req = this.connection.client.getLedger(option,(data)->{
+			Response response = (Response) data;
+			if( !"error".equals(response.status)){
+				//System.out.println(response.result);
+				cb.called(response.message);
+			}else{
+				
+				//System.out.println("error_message :"+ response.error_message);
+				cb.called(response.error_message);
+			}
+		});
+		
+	}
+	
+	public void getLedgerVersion(Callback cb){
+		Request req = this.connection.client.getLedgerVersion((data)->{
+			Response response = (Response) data;
+			if( !"error".equals(response.status)){
+				cb.called(response.result.get("ledger_current_index"));
+			}else{
+				cb.called(response.error_message);
+			}
+		});
+		
+	}
+	
+	public void getTransactions(String address,Callback cb){
+		Request req = this.connection.client.getTransactions(address,(data)->{
+			Response response = (Response) data;
+			if( !"error".equals(response.status)){
+				cb.called(response.message);
+			}else{
+				cb.called(response.error_message);
+			}
+		});
+		
+	}
+	
 	private void onValidated(ManagedTxn managed) {
 		TransactionResult tr = managed.result;
-		cb.called(tr.toJSON());
+		//cb.called(tr.toJSON());
 		//print("Result:\n{0}", tr.toJSON().toString(2));
 		//print("Transaction result was: {0}", tr.engineResult);
 		//System.exit(0);
@@ -241,10 +280,9 @@ public class Chainsql extends TopLevel {
 		// System.exit(1);
 	}
 
-	private void submit(TransactionManager tm, SignedTransaction signed, Callback cb) {
-		this.cb = cb;
+	public void submit(TransactionManager tm, SignedTransaction signed, Callback cb) {
 		tm.queue(tm.manage(signed.txn)
-				.onValidated(this::onValidated)
+				.onValidated(cb)
 				.onError(this::onError));
 
 	}

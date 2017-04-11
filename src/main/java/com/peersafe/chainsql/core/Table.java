@@ -65,17 +65,18 @@ public class Table {
 	}
 	public Table get(List<String> orgs){
 		for(String s: orgs){
-			if(!"".equals(orgs)&&orgs!=null){
+			if(!"".equals(s)&&s!=null){
 				String json = JSONUtil.StrToJsonStr(s);
 				this.query.add(json);
 			}
 			
 		}
+		
 	    this.exec = "r_get";
 		return this;
 		
 	}
-	public Table select(List<String> orgs){
+	/*public Table select(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(orgs)&&orgs!=null){
 				String json = JSONUtil.StrToJsonStr(s);
@@ -86,7 +87,7 @@ public class Table {
 	    this.exec = "r_get";
     	return this;
 		
-	}
+	}*/
 	public Table withFields(String  orgs){
 		if(!"".equals(orgs)&&orgs!=null){
 			String ss = orgs.replace("\'", "\"");
@@ -122,7 +123,7 @@ public class Table {
 	public Table order(List<String> orgs){
 		List<String> orderarr = new ArrayList<String>();
 		for(String s: orgs){
-			if(!"".equals(orgs)&&orgs!=null){
+			if(!"".equals(s)&&s!=null){
 				String json = JSONUtil.StrToJsonStr(s);
 				orderarr.add(json);
 			}
@@ -175,6 +176,12 @@ public class Table {
 	
 
 	public Table select(Table table,Connection connect,Callback cb){
+		
+		if(table.query.size()==0||!table.query.get(0).contains("[")){
+			table.query.add(0, "[]");
+			
+		}
+		
 		AccountID account = AccountID.fromAddress(connect.scope);
 		String tables ="{\"Table\":{\"TableName\":\""+table.name+"\"}}";
 		JSONObject tabjson = JSONObject.fromObject(tables);

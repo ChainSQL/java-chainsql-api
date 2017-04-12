@@ -31,7 +31,7 @@ public class Chainsql extends Submit {
 	private String[] query;
 	private String exec;
 	private Operate perm;
-	private EventManager event;
+	public	EventManager event;
 	private boolean strictMode;
 	
 	private SignedTransaction signed;

@@ -8,15 +8,12 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.resources.Operate;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.JSONUtil;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.Account;
 import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.client.requests.Request;
 import com.ripple.client.responses.Response;
-import com.ripple.client.transactions.TransactionManager;
 import com.ripple.core.coretypes.AccountID;
 import com.ripple.core.coretypes.Amount;
 import com.ripple.core.coretypes.Blob;
@@ -30,7 +27,6 @@ public class Chainsql extends Submit {
 	private String owner;
 	private String[] query;
 	private String exec;
-	private Operate perm;
 	public	EventManager event;
 	private boolean strictMode;
 	
@@ -249,14 +245,6 @@ public class Chainsql extends Submit {
 
 	public void setConnection(Connection connection) {
 		this.connection = connection;
-	}
-
-	public Operate getPerm() {
-		return perm;
-	}
-
-	public void setPerm(Operate perm) {
-		this.perm = perm;
 	}
 
 	public String getOwner() {

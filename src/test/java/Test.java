@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
-
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;

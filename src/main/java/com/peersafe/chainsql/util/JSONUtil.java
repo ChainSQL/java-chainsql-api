@@ -2,7 +2,6 @@ package com.peersafe.chainsql.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.json.JSONException;

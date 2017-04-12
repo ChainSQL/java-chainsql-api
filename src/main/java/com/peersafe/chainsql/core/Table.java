@@ -12,7 +12,6 @@ import com.peersafe.chainsql.util.JSONUtil;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.requests.Request;
 import com.ripple.client.responses.Response;
-import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.core.coretypes.AccountID;
 import com.ripple.core.coretypes.Amount;
 import com.ripple.core.coretypes.Blob;

@@ -125,7 +125,7 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql drop(String name,Callback cb) {
+	public Chainsql dropTable(String name,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return drop(name, map,cb);
@@ -149,7 +149,7 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql rename(String oldName, String newName,Callback cb) {
+	public Chainsql renameTable(String oldName, String newName,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
 		return rename(oldName, newName, map,cb);
@@ -173,25 +173,30 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql assign(String name, String user, List flag,Callback cb) {
+	public Chainsql grant(String name, String user, List flag,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return assign(name, user, flag, map,cb);
+		return grant(name, user, flag, map,cb);
 	}
 
-	private Chainsql assign(String name, String user, List flag, Map map,Callback cb) {
+	private Chainsql grant(String name, String user, List<String> flag, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
 		STArray arr = Validate.fromJSONArray(str);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
-		Integer flags = Validate.assign(flag);
+		List<JSONObject> flags = new ArrayList<JSONObject>();
+		for (String s : flag) {
+			JSONObject json = JSONUtil.StrToJson(s);
+			flags.add(json);
+		}
+		//Integer flags = Validate.assign(flag);
 		TableListSet payment = new TableListSet();
 		payment.as(AccountID.Account, this.connection.address);
 		payment.as(STArray.Tables, arr);
 		payment.as(UInt16.OpType, 4);
 		payment.as(AccountID.User, user);
-		payment.as(UInt32.Flags, flags);
+		payment.as(UInt32.Flags, JSONUtil.toHexString(flags.toString()));
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
 
@@ -200,32 +205,36 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	public Chainsql assignCancle(String name, String raw, List flag,Callback cb) {
+	/*public Chainsql assignCancle(String name, String raw, List flag,Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		return assignCancle(name, raw, flag, map,cb);
 	}
 
-	private Chainsql assignCancle(String name, String user, List flag, Map map,Callback cb) {
+	private Chainsql assignCancle(String name, String user, List<String> flag, Map map,Callback cb) {
 		Account account = this.connection.client.accountFromSeed(this.connection.secret);
 		TransactionManager tm = account.transactionManager();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
 		STArray arr = Validate.fromJSONArray(str);
-		Integer flags = Validate.assign(flag);
+		List<JSONObject> flags = new ArrayList<JSONObject>();
+		for (String s : flag) {
+			JSONObject json = JSONUtil.StrToJson(s);
+			flags.add(json);
+		}
 		String fee = this.connection.client.serverInfo.fee_ref + "";
 		TableListSet payment = new TableListSet();
 		payment.as(AccountID.Account, this.connection.address);
 		payment.as(STArray.Tables, arr);
 		payment.as(UInt16.OpType, 5);
 		payment.as(AccountID.User, user);
-		payment.as(UInt32.Flags, flags);
+		payment.as(UInt32.Flags, JSONUtil.toHexString(flags.toString()));
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
 
 		SignedTransaction signed = payment.sign(this.connection.secret);
 		submit(tm, signed, cb);
 		return this;
-	}
+	}*/
 	public void getLedger(JSONObject option,Callback cb){
 		Request req = this.connection.client.getLedger(option,(data)->{
 			Response response = (Response) data;

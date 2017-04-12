@@ -81,13 +81,16 @@ public abstract class Submit {
 		}
 	}
 
+	private JSONObject getError(String err){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "error");
+		obj.put("error_message", err);
+		return obj;
+	}
 
 	protected JSONObject doSubmit(SignedTransaction signed){
 		if(signed == null){
-			JSONObject obj = new JSONObject();
-			obj.put("status", "error");
-			obj.put("error_message", "Signing failed,maybe ripple node error");
-			return obj;
+			return getError("Signing failed,maybe ripple node error");
 		}
 		
 		Account account = connection.client.accountFromSeed(connection.secret);
@@ -98,6 +101,9 @@ public abstract class Submit {
         
         //subscribe tx
         if(sync || cb != null){
+        	if(tx == null || tx.hash == null){
+    			return getError("Submit failed,transaction hash is null.");
+        	}
         	subscribeTx(tx.hash.toString());
         }
         

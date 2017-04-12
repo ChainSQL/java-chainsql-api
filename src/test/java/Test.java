@@ -13,9 +13,9 @@ public class Test {
 	  public Table table;
 	  public static String sTableName;
 	  public static void main(String[] args) {
-		  c.connect("ws://192.168.0.197:6007");
+		  c.connect("ws://192.168.0.191:6006");
 		  
-		  sTableName = "hijack";
+		  sTableName = "wu01";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -45,7 +45,7 @@ public class Test {
 		  //test.testrename();
 			//test.testget();
 		  //test.testdrop();
-			 //test.testassign();
+			 test.testassign();
 		     //test.testcelassign();
 
 		  try {
@@ -183,7 +183,7 @@ public class Test {
 	  }
 	  
 	  public void testassign(){
-		  c.grant(sTableName, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}")).submit((data)->{
+		  c.grant(sTableName, "rMgoRgBsh2NRUbEvFLRXHDVniYHS81JC3d",c.array("{insert:true}","{delete:true}","{update:true}")).submit((data)->{
 	 			 System.out.println("test1wqw------"+data);
 		  });
 	  }

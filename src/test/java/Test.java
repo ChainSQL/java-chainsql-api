@@ -5,6 +5,7 @@ import java.util.List;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.core.Chainsql;
+import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
 
 
@@ -38,17 +39,23 @@ public class Test {
 		  	//test.getTransactions();
 		  	//test.getLedgerVersion();
 		  	//test.getLedge();
-			// test.testCreateTable();
-			 test.testinsert();
-			 //test.testUpdateTable();
-			 //test.testdelete();
-			 // test.testrename();
+		  //test.testCreateTable();
+		  //test.testinsert();
+		  //test.testUpdateTable();
+		  //test.testdelete();
+		  //test.testrename();
 			//test.testget();
-			  //test.testdrop();
+		  //test.testdrop();
 			 //test.testassign();
 		     //test.testcelassign();
-		  	
-			 //c.disconnect();
+
+		  try {
+			Thread.sleep(10000);
+		  } catch (InterruptedException e) {
+			e.printStackTrace();
+		  }
+		  
+		  c.disconnect();
 			 //System.out.println("```````````");
 			// test.testget();
 			/* try {
@@ -84,16 +91,26 @@ public class Test {
 		 });
 	}	
     public void testCreateTable() {
-    	 c.createTable(sTableName,c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+    	List<String> args = c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
-	    		 ),(data)->{
-	    			 System.out.println("creat------"+data);
-	    		 });
-	   }
+	    		 );
+    	JSONObject obj;
+    	
+//    	obj = c.createTable(sTableName,args).submit();
+//    	System.out.println(obj);
+    	
+//    	obj = c.createTable(sTableName,args).submit((data)->{
+//    		System.out.println("creat------"+data);
+//    	});
+//    	System.out.println(obj);
+    	
+    	obj = c.createTable(sTableName, args).submit(SyncCond.db_success);
+    	System.out.println(obj);
+    }
 	 
 	 public void testinsert(){
 //		 List<String> orgs = c.array("{'id':1,'age': 333}");
-		 List<String> orgs = c.array("{'age': 333}");
+		 List<String> orgs = c.array("{'age': 333,'name':'lucy'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -102,49 +119,74 @@ public class Test {
 //		 System.out.println(obj);
 		 
 		 obj = c.table(sTableName).insert(orgs).submit((data)->{
- 			 System.out.println("creat------"+data);
+ 			 System.out.println("insert------"+data);
  		 });
 		 System.out.println(obj);
 	 }
 	 
 
 	  public void testUpdateTable(){
-		  c.table(sTableName).get(c.array("{'name':'peera'}")).update(c.array("{'age':'24'}")).submit((data)->{
-	 			 System.out.println("creat------"+data);
+		  List<String> arr1 = c.array("{'id': 1}");
+		  List<String> arr2 = c.array("{'age': 226}");
+		  
+		  JSONObject obj;
+		  obj = c.table(sTableName).get(arr1).update(arr2).submit((data)->{
+	 			 System.out.println("update------"+data);
 	 		 });
-	        
+		  System.out.println(obj);
+		  
+//		  obj = c.table(sTableName).get(arr1).update(arr2).submit();
+//		  System.out.println(obj);
+//		  
+//		  obj = c.table(sTableName).get(arr1).update(arr2).submit(SyncCond.db_success);
+//		  System.out.println(obj);
 	  }
 	  public void testdelete(){
-		  c.table(sTableName).get(c.array("{'name': 'peera'}")).delete().submit((data)->{
- 			 System.out.println("creat------"+data);
- 		 });
-	        
+		  List<String> arr = c.array("{'name': 'lucy'}");
+		  JSONObject obj;
+		  obj = c.table(sTableName).get(arr).delete().submit((data)->{
+			  System.out.println("delete------"+data);
+		  });
+		  System.out.println(obj);
+//		  
+//		  obj = c.table(sTableName).get(arr).delete().submit();
+//		  System.out.println(obj);
+//		  
+//		  obj = c.table(sTableName).get(arr).delete().submit(SyncCond.db_success);
+//		  c.table(sTableName).get(arr).delete().submit();
 	  }
 	  
 	  public void testrename(){
-
-		  c.renameTable(sTableName, "TableBww",(data)->{
-			  
+		  JSONObject obj;
+		  obj = c.renameTable(sTableName, "hijack").submit((data)->{
+			  System.out.println("rename------"+data);
 		  });
-
+		  System.out.println(obj);
+//		  
+//		  obj = c.renameTable(sTableName, "TableBww").submit();
+//		  System.out.println(obj);
+//		  
+//		  obj = c.renameTable(sTableName, "TableBww").submit(SyncCond.db_success);
+//		  System.out.println(obj);
 	  }
 	  
 	  public void testget(){
 		 // table = c.table("testcas").get(c.array("{'name':'peerb1'}")).limit("{index:0,total:10}").filterWith("[]").submit();
 		  
 		/*  table = c.table("testcas").get(c.array("{'name':'peerb1'}")).order(c.array("{age:-1}")).filterWith("[]").submit();*/
-//		  c.table(sTableName).get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
-//	 			 System.out.println("test1wqw------"+data);
-//	 		 });
-		  //System.out.println(table.getData());
-//		  JSONObject obj =  c.table(sTableName).get().submit();
-//		  System.out.println(obj.toString());
+		  JSONObject obj = c.table(sTableName).get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
+	 			 System.out.println("testget------"+data);
+		  });
+		  System.out.println(table.getData());
+		  
+		  obj =  c.table(sTableName).get(null).submit();
+		  System.out.println(obj.toString());
 	  }
 	  
 	  public void testassign(){
-		  c.grant(sTableName, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
+		  c.grant(sTableName, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}")).submit((data)->{
 	 			 System.out.println("test1wqw------"+data);
-	 		 });
+		  });
 	  }
 	  /*public void testcelassign(){
 		  c.grant("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
@@ -152,9 +194,17 @@ public class Test {
 	 		 });
 	  }*/
 	public void testdrop(){
-		c.dropTable("dc_universe1",(data)->{
-			 System.out.println("test1wqw------"+data);
-		 });
+		JSONObject obj;
+		obj = c.dropTable(sTableName).submit((data)->{
+			 System.out.println("drop------"+data);
+		});
+		System.out.println(obj);
+//		
+//		obj = c.dropTable(sTableName).submit();
+//		System.out.println(obj);
+//		
+//		obj = c.dropTable(sTableName).submit(SyncCond.db_success);
+//		System.out.println(obj);
 	}
 	public ArrayList<String> select(String tableName,String filterWith,String whereCond){
 		ArrayList<String> cond=new ArrayList<String>();

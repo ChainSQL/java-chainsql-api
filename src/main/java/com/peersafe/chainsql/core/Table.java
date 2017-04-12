@@ -8,59 +8,27 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.JSONUtil;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.Account;
-import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.client.requests.Request;
 import com.ripple.client.responses.Response;
 import com.ripple.client.transactions.ManagedTxn;
-import com.ripple.client.transactions.TransactionManager;
 import com.ripple.core.coretypes.AccountID;
 import com.ripple.core.coretypes.Amount;
 import com.ripple.core.coretypes.Blob;
 import com.ripple.core.coretypes.STArray;
 import com.ripple.core.coretypes.uint.UInt16;
 import com.ripple.core.coretypes.uint.UInt32;
-import com.ripple.core.types.known.tx.result.TransactionResult;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.SQLStatement;
 
-public class Table {
+public class Table extends Submit{
 	private String name;
 	private String owner;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
 	private Object data;
 	public String message;
-	public Connection connection;
-	public Callback cb;
-	
-	public SubmitState submit_state;
-	public SyncState sync_state;
-	
-	public JSONObject submitRes;
-	public JSONObject syncRes;
-	
-	public boolean sync = false;
-	public SyncCond condition;
-	
-	public enum SyncCond {
-        validate_success,	
-        db_success,
-	}
-	
-	public enum SubmitState{
-		waiting_submit,
-		submit_success,
-		submit_error,
-	}
-	
-	public enum SyncState{
-		waiting_sync,
-		sync_response,
-	}
 
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
@@ -151,62 +119,8 @@ public class Table {
 		this.query.add(json.toString());
     	return this;
 	}
-	
-	
-//	public Table submit(Callback cb){
-//		if(this.exec=="r_get"){
-//			select(this,this.connection,cb);
-//		}else{
-//			prepareSQLStatement(this,this.connection,cb);
-//		}
-//		return this;
-//		
-//	}
-	
-	/**
-	 * asynchronous,callback trigger with all possible status
-	 * @param cb
-	 * @return submit result
-	 */
-	public JSONObject submit(Callback cb){
-		this.cb = cb;
-		if(this.exec == "r_get"){
-			return select();
-		}else{
-			return prepareSQLStatement();
-		}
-	}
-	
-	/**
-	 * synchronous,return when condition satisfied or submit failed
-	 * @param cond,return condition
-	 * @return
-	 */
-	public JSONObject submit(SyncCond cond){
-		sync = true;
-		condition = cond;
-		
-		if(this.exec=="r_get"){
-			return select();
-		}else{
-			return prepareSQLStatement();
-		}		
-	}
 
-	/**
-	 * submit a transaction,return immediately
-	 * @return submit result
-	 */
-	public JSONObject submit(){
-		if(this.exec=="r_get"){
-			return select();
-		}else{
-			return prepareSQLStatement();
-		}
-	}
-	
-
-	private JSONObject prepareSQLStatement(){
+	private SignedTransaction prepareTransaction(){
 	    AccountID account = AccountID.fromAddress(connection.scope);
 	    Map map = Validate.rippleRes(connection.client, account, name);
 	    
@@ -214,14 +128,13 @@ public class Table {
 	    	JSONObject obj = new JSONObject();
 	    	obj.put("status","error");
 	    	obj.put("error_message", "Command account_info failed.");
-	    	return obj;
+	    	return null;
 	    }
 	    
         return prepareSQLStatement(map);
 	}
-	private JSONObject prepareSQLStatement(Map map) {
-		Account account = connection.client.accountFromSeed(connection.secret);
-	    TransactionManager tm = account.transactionManager();
+
+	public SignedTransaction prepareSQLStatement(Map map) {
 		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\",\"NameInDB\":\""+map.get("NameInDB")+"\"}}";
 		STArray arr = Validate.fromJSONArray(str);
 		String fee = connection.client.serverInfo.fee_ref+"";
@@ -235,71 +148,17 @@ public class Table {
         payment.as(Amount.Fee, fee);
         SignedTransaction signed = payment.sign(connection.secret);
         
-        ManagedTxn tx = tm.manage(signed.txn);
-        tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
-                   .onError(this::onSubmitError));
-        
-        //subscribe tx
-        if(sync || cb != null){
-        	subscribeTx(tx.hash.toString());
-        }
-        
-        //wait until submit return
-        submit_state = SubmitState.waiting_submit;
-        while(submit_state == SubmitState.waiting_submit){
-        	waiting();
-        }        
-        
-        if(sync){
-        	if(submit_state == SubmitState.submit_error){
-        		return submitRes;
-        	}else{
-            	while(sync_state != SyncState.sync_response){
-            		waiting();
-            	}
-            	return syncRes;
-        	}        	
-        }else{
-        	return submitRes;
-        }
+        return signed;
 	};
-	
-	private void subscribeTx(String txId){
-    	EventManager manager = new EventManager(connection);
-    	manager.subTx(txId,(data)->{
-    		//System.out.println(data);
-    		if(cb != null){
-    			cb.called(data);
-    		}else if(sync){
-    			JSONObject obj = (JSONObject)data;
-    			JSONObject res = new JSONObject();
-    			JSONObject tx = (JSONObject) obj.get("transaction");
-    			res.put("tx_hash", tx.get("hash").toString());
-    			
-    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
-    				res.put("status", "success");
-    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
-    				res.put("status", "success");
-    			}else if(!obj.get("status").equals("validate_success")){
-    				res.put("status", "error");
-    				res.put("error_message", obj.get("error_message"));
-    			}
-    			if(!res.isNull("status")){
-        			syncRes = res;
-        			sync_state = SyncState.sync_response;
-    			}
-    		}
-        });
-	}
-	
-	private void waiting(){
-      	try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+
+	@Override
+	JSONObject doSubmit() {
+		if(this.exec == "r_get"){
+			return select();
+		}else{
+			return doSubmit(prepareTransaction());
 		}
 	}
-
 
 	private JSONObject select(){
 		if(query.size()==0||!query.get(0).contains("[")){
@@ -332,27 +191,6 @@ public class Table {
 		}
 		return obj;
 	}
-	
-	private void onSubmitSuccess(Response res){
-        JSONObject obj = new JSONObject();
-        obj.put("status", "success");
-        JSONObject tx_json = (JSONObject) res.result.get("tx_json");
-        obj.put("tx_hash", tx_json.get("hash").toString());
-        
-		submitRes = obj;
-		submit_state = SubmitState.submit_success;
-	}
-
-    private void onSubmitError(ManagedTxn managed) {
-        JSONObject obj = new JSONObject();
-        obj.put("status", "error");
-        obj.put("error_message", managed.result.engineResult.human);
-        //JSONObject tx_json = (JSONObject) managed.result.get("tx_json");
-        obj.put("tx_hash", managed.result.hash.toString());
-        
-        submitRes = obj;
-        submit_state = SubmitState.submit_error;
-    }
 	
 	public Table(String name) {
 		super();
@@ -406,8 +244,5 @@ public class Table {
 	}
 	public void setExec(String exec) {
 		this.exec = exec;
-	}
-
-
-	
+	}	
 }

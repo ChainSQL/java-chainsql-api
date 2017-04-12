@@ -1,9 +1,7 @@
 package com.peersafe.chainsql.core;
 
-import static com.ripple.java8.utils.Print.print;
-import static com.ripple.java8.utils.Print.printErr;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -13,13 +11,11 @@ import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Operate;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.JSONUtil;
-import com.peersafe.chainsql.util.TopLevel;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.Account;
 import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.client.requests.Request;
 import com.ripple.client.responses.Response;
-import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.client.transactions.TransactionManager;
 import com.ripple.core.coretypes.AccountID;
 import com.ripple.core.coretypes.Amount;
@@ -27,19 +23,34 @@ import com.ripple.core.coretypes.Blob;
 import com.ripple.core.coretypes.STArray;
 import com.ripple.core.coretypes.uint.UInt16;
 import com.ripple.core.coretypes.uint.UInt32;
-import com.ripple.core.types.known.tx.result.TransactionResult;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.TableListSet;
 
-public class Chainsql extends TopLevel {
-	public Connection connection;
+public class Chainsql extends Submit {
 	private String owner;
 	private String[] query;
 	private String exec;
-	public Operate perm;
-	public EventManager event;
-	public boolean strictMode;
+	private Operate perm;
+	private EventManager event;
+	private boolean strictMode;
+	
+	private SignedTransaction signed;
 
+	 public List array(Object val0, Object... vals){
+		 	List res = new ArrayList();
+		 	if(val0.getClass().isArray()){
+		 		String[] a = (String[]) val0; 
+		 		for(String s:a){
+		 			res.add(s);
+		 		}
+		 		
+		 	}else{
+		 		  res.add(val0);
+			      res.addAll(Arrays.asList(vals));
+		 	}
+	        return res;
+	 }
+	 
 	public void as(String address, String secret) {
 		this.connection.address = address;
 		this.connection.secret = secret;
@@ -80,8 +91,13 @@ public class Chainsql extends TopLevel {
 		tab.connection = this.connection;
 		return tab;
 	}
+	
+	@Override
+	JSONObject doSubmit() {
+		return doSubmit(signed);
+	}
 
-	public Chainsql createTable(String name, List<String> raw, Callback cb) {
+	public Chainsql createTable(String name, List<String> raw) {
 		use(this.connection.address);
 		List<JSONObject> strraw = new ArrayList<JSONObject>();
 		for (String s : raw) {
@@ -95,19 +111,13 @@ public class Chainsql extends TopLevel {
 			System.out.println("Exception:" + e.getLocalizedMessage());
 			//e.printStackTrace();
 		}
-		return create(name, strraw.toString(), cb);
-
-	}
-
-	private Chainsql create(String name, String raw, Callback cb) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return create(name, raw, map, cb);
+		
+		return create(name, strraw.toString(), map);
 	}
 
-	private Chainsql create(String name, String raw, Map map, Callback cb) {
-		Account account = this.connection.client.accountFromSeed(this.connection.secret);
-		TransactionManager tm = account.transactionManager();
+	private Chainsql create(String name, String raw, Map map) {
 		TableListSet payment = new TableListSet();
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
 		STArray arr = Validate.fromJSONArray(str);
@@ -118,21 +128,19 @@ public class Chainsql extends TopLevel {
 		payment.as(UInt16.OpType, 1);
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
-		SignedTransaction signed = payment.sign(this.connection.secret);
-		submit(tm, signed, cb);
+
+		signed = payment.sign(this.connection.secret);
+
 		return this;
 	}
 
-	public Chainsql dropTable(String name,Callback cb) {
+	public Chainsql dropTable(String name) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return drop(name, map,cb);
-
+		return drop(name, map);
 	}
 
-	private Chainsql drop(String name, Map map,Callback cb) {
-		Account account = this.connection.client.accountFromSeed(this.connection.secret);
-		TransactionManager tm = account.transactionManager();
+	private Chainsql drop(String name, Map map) {
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
 		STArray arr = Validate.fromJSONArray(str);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
@@ -142,20 +150,18 @@ public class Chainsql extends TopLevel {
 		payment.as(UInt16.OpType, 2);
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
-		SignedTransaction signed = payment.sign(this.connection.secret);
-		submit(tm, signed, cb);
+		signed = payment.sign(this.connection.secret);
+
 		return this;
 	}
 
-	public Chainsql renameTable(String oldName, String newName,Callback cb) {
+	public Chainsql renameTable(String oldName, String newName) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
-		return rename(oldName, newName, map,cb);
+		return rename(oldName, newName, map);
 	}
 
-	private Chainsql rename(String oldName, String newName, Map map,Callback cb) {
-		Account account = this.connection.client.accountFromSeed(this.connection.secret);
-		TransactionManager tm = account.transactionManager();
+	private Chainsql rename(String oldName, String newName, Map map) {
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(oldName) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\",\"TableNewName\":\"" + JSONUtil.toHexString(newName) + "\"}}";
 		STArray arr = Validate.fromJSONArray(str);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
@@ -166,20 +172,17 @@ public class Chainsql extends TopLevel {
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
 
-		SignedTransaction signed = payment.sign(this.connection.secret);
-		submit(tm, signed, cb);
+		signed = payment.sign(this.connection.secret);
 		return this;
 	}
 
-	public Chainsql grant(String name, String user, List flag,Callback cb) {
+	public Chainsql grant(String name, String user, List flag) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return grant(name, user, flag, map,cb);
+		return grant(name, user, flag, map);
 	}
 
-	private Chainsql grant(String name, String user, List<String> flag, Map map,Callback cb) {
-		Account account = this.connection.client.accountFromSeed(this.connection.secret);
-		TransactionManager tm = account.transactionManager();
+	private Chainsql grant(String name, String user, List<String> flag, Map map) {
 		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
 		STArray arr = Validate.fromJSONArray(str);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
@@ -197,8 +200,7 @@ public class Chainsql extends TopLevel {
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
 
-		SignedTransaction signed = payment.sign(this.connection.secret);
-		submit(tm, signed, cb);
+		signed = payment.sign(this.connection.secret);
 		return this;
 	}
 
@@ -240,30 +242,7 @@ public class Chainsql extends TopLevel {
 		});
 		
 	}
-	
-	private void onValidated(ManagedTxn managed) {
-		TransactionResult tr = managed.result;
-		//cb.called(tr.toJSON());
-		//print("Result:\n{0}", tr.toJSON().toString(2));
-		//print("Transaction result was: {0}", tr.engineResult);
-		//System.exit(0);
-	}
-
-	private void onError(ManagedTxn managed) {
-		printErr("Transaction failed!");
-		managed.submissions.forEach(sub ->
-				printErr("{0}", sub.hash));
-		// System.exit(1);
-	}
-
-	public void submit(TransactionManager tm, SignedTransaction signed, Callback cb) {
-		tm.queue(tm.manage(signed.txn)
-				.onValidated(cb)
-				.onError(this::onError));
-
-	}
-
-	
+    
 	public Connection getConnection() {
 		return connection;
 	}
@@ -307,6 +286,4 @@ public class Chainsql extends TopLevel {
 	public void setExec(String exec) {
 		this.exec = exec;
 	}
-
-
 }

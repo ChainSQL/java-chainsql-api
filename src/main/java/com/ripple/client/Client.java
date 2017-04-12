@@ -719,7 +719,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     public void sendRequest(final Request request) {
-    	System.out.println("request:"+request.json());
+    	//System.out.println("request:"+request.json());
         Logger reqLog = Request.logger;
 
         try {
@@ -1105,7 +1105,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.once(Request.OnResponse.class, new Request.OnResponse() {
 	            public  void called(Response response) {
 	                if (response.succeeded) {
-	                	System.out.println("response:" + response.message.toString());
+	                	//System.out.println("response:" + response.message.toString());
 	                	cb.called(response);
 	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
 	                }
@@ -1127,7 +1127,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
            request.once(Request.OnResponse.class, new Request.OnResponse() {
    	            public  void called(Response response) {
    	                if (response.succeeded) {
-   	                	System.out.println("response:" + response.message.toString());
+   	                	//System.out.println("response:" + response.message.toString());
    	                	cb.called(response);
    	                }
    	            }
@@ -1147,7 +1147,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
           request.once(Request.OnResponse.class, new Request.OnResponse() {
   	            public  void called(Response response) {
   	                if (response.succeeded) {
-  	                	System.out.println("response:" + response.message.toString());
+  	                	//System.out.println("response:" + response.message.toString());
   	                	cb.called(response);
   	                }
   	            }
@@ -1177,7 +1177,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
          request.once(Request.OnResponse.class, new Request.OnResponse() {
  	            public  void called(Response response) {
  	                if (response.succeeded) {
- 	                	System.out.println("response:" + response.message.toString());
+ 	                	//System.out.println("response:" + response.message.toString());
  	                	cb.called(response);
  	                }
  	            }

@@ -24,6 +24,16 @@ public class Test {
 		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
+//		  JSONObject obj = new JSONObject();
+//		  JSONObject subObj = new JSONObject();
+//		  subObj.put("table", "hello");
+//		  obj.put("val", "123");
+//		  obj.put("tables", subObj);
+//		  System.out.println(obj);		  
+//		  JSONObject table = obj.getJSONObject("tables");
+//		  table.put("table", "nihao");
+//		  System.out.println(obj);
+		  
 		  Test test =new Test();
 		  	//test.getTransactions();
 		  	//test.getLedgerVersion();
@@ -112,7 +122,7 @@ public class Test {
 	  }
 	  
 	  public void testrename(){
-		  c.reName(sTableName, "TableBww",(data)->{
+		  c.rename(sTableName, "TableBww",(data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
 	  }
@@ -125,8 +135,8 @@ public class Test {
 //	 			 System.out.println("test1wqw------"+data);
 //	 		 });
 		  //System.out.println(table.getData());
-		  JSONObject obj =  c.table(sTableName).select(null).submit();
-		  System.out.println(obj.toString());
+//		  JSONObject obj =  c.table(sTableName).get().submit();
+//		  System.out.println(obj.toString());
 	  }
 	  
 	  public void testassign(){

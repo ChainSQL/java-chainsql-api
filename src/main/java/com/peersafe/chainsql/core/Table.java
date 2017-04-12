@@ -204,6 +204,14 @@ public class Table {
 	public JSONObject prepareSQLStatement(){
 	    AccountID account = AccountID.fromAddress(connection.scope);
 	    Map map = Validate.rippleRes(connection.client, account, name);
+	    
+	    if(map.get("Sequence") == null || map.get("NameInDB") == null){
+	    	JSONObject obj = new JSONObject();
+	    	obj.put("status","error");
+	    	obj.put("error_message", "Command account_info failed.");
+	    	return obj;
+	    }
+	    
         return prepareSQLStatement(map);
 	}
 	public JSONObject prepareSQLStatement(Map map) {
@@ -289,7 +297,7 @@ public class Table {
 	}
 
 
-	public JSONObject select(){
+	private JSONObject select(){
 		if(query.size()==0||!query.get(0).contains("[")){
 			query.add(0, "[]");
 			

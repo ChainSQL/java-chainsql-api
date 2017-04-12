@@ -92,6 +92,9 @@ public class JSONUtil {
 		String str = encode(s);
 		return str;
 	} 
+	public static String fromHexString(String s){
+		return decode(s);
+	}
 	private static String hexString = "0123456789ABCDEF";
 	 
 	public static String encode(String str){

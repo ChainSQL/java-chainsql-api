@@ -26,21 +26,21 @@ public class EventManager {
 		messageTx.put("owner", owner);
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
+		
 		if (!this.onMessage) {
-			 _onMessage(this);
+			this.connection.client.OnTBMessage(this::onTBMessage);
 			this.onMessage = true;
 		}
 		this.mapCache.put(name + owner,cb);
 	}
 
 	public void subTx(String id,Callback cb) {
-
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("transaction", id);
 		this.connection.client.subscriptions.addMessage(messageTx);
 		if (!this.onMessage) {
-			 _onMessage(this);
+			this.connection.client.OnTXMessage(this::onTXMessage);
 			this.onMessage = true;
 		}
 		this.mapCache.put(id, cb);
@@ -53,11 +53,7 @@ public class EventManager {
 		messageTx.put("owner", owner);
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
-		
-		if (!this.onMessage) {
-			 _onMessage(this);
-			this.onMessage = true;
-		}
+	
 		this.mapCache.remove(name + owner);
 
 	}
@@ -68,30 +64,45 @@ public class EventManager {
 		messageTx.put("transaction", id);
 		
 		this.connection.client.subscriptions.addMessage(messageTx);
-		if (!this.onMessage) {
-			 _onMessage(this);
-			this.onMessage = true;
-		}
+		
 		this.mapCache.remove(id);
 
 	}
-	private void _onMessage(EventManager em){
-		em.connection.client.OnMessage((data)->{
-			   if ( "table".equals(data.getString("type")) || "singleTransaction".equals(data.getString("type"))) {
-			      String key = null;
-			      if ("table".equals(data.getString("type"))) {
-			    	  key = data.getString("tablename") + data.getString("owner");
-			      };
-			      if ("singleTransaction".equals(data.getString("type"))) {
-			    	  key = ((JSONObject) data.get("transaction")).getString("hash");
-			      }
-			      if (em.mapCache.containsKey(key)) {
-		    	     em.mapCache.get(key).called(data);
-			        if ( !"validate_success".equals(data.getString("status"))) {
-			        	em.mapCache.remove(key);
-			        }
-			      }
-		    }
-		});
+
+	private void onTBMessage(JSONObject data){
+		String key = data.getString("tablename") + data.getString("owner");
+		makeCallback(key,data);
+	}
+	
+	private void onTXMessage(JSONObject data){
+		String key = ((JSONObject) data.get("transaction")).getString("hash");
+		makeCallback(key,data);
+        if ( !"validate_success".equals(data.getString("status"))) {
+        	mapCache.remove(key);
+        }
+	}
+	
+	private void makeCallback(String key,JSONObject data){
+		if (mapCache.containsKey(key)) {
+	    	 unHexData(data);
+	    	 mapCache.get(key).called(data);
+	     }
+	}
+	
+	/**
+	 * unhex some fields
+	 * @param data
+	 */
+	private void unHexData(JSONObject data){
+		JSONObject tx = data.getJSONObject("transaction");
+
+		if(tx.has("Raw")){
+			tx.put("Raw", JSONUtil.fromHexString(tx.getString("Raw")));
+		}
+		if(tx.has("Tables")){
+			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
+			table = table.getJSONObject("Table");
+			table.put("TableName", JSONUtil.fromHexString(table.getString("TableName")));
+		}
 	}
 }

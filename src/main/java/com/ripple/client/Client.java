@@ -153,7 +153,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private HashMap<AccountID, Account> accounts = new HashMap<AccountID, Account>();
     // Handles [un]subscription requests, also on reconnect
     public SubscriptionManager subscriptions = new SubscriptionManager();
-
+    
+    private static final int MAX_REQUEST_COUNT = 10; 
+    
     // Constructor
     public Client(WebSocketTransport ws) {
         this.ws = ws;
@@ -500,10 +502,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     emit(OnPathFind.class, msg);
                     break;
                 case singleTransaction:
-                	emit(OnMessage.class,msg);
+                	emit(OnTXMessage.class,msg);
                 	break;
                 case table:
-                	emit(OnMessage.class,msg);
+                	emit(OnTBMessage.class,msg);
                 	break;
                 default:
                     unhandledMessage(msg);
@@ -741,8 +743,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     // ### Managed Requests API
-
-    public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder) {
+    public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder){
+    	return makeManagedRequest(cmd,manager,builder,0);
+    }
+    
+    public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder,int depth) {
+    	if(depth > MAX_REQUEST_COUNT){
+    		return null;
+    	}
         final Request request = newRequest(cmd);
         final boolean[] responded = new boolean[]{false};
         request.once(Request.OnTimeout.class, new Request.OnTimeout() {
@@ -751,7 +759,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 if (!responded[0] && manager.retryOnUnsuccessful(null)) {
                     logRetry(request, "Request timed out");
                     request.clearAllListeners();
-                    queueRetry(50, cmd, manager, builder);
+                    queueRetry(50, cmd, manager, builder,depth);
                 }
             }
         });
@@ -761,7 +769,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 if (!responded[0] && manager.retryOnUnsuccessful(null)) {
                     logRetry(request, "Client disconnected");
                     request.clearAllListeners();
-                    queueRetry(50, cmd, manager, builder);
+                    queueRetry(50, cmd, manager, builder,depth);
                 }
             }
         };
@@ -777,7 +785,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     manager.cb(response, t);
                 } else {
                     if (manager.retryOnUnsuccessful(response)) {
-                        queueRetry(50, cmd, manager, builder);
+                        queueRetry(50, cmd, manager, builder,depth);
                     } else {
                         manager.cb(response, null);
                     }
@@ -793,11 +801,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private <T> void queueRetry(int ms,
                                 final Command cmd,
                                 final Manager<T> manager,
-                                final Request.Builder<T> builder) {
+                                final Request.Builder<T> builder,
+                                final int depth) {
         schedule(ms, new Runnable() {
             @Override
             public void run() {
-                makeManagedRequest(cmd, manager, builder);
+                makeManagedRequest(cmd, manager, builder,depth + 1);
             }
         });
     }

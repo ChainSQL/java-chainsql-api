@@ -191,7 +191,7 @@ public class Chainsql extends TopLevel {
 		TableListSet payment = new TableListSet();
 		payment.as(AccountID.Account, this.connection.address);
 		payment.as(STArray.Tables, arr);
-		payment.as(UInt16.OpType, 4);
+		payment.as(UInt16.OpType, 11);
 		payment.as(AccountID.User, user);
 		payment.as(UInt32.Flags, JSONUtil.toHexString(flags.toString()));
 		payment.as(UInt32.Sequence, map.get("Sequence"));

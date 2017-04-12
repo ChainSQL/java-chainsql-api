@@ -118,10 +118,8 @@ public class Chainsql extends TopLevel {
 		payment.as(UInt16.OpType, 1);
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
-
 		SignedTransaction signed = payment.sign(this.connection.secret);
 		submit(tm, signed, cb);
-
 		return this;
 	}
 
@@ -190,7 +188,6 @@ public class Chainsql extends TopLevel {
 			JSONObject json = JSONUtil.StrToJson(s);
 			flags.add(json);
 		}
-		//Integer flags = Validate.assign(flag);
 		TableListSet payment = new TableListSet();
 		payment.as(AccountID.Account, this.connection.address);
 		payment.as(STArray.Tables, arr);
@@ -205,36 +202,6 @@ public class Chainsql extends TopLevel {
 		return this;
 	}
 
-	/*public Chainsql assignCancle(String name, String raw, List flag,Callback cb) {
-		AccountID account = AccountID.fromAddress(this.connection.address);
-		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return assignCancle(name, raw, flag, map,cb);
-	}
-
-	private Chainsql assignCancle(String name, String user, List<String> flag, Map map,Callback cb) {
-		Account account = this.connection.client.accountFromSeed(this.connection.secret);
-		TransactionManager tm = account.transactionManager();
-		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
-		STArray arr = Validate.fromJSONArray(str);
-		List<JSONObject> flags = new ArrayList<JSONObject>();
-		for (String s : flag) {
-			JSONObject json = JSONUtil.StrToJson(s);
-			flags.add(json);
-		}
-		String fee = this.connection.client.serverInfo.fee_ref + "";
-		TableListSet payment = new TableListSet();
-		payment.as(AccountID.Account, this.connection.address);
-		payment.as(STArray.Tables, arr);
-		payment.as(UInt16.OpType, 5);
-		payment.as(AccountID.User, user);
-		payment.as(UInt32.Flags, JSONUtil.toHexString(flags.toString()));
-		payment.as(UInt32.Sequence, map.get("Sequence"));
-		payment.as(Amount.Fee, fee);
-
-		SignedTransaction signed = payment.sign(this.connection.secret);
-		submit(tm, signed, cb);
-		return this;
-	}*/
 	public void getLedger(JSONObject option,Callback cb){
 		Request req = this.connection.client.getLedger(option,(data)->{
 			Response response = (Response) data;

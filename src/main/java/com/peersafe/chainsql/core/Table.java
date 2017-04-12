@@ -64,8 +64,10 @@ public class Table {
 
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
-			String json = JSONUtil.StrToJsonStr(s);
-			this.query.add(json);
+			if(!"".equals(s)&&s!=null){
+				String json = JSONUtil.StrToJsonStr(s);
+				this.query.add(json);
+			}
 		}
 	    this.exec = "r_insert";
 		return this;
@@ -74,8 +76,11 @@ public class Table {
 	
 	public Table update(List<String> orgs) {
 		for(String s: orgs){
-			String json = JSONUtil.StrToJsonStr(s);
-			this.query.add(0, json);
+			if(!"".equals(s)&&s!=null){
+				String json = JSONUtil.StrToJsonStr(s);
+				this.query.add(0, json);
+			}
+			
 		}
 	    this.exec = "r_update";
 		return this;
@@ -201,7 +206,7 @@ public class Table {
 	}
 	
 
-	public JSONObject prepareSQLStatement(){
+	private JSONObject prepareSQLStatement(){
 	    AccountID account = AccountID.fromAddress(connection.scope);
 	    Map map = Validate.rippleRes(connection.client, account, name);
 	    
@@ -214,7 +219,7 @@ public class Table {
 	    
         return prepareSQLStatement(map);
 	}
-	public JSONObject prepareSQLStatement(Map map) {
+	private JSONObject prepareSQLStatement(Map map) {
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
 		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\",\"NameInDB\":\""+map.get("NameInDB")+"\"}}";
@@ -222,7 +227,6 @@ public class Table {
 		String fee = connection.client.serverInfo.fee_ref+"";
 		SQLStatement payment = new SQLStatement();
         payment.as(AccountID.Owner,      connection.scope);
-        //payment.as(AccountID.Account, null);
         payment.as(AccountID.Account, connection.address);
         payment.as(STArray.Tables, arr);
         payment.as(UInt16.OpType, Validate.toOpType(exec));
@@ -329,14 +333,6 @@ public class Table {
 		return obj;
 	}
 	
-	private void onValidated(ManagedTxn managed) {
-        TransactionResult tr = managed.result;
-        cb.called(tr.toJSON());
-       // print("Result:\n{0}", tr.toJSON().toString(2));
-       // print("Transaction result was: {0}", tr.engineResult);
-        //System.exit(0);
-    }
-	
 	private void onSubmitSuccess(Response res){
         JSONObject obj = new JSONObject();
         obj.put("status", "success");
@@ -387,9 +383,6 @@ public class Table {
 	public List getQuery() {
 		return query;
 	}
-
-
-
 	public Connection getConnection() {
 		return connection;
 	}

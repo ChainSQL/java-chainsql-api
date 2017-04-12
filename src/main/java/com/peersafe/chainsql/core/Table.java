@@ -1,13 +1,14 @@
 package com.peersafe.chainsql.core;
 
-import static com.ripple.java8.utils.Print.print;
-import static com.ripple.java8.utils.Print.printErr;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+//import net.sf.json.JSONObject;
+import org.json.JSONObject;
+
 import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.JSONUtil;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.Account;
@@ -26,8 +27,6 @@ import com.ripple.core.types.known.tx.result.TransactionResult;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.SQLStatement;
 
-import net.sf.json.JSONObject;
-
 public class Table {
 	private String name;
 	private String owner;
@@ -38,6 +37,31 @@ public class Table {
 	public Connection connection;
 	public Callback cb;
 	
+	public SubmitState submit_state;
+	public SyncState sync_state;
+	
+	public JSONObject submitRes;
+	public JSONObject syncRes;
+	
+	public boolean sync = false;
+	public SyncCond condition;
+	
+	public enum SyncCond {
+        validate_success,	
+        db_success,
+	}
+	
+	public enum SubmitState{
+		waiting_submit,
+		submit_success,
+		submit_error,
+	}
+	
+	public enum SyncState{
+		waiting_sync,
+		sync_response,
+	}
+
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
 			String json = JSONUtil.StrToJsonStr(s);
@@ -76,18 +100,7 @@ public class Table {
 		return this;
 		
 	}
-	/*public Table select(List<String> orgs){
-		for(String s: orgs){
-			if(!"".equals(orgs)&&orgs!=null){
-				String json = JSONUtil.StrToJsonStr(s);
-				this.query.add(json);
-			}
-		}
-		this.query.add(0, "[]");
-	    this.exec = "r_get";
-    	return this;
-		
-	}*/
+
 	public Table withFields(String  orgs){
 		if(!"".equals(orgs)&&orgs!=null){
 			String ss = orgs.replace("\'", "\"");
@@ -119,7 +132,7 @@ public class Table {
 		this.query.add(json.toString());
 		return this;
 	}
-	
+
 	public Table order(List<String> orgs){
 		List<String> orderarr = new ArrayList<String>();
 		for(String s: orgs){
@@ -135,73 +148,180 @@ public class Table {
 	}
 	
 	
-	public Table submit(Callback cb){
-		if(this.exec=="r_get"){
-			select(this,this.connection,cb);
+//	public Table submit(Callback cb){
+//		if(this.exec=="r_get"){
+//			select(this,this.connection,cb);
+//		}else{
+//			prepareSQLStatement(this,this.connection,cb);
+//		}
+//		return this;
+//		
+//	}
+	
+	/**
+	 * asynchronous,callback trigger with all possible status
+	 * @param cb
+	 * @return submit result
+	 */
+	public JSONObject submit(Callback cb){
+		this.cb = cb;
+		if(this.exec == "r_get"){
+			return select();
 		}else{
-			prepareSQLStatement(this,this.connection,cb);
+			return prepareSQLStatement();
 		}
-		return this;
-		
 	}
 	
-	public void prepareSQLStatement(Table scope, Connection connect,Callback cb){
-	    AccountID account = AccountID.fromAddress(connect.scope);
-	    Map map = Validate.rippleRes(connect.client, account, scope.name);
-        prepareSQLStatement( scope,connect,map,cb);
-
+	/**
+	 * synchronous,return when condition satisfied or submit failed
+	 * @param cond,return condition
+	 * @return
+	 */
+	public JSONObject submit(SyncCond cond){
+		sync = true;
+		condition = cond;
+		
+		if(this.exec=="r_get"){
+			return select();
+		}else{
+			return prepareSQLStatement();
+		}		
 	}
-	public void prepareSQLStatement(Table scope, Connection connect,Map map,Callback cb) {
-		Account account = connect.client.accountFromSeed(connect.secret);
+
+	/**
+	 * submit a transaction,return immediately
+	 * @return submit result
+	 */
+	public JSONObject submit(){
+		if(this.exec=="r_get"){
+			return select();
+		}else{
+			return prepareSQLStatement();
+		}
+	}
+	
+
+	public JSONObject prepareSQLStatement(){
+	    AccountID account = AccountID.fromAddress(connection.scope);
+	    Map map = Validate.rippleRes(connection.client, account, name);
+        return prepareSQLStatement(map);
+	}
+	public JSONObject prepareSQLStatement(Map map) {
+		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
-		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(scope.name)+"\",\"NameInDB\":\""+map.get("NameInDB")+"\"}}";
+		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\",\"NameInDB\":\""+map.get("NameInDB")+"\"}}";
 		STArray arr = Validate.fromJSONArray(str);
-		String fee = connect.client.serverInfo.fee_ref+"";
+		String fee = connection.client.serverInfo.fee_ref+"";
 		SQLStatement payment = new SQLStatement();
-        payment.as(AccountID.Owner,      connect.scope);
-        payment.as(AccountID.Account, connect.address);
+        payment.as(AccountID.Owner,      connection.scope);
+        //payment.as(AccountID.Account, null);
+        payment.as(AccountID.Account, connection.address);
         payment.as(STArray.Tables, arr);
-        payment.as(UInt16.OpType, Validate.toOpType(scope.exec));
-        payment.as(Blob.Raw, JSONUtil.toHexString(scope.query.toString()));
+        payment.as(UInt16.OpType, Validate.toOpType(exec));
+        payment.as(Blob.Raw, JSONUtil.toHexString(query.toString()));
         payment.as(UInt32.Sequence, map.get("Sequence"));
         payment.as(Amount.Fee, fee);
-        SignedTransaction signed = payment.sign(connect.secret);
-      
-        this.cb = cb;
-        tm.queue(tm.manage(signed.txn)
- 	            .onValidated(this::onValidated)
- 	                .onError(this::onError));
-    
-		};
+        SignedTransaction signed = payment.sign(connection.secret);
+        
+        ManagedTxn tx = tm.manage(signed.txn);
+        tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
+                   .onError(this::onSubmitError));
+        
+        //subscribe tx
+        if(sync || cb != null){
+        	subscribeTx(tx.hash.toString());
+        }
+        
+        //wait until submit return
+        submit_state = SubmitState.waiting_submit;
+        while(submit_state == SubmitState.waiting_submit){
+        	waiting();
+        }        
+        
+        if(sync){
+        	if(submit_state == SubmitState.submit_error){
+        		return submitRes;
+        	}else{
+            	while(sync_state != SyncState.sync_response){
+            		waiting();
+            	}
+            	return syncRes;
+        	}        	
+        }else{
+        	return submitRes;
+        }
+	};
 	
+	private void subscribeTx(String txId){
+    	EventManager manager = new EventManager(connection);
+    	manager.subTx(txId,(data)->{
+    		//System.out.println(data);
+    		if(cb != null){
+    			cb.called(data);
+    		}else if(sync){
+    			JSONObject obj = (JSONObject)data;
+    			JSONObject res = new JSONObject();
+    			JSONObject tx = (JSONObject) obj.get("transaction");
+    			res.put("tx_hash", tx.get("hash").toString());
+    			
+    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
+    				res.put("status", "success");
+    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
+    				res.put("status", "success");
+    			}else if(!obj.get("status").equals("validate_success")){
+    				res.put("status", "error");
+    				res.put("error_message", obj.get("error_message"));
+    			}
+    			if(!res.isNull("status")){
+        			syncRes = res;
+        			sync_state = SyncState.sync_response;
+    			}
+    		}
+        });
+	}
+	
+	private void waiting(){
+      	try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
-	public Table select(Table table,Connection connect,Callback cb){
-		
-		if(table.query.size()==0||!table.query.get(0).contains("[")){
-			table.query.add(0, "[]");
+
+	public JSONObject select(){
+		if(query.size()==0||!query.get(0).contains("[")){
+			query.add(0, "[]");
 			
 		}
-		
-		AccountID account = AccountID.fromAddress(connect.scope);
-		String tables ="{\"Table\":{\"TableName\":\""+table.name+"\"}}";
-		JSONObject tabjson = JSONObject.fromObject(tables);
+
+		AccountID account = AccountID.fromAddress(connection.scope);
+		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
+		JSONObject tabjson = new JSONObject(tables);
+
 		JSONObject[] tabarr ={tabjson};
-		Request req = connect.client.select(account,tabarr,table.query.toString(),(data)->{
-			Response response = (Response) data;
-			
-			if( !"error".equals(response.status)){
-				this.data = response.result.get("lines");
-				cb.called(response.result.get("lines"));
-			}else{
-				this.message = response.error;
-				System.out.println("error_message :" +this.message);
-				cb.called(response.error);
+		Request req = connection.client.select(account,tabarr,query.toString(),(data)->{
+			if(cb != null){
+				Response response = (Response) data;
+				cb.called(getSelectRes(response));
 			}
 		});
 		
-		
-		return this;
+		return getSelectRes(req.response);
 	}
+	
+	private JSONObject getSelectRes(Response response){
+		JSONObject obj = new JSONObject();
+		obj.put("status", response.status);
+		if( !"error".equals(response.status)){
+			this.data = response.result.get("lines");
+			obj.put("lines", response.result.get("lines"));
+		}else{
+			obj.put("error_message", response.error);
+		}
+		return obj;
+	}
+	
 	private void onValidated(ManagedTxn managed) {
         TransactionResult tr = managed.result;
         cb.called(tr.toJSON());
@@ -209,12 +329,26 @@ public class Table {
        // print("Transaction result was: {0}", tr.engineResult);
         //System.exit(0);
     }
+	
+	private void onSubmitSuccess(Response res){
+        JSONObject obj = new JSONObject();
+        obj.put("status", "success");
+        JSONObject tx_json = (JSONObject) res.result.get("tx_json");
+        obj.put("tx_hash", tx_json.get("hash").toString());
+        
+		submitRes = obj;
+		submit_state = SubmitState.submit_success;
+	}
 
-    private void onError(ManagedTxn managed) {
-        printErr("Transaction failed!");
-        managed.submissions.forEach(sub ->
-                printErr("{0}", sub.hash) );
-        //System.exit(1);
+    private void onSubmitError(ManagedTxn managed) {
+        JSONObject obj = new JSONObject();
+        obj.put("status", "error");
+        obj.put("error_message", managed.result.engineResult.human);
+        //JSONObject tx_json = (JSONObject) managed.result.get("tx_json");
+        obj.put("tx_hash", managed.result.hash.toString());
+        
+        submitRes = obj;
+        submit_state = SubmitState.submit_error;
     }
 	
 	public Table(String name) {

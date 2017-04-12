@@ -19,17 +19,13 @@ public class JSONUtil {
      * @throws IOException
      */
 	  public static String StrToJsonStr(String args) {
-			JSONObject a = new JSONObject(args);
-			a.toString();
-			//checkinsert(a);
-			
-      return a.toString();
-  }
+		  JSONObject a = new JSONObject(args);
+		  return a.toString();
+	  }
   
     public static JSONObject StrToJson(String args) {
-			JSONObject a = new JSONObject(args);	
+		JSONObject a = new JSONObject(args);
 			//checkinsert(a);
-			
         return a;
     }
     

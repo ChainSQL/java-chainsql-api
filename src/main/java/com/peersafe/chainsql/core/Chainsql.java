@@ -287,6 +287,7 @@ public class Chainsql extends TopLevel {
 
 	}
 
+	
 	public Connection getConnection() {
 		return connection;
 	}

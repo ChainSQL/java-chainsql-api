@@ -1,5 +1,6 @@
 package com.ripple.client.transactions;
 
+import com.ripple.client.Client.OnLedgerClosed;
 import com.ripple.client.pubsub.CallbackContext;
 import com.ripple.client.pubsub.Publisher;
 import com.ripple.client.pubsub.Publisher.Callback;
@@ -32,6 +33,11 @@ public class ManagedTxn extends SignedTransaction {
                 handler.called(ManagedTxn.this);
             }
         });
+        return this;
+    }
+    
+    public ManagedTxn onSubmitSuccess(OnSubmitSuccess cb){
+        on(OnSubmitSuccess.class, cb);
         return this;
     }
 

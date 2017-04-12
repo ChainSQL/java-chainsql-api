@@ -1,21 +1,21 @@
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
-
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
-
-
+import com.peersafe.chainsql.core.Table.SyncCond;
 
 
 public class Test {
 	  public static final Chainsql c = Chainsql.c;
 	  public Table table;
+	  public static String sTableName;
 	  public static void main(String[] args) {
 		  c.connect("ws://192.168.0.197:6007");
 		  
-		  
+		  sTableName = "hijack";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -25,11 +25,11 @@ public class Test {
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
 		  Test test =new Test();
-		  	test.getTransactions();
+		  	//test.getTransactions();
 		  	//test.getLedgerVersion();
 		  	//test.getLedge();
 			// test.testCreateTable();
-			 //test.testinsert();
+			 test.testinsert();
 			 //test.testUpdateTable();
 			 //test.testdelete();
 			 // test.testrename();
@@ -74,7 +74,7 @@ public class Test {
 		 });
 	}	
     public void testCreateTable() {
-    	 c.createTable("test1a",c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+    	 c.createTable(sTableName,c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
 	    		 ),(data)->{
 	    			 System.out.println("creat------"+data);
@@ -82,27 +82,37 @@ public class Test {
 	   }
 	 
 	 public void testinsert(){
-		 c.table("test1a").insert(c.array("{'name': 'peera1','age': 222}","{'name': 'peerb1','age': 231}")).submit((data)->{
+//		 List<String> orgs = c.array("{'id':1,'age': 333}");
+		 List<String> orgs = c.array("{'age': 333}");
+		 JSONObject obj;
+//		 obj = c.table(sTableName).insert(orgs).submit();
+//		 System.out.println(obj);
+		 
+//		 obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//		 System.out.println(obj);
+		 
+		 obj = c.table(sTableName).insert(orgs).submit((data)->{
  			 System.out.println("creat------"+data);
  		 });
+		 System.out.println(obj);
 	 }
 	 
 
 	  public void testUpdateTable(){
-		  c.table("tabke").get(c.array("{'name':'peera'}")).update(c.array("{'age':'24'}")).submit((data)->{
+		  c.table(sTableName).get(c.array("{'name':'peera'}")).update(c.array("{'age':'24'}")).submit((data)->{
 	 			 System.out.println("creat------"+data);
 	 		 });
 	        
 	  }
 	  public void testdelete(){
-		  c.table("tabke").get(c.array("{'name': 'peera'}")).delete().submit((data)->{
+		  c.table(sTableName).get(c.array("{'name': 'peera'}")).delete().submit((data)->{
  			 System.out.println("creat------"+data);
  		 });
 	        
 	  }
 	  
 	  public void testrename(){
-		  c.reName("test", "TableBww",(data)->{
+		  c.reName(sTableName, "TableBww",(data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
 	  }
@@ -111,16 +121,16 @@ public class Test {
 		 // table = c.table("testcas").get(c.array("{'name':'peerb1'}")).limit("{index:0,total:10}").filterWith("[]").submit();
 		  
 		/*  table = c.table("testcas").get(c.array("{'name':'peerb1'}")).order(c.array("{age:-1}")).filterWith("[]").submit();*/
-		  table = c.table("test1wqw").get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
-	 			 System.out.println("test1wqw------"+data);
-	 		 });
+//		  c.table(sTableName).get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
+//	 			 System.out.println("test1wqw------"+data);
+//	 		 });
 		  //System.out.println(table.getData());
-		  //table = c.table("test3").select(c.array("{'name':'peerb1'}")).submit();
-		  System.out.println(table.getData());
+		  JSONObject obj =  c.table(sTableName).select(null).submit();
+		  System.out.println(obj.toString());
 	  }
 	  
 	  public void testassign(){
-		  c.assign("test", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array(c.perm.lsfDelete, c.perm.lsfSelect,c.perm.lsfUpdate),(data)->{
+		  c.assign(sTableName, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array(c.perm.lsfDelete, c.perm.lsfSelect,c.perm.lsfUpdate),(data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
 	  }
@@ -137,12 +147,9 @@ public class Test {
 	public ArrayList<String> select(String tableName,String filterWith,String whereCond){
 		ArrayList<String> cond=new ArrayList<String>();
 		cond.add(whereCond);
-		Table t=c.table(tableName)
-				.withFields(filterWith).get(cond).submit((data)->{
+		JSONObject json = c.table(tableName).withFields(filterWith).get(cond).submit((data)->{
 		 			 System.out.println("creat------"+data);
 		 		 });
-		System.out.println(t.getData().getClass());
-		JSONObject json=(JSONObject)t.getData();
 		if(json==null){
 			System.out.println("查询结果集为空");
 			return null;

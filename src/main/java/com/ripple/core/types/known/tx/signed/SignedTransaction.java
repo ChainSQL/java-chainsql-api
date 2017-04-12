@@ -7,8 +7,10 @@ import com.ripple.core.coretypes.hash.HalfSha512;
 import com.ripple.core.coretypes.hash.Hash256;
 import com.ripple.core.coretypes.hash.prefixes.HashPrefix;
 import com.ripple.core.coretypes.uint.UInt32;
+import com.ripple.core.fields.Field;
 import com.ripple.core.serialized.BytesList;
 import com.ripple.core.serialized.MultiSink;
+import com.ripple.core.serialized.SerializedType;
 import com.ripple.core.serialized.enums.TransactionType;
 import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.crypto.ecdsa.IKeyPair;
@@ -80,9 +82,18 @@ public class SignedTransaction {
             BytesList blob = new BytesList();
             HalfSha512 id = HalfSha512.prefixed256(HashPrefix.transactionID);
 
+//            for (Field field : txn) {
+//            	if(field.isSerialized()){
+//            		System.out.println(field.toString() + "1");
+//            	}else{
+//            		System.out.println(field.toString() + "0");
+//            	}
+//            }
+            //signingData = txn.signingData();
             txn.toBytesSink(new MultiSink(blob, id));
             tx_blob = blob.bytesHex();
-            hash = id.finish();
+            hash = Hash256.prefixedHalfSha512(HashPrefix.transactionID, blob.bytes());
+            //hash = id.finish();
         } catch (Exception e) {
             // electric paranoia
             previousSigningData = null;

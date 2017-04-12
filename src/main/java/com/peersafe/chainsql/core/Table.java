@@ -302,7 +302,6 @@ public class Table {
 			query.add(0, "[]");
 			
 		}
-
 		AccountID account = AccountID.fromAddress(connection.scope);
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
 		JSONObject tabjson = new JSONObject(tables);

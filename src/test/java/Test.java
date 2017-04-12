@@ -3,9 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
+
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
-import com.peersafe.chainsql.core.Table.SyncCond;
 
 
 public class Test {
@@ -122,9 +122,11 @@ public class Test {
 	  }
 	  
 	  public void testrename(){
-		  c.rename(sTableName, "TableBww",(data)->{
-	 			 System.out.println("test1wqw------"+data);
-	 		 });
+
+		  c.renameTable(sTableName, "TableBww",(data)->{
+			  
+		  });
+
 	  }
 	  
 	  public void testget(){
@@ -140,17 +142,17 @@ public class Test {
 	  }
 	  
 	  public void testassign(){
-		  c.assign(sTableName, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array(c.perm.lsfDelete, c.perm.lsfSelect,c.perm.lsfUpdate),(data)->{
+		  c.grant(sTableName, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
 	  }
-	  public void testcelassign(){
-		  c.assignCancle("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("lsfDelete", "lsfSelect","lsfUpdate"),(data)->{
+	  /*public void testcelassign(){
+		  c.grant("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
-	  }
+	  }*/
 	public void testdrop(){
-		c.drop("dc_universe1",(data)->{
+		c.dropTable("dc_universe1",(data)->{
 			 System.out.println("test1wqw------"+data);
 		 });
 	}

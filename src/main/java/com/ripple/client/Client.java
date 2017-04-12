@@ -20,12 +20,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.util.EventManager;
 import com.ripple.client.enums.Command;
 import com.ripple.client.enums.Message;
 import com.ripple.client.enums.RPCErr;
 import com.ripple.client.pubsub.Publisher;
-import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.client.requests.Request;
 import com.ripple.client.requests.Request.Manager;
 import com.ripple.client.responses.Response;
@@ -1107,7 +1105,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.once(Request.OnResponse.class, new Request.OnResponse() {
 	            public  void called(Response response) {
 	                if (response.succeeded) {
-	                	//System.out.println("response:" + response.message.toString());
+	                	System.out.println("response:" + response.message.toString());
 	                	cb.called(response);
 	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
 	                }
@@ -1129,7 +1127,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
            request.once(Request.OnResponse.class, new Request.OnResponse() {
    	            public  void called(Response response) {
    	                if (response.succeeded) {
-   	                	//System.out.println("response:" + response.message.toString());
+   	                	System.out.println("response:" + response.message.toString());
    	                	cb.called(response);
    	                }
    	            }
@@ -1149,7 +1147,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
           request.once(Request.OnResponse.class, new Request.OnResponse() {
   	            public  void called(Response response) {
   	                if (response.succeeded) {
-  	                	//System.out.println("response:" + response.message.toString());
+  	                	System.out.println("response:" + response.message.toString());
   	                	cb.called(response);
   	                }
   	            }
@@ -1179,7 +1177,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
          request.once(Request.OnResponse.class, new Request.OnResponse() {
  	            public  void called(Response response) {
  	                if (response.succeeded) {
- 	                	//System.out.println("response:" + response.message.toString());
+ 	                	System.out.println("response:" + response.message.toString());
  	                	cb.called(response);
  	                }
  	            }

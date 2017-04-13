@@ -124,9 +124,6 @@ public class Table extends Submit{
 	    Map map = Validate.rippleRes(connection.client, account, name);
 	    
 	    if(map.get("Sequence") == null || map.get("NameInDB") == null){
-	    	JSONObject obj = new JSONObject();
-	    	obj.put("status","error");
-	    	obj.put("error_message", "Command account_info failed.");
 	    	return null;
 	    }
 	    

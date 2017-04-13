@@ -92,6 +92,14 @@ public class Chainsql extends Submit {
 	JSONObject doSubmit() {
 		return doSubmit(signed);
 	}
+	
+	private boolean mapError(Map map){
+		if(map.get("Sequence") == null || map.get("NameInDB") == null){
+	    	return true;
+	    }else{
+	    	return false;
+	    }
+	}
 
 	public Chainsql createTable(String name, List<String> raw) {
 		use(this.connection.address);
@@ -110,7 +118,11 @@ public class Chainsql extends Submit {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		
-		return create(name, strraw.toString(), map);
+		if(mapError(map)){
+			return this;
+		}else{
+			return create(name, strraw.toString(), map);
+		}		
 	}
 
 	private Chainsql create(String name, String raw, Map map) {
@@ -133,7 +145,11 @@ public class Chainsql extends Submit {
 	public Chainsql dropTable(String name) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return drop(name, map);
+		if(mapError(map)){
+			return this;
+		}else{
+			return drop(name, map);
+		}
 	}
 
 	private Chainsql drop(String name, Map map) {
@@ -154,7 +170,11 @@ public class Chainsql extends Submit {
 	public Chainsql renameTable(String oldName, String newName) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
-		return rename(oldName, newName, map);
+		if(mapError(map)){
+			return this;
+		}else{
+			return rename(oldName, newName, map);
+		}
 	}
 
 	private Chainsql rename(String oldName, String newName, Map map) {
@@ -175,7 +195,11 @@ public class Chainsql extends Submit {
 	public Chainsql grant(String name, String user, List flag) {
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
-		return grant(name, user, flag, map);
+		if(mapError(map)){
+			return this;
+		}else{
+			return grant(name, user, flag, map);
+		}
 	}
 
 	private Chainsql grant(String name, String user, List<String> flag, Map map) {

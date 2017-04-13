@@ -13,9 +13,11 @@ public class Test {
 	  public Table table;
 	  public static String sTableName;
 	  public static void main(String[] args) {
-		  c.connect("ws://192.168.0.191:6006");
+		  //c.connect("ws://192.168.0.191:6006");
+		  c.connect("ws://192.168.0.197:6008");
+		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "wu01";
+		  sTableName = "ffsfaf11";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -38,23 +40,23 @@ public class Test {
 		  	//test.getTransactions();
 		  	//test.getLedgerVersion();
 		  	//test.getLedge();
-		  //test.testCreateTable();
-		  //test.testinsert();
+		  test.testCreateTable();
+//		  test.testinsert();
 		  //test.testUpdateTable();
 		  //test.testdelete();
 		  //test.testrename();
 			//test.testget();
 		  //test.testdrop();
-			 test.testassign();
+//			 test.testassign();
 		     //test.testcelassign();
 
-		  try {
-			Thread.sleep(10000);
-		  } catch (InterruptedException e) {
-			e.printStackTrace();
-		  }
-		  
-		  c.disconnect();
+//		  try {
+//			Thread.sleep(10000);
+//		  } catch (InterruptedException e) {
+//			e.printStackTrace();
+//		  }
+//		  
+//		  c.disconnect();
 			 //System.out.println("```````````");
 			// test.testget();
 			/* try {
@@ -109,7 +111,7 @@ public class Test {
 	 
 	 public void testinsert(){
 //		 List<String> orgs = c.array("{'id':1,'age': 333}");
-		 List<String> orgs = c.array("{'age': 333,'name':'lucy'}");
+		 List<String> orgs = c.array("{'age': 53,'name':'小胡'}","{'age': 33,'name':'小明'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -183,7 +185,7 @@ public class Test {
 	  }
 	  
 	  public void testassign(){
-		  c.grant(sTableName, "rMgoRgBsh2NRUbEvFLRXHDVniYHS81JC3d",c.array("{insert:true}","{delete:true}","{update:true}")).submit((data)->{
+		  c.grant(sTableName, "rMgoRgBsh2NRUbEvFLRXHDVniYHS81JC3d",c.array("{insert:false}")).submit((data)->{
 	 			 System.out.println("test1wqw------"+data);
 		  });
 	  }

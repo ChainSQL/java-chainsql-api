@@ -52,14 +52,14 @@ public class Validate {
 			Integer Sequence = (Integer)sequence.response.result.optJSONObject("account_data").get("Sequence");
 			map.put("Sequence", Sequence);
 		}else{
-			 System.out.println("error_message :This result is null");
+			// System.out.println("error_message :This result is null");
 		}
 		Request nameindb = client.getNameInDB(name, account);
 		if(nameindb.response.result!=null){
 			String NameInDB =  (String)nameindb.response.result.get("nameInDB");
 			map.put("NameInDB", NameInDB);
 		}else{
-			 System.out.println("error_message :This result is null");
+			 //System.out.println("error_message :This result is null");
 		}
 		
 		/*Request fee = client.getNameInDB(name, account);

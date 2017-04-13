@@ -99,11 +99,17 @@ public abstract class Submit {
         tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
                    .onError(this::onSubmitError));
         
+        for(int i=0; i<2; i++){
+        	 waiting();
+        }
+       
         //subscribe tx
         if(sync || cb != null){
         	if(tx == null || tx.hash == null){
+        		System.out.println(" hash :"+tx.hash.toString());
     			return getError("Submit failed,transaction hash is null.");
         	}
+        	System.out.println(tx.hash.toString());
         	subscribeTx(tx.hash.toString());
         }
         

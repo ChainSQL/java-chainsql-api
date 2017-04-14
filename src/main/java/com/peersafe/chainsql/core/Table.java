@@ -157,7 +157,7 @@ public class Table extends Submit{
 	}
 
 	private JSONObject select(){
-		if(query.size()==0||!query.get(0).contains("[")){
+		if(query.size()==0||!query.get(0).substring(0, 1).contains("[")){
 			query.add(0, "[]");
 			
 		}
@@ -166,7 +166,7 @@ public class Table extends Submit{
 		JSONObject tabjson = new JSONObject(tables);
 
 		JSONObject[] tabarr ={tabjson};
-		//System.out.println(query.toString());
+		System.out.println(query.toString());
 		Request req = connection.client.select(account,tabarr,query.toString(),(data)->{
 			if(cb != null){
 				Response response = (Response) data;

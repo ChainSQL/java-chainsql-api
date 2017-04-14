@@ -75,7 +75,7 @@ public abstract class Submit {
 	
 	private void waiting(){
       	try {
-			Thread.sleep(100);
+			Thread.sleep(50);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -99,17 +99,21 @@ public abstract class Submit {
         tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
                    .onError(this::onSubmitError));
         
-        for(int i=0; i<2; i++){
-        	 waiting();
+        int count = 0;
+        while(tx.hash == null){
+        	waiting();
+        	count++;
+        	if(count > 20){
+        		break;
+        	}
         }
        
         //subscribe tx
         if(sync || cb != null){
         	if(tx == null || tx.hash == null){
-        		System.out.println(" hash :"+tx.hash.toString());
+        		//System.out.println(" hash :"+tx.hash.toString());
     			return getError("Submit failed,transaction hash is null.");
         	}
-        	System.out.println(tx.hash.toString());
         	subscribeTx(tx.hash.toString());
         }
         

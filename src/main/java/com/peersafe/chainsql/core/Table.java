@@ -106,10 +106,10 @@ public class Table extends Submit{
 	}
 
 	public Table order(List<String> orgs){
-		List<String> orderarr = new ArrayList<String>();
+		List<JSONObject> orderarr = new ArrayList<JSONObject>();
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
+				JSONObject json = JSONUtil.StrToJson(s);
 				orderarr.add(json);
 			}
 		}
@@ -166,6 +166,7 @@ public class Table extends Submit{
 		JSONObject tabjson = new JSONObject(tables);
 
 		JSONObject[] tabarr ={tabjson};
+		//System.out.println(query.toString());
 		Request req = connection.client.select(account,tabarr,query.toString(),(data)->{
 			if(cb != null){
 				Response response = (Response) data;

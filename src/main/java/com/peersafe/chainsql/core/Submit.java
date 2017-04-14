@@ -41,7 +41,7 @@ public abstract class Submit {
 
 	private static final int wait_milli = 50; 
 	private static final int hash_wait = 1000;
-	private static final int submit_wait = 2000;
+	private static final int submit_wait = 3000;
 	private static final int sync_maxtime = 200000;
 	/**
 	 * asynchronous,callback trigger with all possible status
@@ -96,6 +96,8 @@ public abstract class Submit {
 			return getError("Signing failed,maybe ripple node error");
 		}
 		
+
+        submit_state = SubmitState.waiting_submit;
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
         ManagedTxn tx = tm.manage(signed.txn);
@@ -113,14 +115,12 @@ public abstract class Submit {
         //subscribe tx
         if(sync || cb != null){
         	if(tx == null || tx.hash == null){
-        		//System.out.println(" hash :"+tx.hash.toString());
     			return getError("Submit failed,transaction hash is null.");
         	}
         	subscribeTx(tx.hash.toString());
         }
         
         //wait until submit return
-        submit_state = SubmitState.waiting_submit;
         count = submit_wait / wait_milli;
         while(submit_state == SubmitState.waiting_submit){
         	waiting();
@@ -168,7 +168,10 @@ public abstract class Submit {
     				res.put("status", "success");
     			}else if(!obj.get("status").equals("validate_success")){
     				res.put("status", "error");
-    				res.put("error_message", obj.get("error_message"));
+    				if(res.has("error_message"))
+    					res.put("error_message", obj.get("error_message"));
+    				else
+    					res.put("error_message", obj.get("status"));
     			}
     			if(!res.isNull("status")){
         			syncRes = res;
@@ -192,7 +195,8 @@ public abstract class Submit {
         JSONObject obj = new JSONObject();
         JSONObject tx_json = (JSONObject) res.result.get("tx_json");
         obj.put("status", "error");
-        obj.put("error_message", res.result.getString("engine_result_message"));
+        if(res.result.has("engine_result_message"))
+        	obj.put("error_message", res.result.getString("engine_result_message"));
         //JSONObject tx_json = (JSONObject) managed.result.get("tx_json");
         obj.put("tx_hash", tx_json.getString("hash"));
         

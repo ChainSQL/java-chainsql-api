@@ -13,11 +13,11 @@ public class Test {
 	  public Table table;
 	  public static String sTableName;
 	  public static void main(String[] args) {
-		  c.connect("ws://192.168.0.193:6006");
-		  //c.connect("ws://192.168.0.197:6007");
+		  //c.connect("ws://192.168.0.193:6006");
+		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "hijack";
+		  sTableName = "hijack2";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/

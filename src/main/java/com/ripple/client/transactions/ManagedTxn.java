@@ -41,17 +41,17 @@ public class ManagedTxn extends SignedTransaction {
         return this;
     }
 
-    public ManagedTxn onError(final Callback<ManagedTxn> cb) {
+    public ManagedTxn onError(final Callback<Response> cb) {
         on(OnSubmitFailure.class, new OnSubmitFailure() {
             @Override
             public void called(Response args) {
-                cb.called(ManagedTxn.this);
+                cb.called(args);
             }
         });
         on(OnSubmitError.class, new OnSubmitError() {
             @Override
             public void called(Response args) {
-                cb.called(ManagedTxn.this);
+                cb.called(args);
             }
         });
         return this;

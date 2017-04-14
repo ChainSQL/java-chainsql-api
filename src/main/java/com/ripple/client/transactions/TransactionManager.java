@@ -334,11 +334,21 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		if (txn.finalizedOrResponseIsToPriorSubmission(res)) {
 			return;
 		}
-		EngineResult ter = res.engineResult();
+
+		System.out.println(res.message);
+		EngineResult ter = EngineResult.tesSUCCESS;
+		try{
+			ter = res.engineResult();
+		}catch(Exception e){
+			ter = EngineResult.telNormalFailure;
+		}
 		final UInt32 submitSequence = res.getSubmitSequence();
 		switch (ter) {
 		case tesSUCCESS:
 			txn.emit(ManagedTxn.OnSubmitSuccess.class, res);
+			return;
+		case telNormalFailure:
+			txn.emit(ManagedTxn.OnSubmitError.class, res);
 			return;
 		case tefPAST_SEQ:
 			resubmitWithNewSequence(txn);

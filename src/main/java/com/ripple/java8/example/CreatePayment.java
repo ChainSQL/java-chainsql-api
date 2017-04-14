@@ -5,6 +5,7 @@ import static com.ripple.java8.utils.Print.printErr;
 
 import com.ripple.client.Account;
 import com.ripple.client.Client;
+import com.ripple.client.responses.Response;
 import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.client.transactions.TransactionManager;
 import com.ripple.client.transport.impl.JavaWebSocketTransportImpl;
@@ -50,10 +51,10 @@ public class CreatePayment {
 	        System.exit(0);
 	    }
 
-	    private void onError(ManagedTxn managed) {
+	    private void onError(Response res) {
 	        printErr("Transaction failed!");
-	        managed.submissions.forEach(sub ->
-	                printErr("{0}", sub.hash) );
+//	        managed.submissions.forEach(sub ->
+//	                printErr("{0}", sub.hash) );
 	        System.exit(1);
 	    }
 

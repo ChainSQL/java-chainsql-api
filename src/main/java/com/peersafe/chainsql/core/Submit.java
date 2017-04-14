@@ -39,7 +39,10 @@ public abstract class Submit {
 		sync_response,
 	}
 
-	
+	private static final int wait_milli = 50; 
+	private static final int hash_wait = 1000;
+	private static final int submit_wait = 2000;
+	private static final int sync_maxtime = 200000;
 	/**
 	 * asynchronous,callback trigger with all possible status
 	 * @param cb
@@ -99,11 +102,10 @@ public abstract class Submit {
         tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
                    .onError(this::onSubmitError));
         
-        int count = 0;
+        int count = hash_wait/wait_milli;
         while(tx.hash == null){
         	waiting();
-        	count++;
-        	if(count > 20){
+        	if(--count <= 0){
         		break;
         	}
         }
@@ -119,16 +121,27 @@ public abstract class Submit {
         
         //wait until submit return
         submit_state = SubmitState.waiting_submit;
+        count = submit_wait / wait_milli;
         while(submit_state == SubmitState.waiting_submit){
         	waiting();
+        	if(--count <= 0){
+        		submit_state = SubmitState.submit_error;
+        		submitRes = getError("waiting submit result timeout");
+        		break;
+        	}
         }        
         
         if(sync){
         	if(submit_state == SubmitState.submit_error){
         		return submitRes;
         	}else{
+        		count = sync_maxtime / wait_milli;
             	while(sync_state != SyncState.sync_response){
             		waiting();
+            		if(--count <= 0){
+            			syncRes = getError("waiting sync result timeout");
+            			break;
+            		}
             	}
             	return syncRes;
         	}        	
@@ -175,12 +188,13 @@ public abstract class Submit {
 		submit_state = SubmitState.submit_success;
 	}
 
-    private void onSubmitError(ManagedTxn managed) {
+    private void onSubmitError(Response res) {
         JSONObject obj = new JSONObject();
+        JSONObject tx_json = (JSONObject) res.result.get("tx_json");
         obj.put("status", "error");
-        obj.put("error_message", managed.result.engineResult.human);
+        obj.put("error_message", res.result.getString("engine_result_message"));
         //JSONObject tx_json = (JSONObject) managed.result.get("tx_json");
-        obj.put("tx_hash", managed.result.hash.toString());
+        obj.put("tx_hash", tx_json.getString("hash"));
         
         submitRes = obj;
         submit_state = SubmitState.submit_error;

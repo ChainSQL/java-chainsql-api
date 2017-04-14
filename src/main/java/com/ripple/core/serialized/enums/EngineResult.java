@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 public enum EngineResult implements SerializedType
 {
+	telNormalFailure(-400,"Error not here"),
     telLOCAL_ERROR(-399, "Local failure."),
     telBAD_DOMAIN (-398, "Domain too long."),
     telBAD_PATH_COUNT (-397, "Malformed: Too many paths."),

@@ -13,11 +13,11 @@ public class Test {
 	  public Table table;
 	  public static String sTableName;
 	  public static void main(String[] args) {
-		  //c.connect("ws://192.168.0.191:6006");
-		  c.connect("ws://192.168.0.197:6008");
+		  c.connect("ws://192.168.0.193:6006");
+		  //c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "ffsfaf11";
+		  sTableName = "hijack";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -100,13 +100,13 @@ public class Test {
 //    	obj = c.createTable(sTableName,args).submit();
 //    	System.out.println(obj);
     	
-//    	obj = c.createTable(sTableName,args).submit((data)->{
-//    		System.out.println("creat------"+data);
-//    	});
-//    	System.out.println(obj);
-    	
-    	obj = c.createTable(sTableName, args).submit(SyncCond.db_success);
+    	obj = c.createTable(sTableName,args).submit((data)->{
+    		System.out.println("creat------"+data);
+    	});
     	System.out.println(obj);
+    	
+//    	obj = c.createTable(sTableName, args).submit(SyncCond.db_success);
+//    	System.out.println(obj);
     }
 	 
 	 public void testinsert(){

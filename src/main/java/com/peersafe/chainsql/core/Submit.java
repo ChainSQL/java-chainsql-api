@@ -40,7 +40,7 @@ public abstract class Submit {
 	}
 
 	private static final int wait_milli = 50; 
-	private static final int hash_wait = 1000;
+	private static final int hash_wait = 5000;
 	private static final int submit_wait = 3000;
 	private static final int sync_maxtime = 200000;
 	/**

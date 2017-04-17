@@ -41,7 +41,7 @@ public abstract class Submit {
 
 	private static final int wait_milli = 50; 
 	private static final int hash_wait = 5000;
-	private static final int submit_wait = 3000;
+	private static final int submit_wait = 5000;
 	private static final int sync_maxtime = 200000;
 	/**
 	 * asynchronous,callback trigger with all possible status
@@ -104,6 +104,7 @@ public abstract class Submit {
         tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
                    .onError(this::onSubmitError));
         
+        //waiting for tx-hash
         int count = hash_wait/wait_milli;
         while(tx.hash == null){
         	waiting();
@@ -153,7 +154,7 @@ public abstract class Submit {
 	private void subscribeTx(String txId){
     	EventManager manager = new EventManager(connection);
     	manager.subTx(txId,(data)->{
-    		//System.out.println(data);
+    		System.out.println(data);
     		if(cb != null){
     			cb.called(data);
     		}else if(sync){

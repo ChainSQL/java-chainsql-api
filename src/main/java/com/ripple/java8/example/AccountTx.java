@@ -20,7 +20,7 @@ public class AccountTx {
 
     public static void main(String[] args) {
         new Client(new JavaWebSocketTransportImpl())
-                .connect("ws://192.168.0.151:6006");
+                .connect("ws://192.168.0.197:6007");
     }
 
     public AccountTx(Client client) {

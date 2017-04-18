@@ -224,43 +224,19 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
+//	public JSONObject getLedger(){
+//		
+//	}
 	public void getLedger(JSONObject option,Callback cb){
-		Request req = this.connection.client.getLedger(option,(data)->{
-			Response response = (Response) data;
-			if( !"error".equals(response.status)){
-				//System.out.println(response.result);
-				cb.called(response.message);
-			}else{
-				
-				//System.out.println("error_message :"+ response.error_message);
-				cb.called(response.error_message);
-			}
-		});
-		
+		this.connection.client.getLedger(option,cb);
 	}
 	
 	public void getLedgerVersion(Callback cb){
-		Request req = this.connection.client.getLedgerVersion((data)->{
-			Response response = (Response) data;
-			if( !"error".equals(response.status)){
-				cb.called(response.result.get("ledger_current_index"));
-			}else{
-				cb.called(response.error_message);
-			}
-		});
-		
+		this.connection.client.getLedgerVersion(cb);
 	}
 	
 	public void getTransactions(String address,Callback cb){
-		Request req = this.connection.client.getTransactions(address,(data)->{
-			Response response = (Response) data;
-			if( !"error".equals(response.status)){
-				cb.called(response.message);
-			}else{
-				cb.called(response.error_message);
-			}
-		});
-		
+		this.connection.client.getTransactions(address,cb);	
 	}
     
 	public Connection getConnection() {

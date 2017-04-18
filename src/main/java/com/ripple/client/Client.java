@@ -667,7 +667,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	System.out.println("response:" + jsonObject);
+            	//System.out.println("response:" + jsonObject);
                 if (response.succeeded) {
                     accountRoot.setFromJSON(jsonObject);
                 } else {
@@ -794,7 +794,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         builder.beforeRequest(request);
         manager.beforeRequest(request);
 
-    	System.out.println("request:" + request.toJSON());
+    	//System.out.println("request:" + request.toJSON());
     	
         request.request();
         return request;
@@ -1071,8 +1071,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
  			} catch (InterruptedException e) {
  				e.printStackTrace();
  			}  
-    	 	}
-    		return request;
+	 	}
+		return request;
     }
     public  Request getNameInDB(String name ,AccountID account){   	
     	 Request request = newRequest(Command.g_dbname);
@@ -1084,7 +1084,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	            public  void called(Response response) {
 	                if (response.succeeded) {
 	   
-	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
 	                }
 	            }
 	        });
@@ -1098,103 +1097,111 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    	 	}
     	 return request;	
     }
-    public  Request select(AccountID account,JSONObject[] tabarr,String raw,events cb){   	
-   	 Request request = newRequest(Command.r_get);
-   	 JSONObject txjson = new JSONObject();
-   	 txjson.put("Owner", account);
-   	 txjson.put("Tables", tabarr);
-   	 txjson.put("Raw", raw);
-   	 txjson.put("OpType", 7);
-   	 request.json("tx_json", txjson);
-        request.once(Request.OnResponse.class, new Request.OnResponse() {
-	            public  void called(Response response) {
-	                if (response.succeeded) {
-	                	//System.out.println("response:" + response.message.toString());
-	                	cb.called(response);
-	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
-	                }
-	            }
-	        });
-        request.request();
-        while(request.response==null){
-       	 try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}  
-  	 	}
-   	 return request;	
-   }
-    public  Request getLedger(JSONObject option,events cb){   	
-      	 Request request = newRequest(Command.ledger);
-      	 request.json("tx_json", option);
-           request.once(Request.OnResponse.class, new Request.OnResponse() {
-   	            public  void called(Response response) {
-   	                if (response.succeeded) {
-   	                	//System.out.println("response:" + response.message.toString());
-   	                	cb.called(response);
-   	                }
-   	            }
-   	        });
-           request.request();
-           while(request.response==null){
-          	 try {
-   				Thread.sleep(100);
-   			} catch (InterruptedException e) {
-   				e.printStackTrace();
-   			}  
-     	 	}
-      	 return request;	
+    public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback cb){
+	   	 Request request = newRequest(Command.r_get);
+	   	 JSONObject txjson = new JSONObject();
+	   	 txjson.put("Owner", account);
+	   	 txjson.put("Tables", tabarr);
+	   	 txjson.put("Raw", raw);
+	   	 txjson.put("OpType", 7);
+	   	 request.json("tx_json", txjson);
+	        request.once(Request.OnResponse.class, new Request.OnResponse() {
+		            public  void called(Response response) {
+		                if (response.succeeded) {
+		                	//System.out.println("response:" + response.message.toString());
+		                	cb.called(response);
+		                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
+		                }
+		            }
+		        });
+	        request.request();
+	        while(request.response==null){
+	       	 try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}  
+	  	 	}
+	   	 return request;	
+	   }
+    public  void getLedger(JSONObject option,Callback cb){  
+    	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+        		request.json("ledger_index", option.get("ledger_index"));
+       		 	request.json("expand",option.get("expand") );
+       		 	request.json("transactions", option.get("transactions"));
+       		 	request.json("accounts", option.get("accounts"));
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
       }
-    public  Request getLedgerVersion(events cb){   	
-     	 Request request = newRequest(Command.ledger_current);
-          request.once(Request.OnResponse.class, new Request.OnResponse() {
-  	            public  void called(Response response) {
-  	                if (response.succeeded) {
-  	                	//System.out.println("response:" + response.message.toString());
-  	                	cb.called(response);
-  	                }
-  	            }
-  	        });
-          request.request();
-          while(request.response==null){
-         	 try {
-  				Thread.sleep(100);
-  			} catch (InterruptedException e) {
-  				e.printStackTrace();
-  			}  
-    	 	}
-     	 return request;	
+    public  void getLedgerVersion(Callback cb){   	
+    	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
      }
     
-    public  Request getTransactions(String address,events cb){   	
-    	 Request request = newRequest(Command.account_tx);
-    	 JSONObject txjson = new JSONObject();
-       	 txjson.put("account", address);
-       	 txjson.put("ledger_index_min", 1);
-       	 txjson.put("ledger_index_max", 10);
-       	 txjson.put("binary", false);
-       	 txjson.put("count", false);
-       	 txjson.put("limit", 10);
-       	 txjson.put("forward", false);
-       	 request.json("tx_json", txjson);
-         request.once(Request.OnResponse.class, new Request.OnResponse() {
- 	            public  void called(Response response) {
- 	                if (response.succeeded) {
- 	                	//System.out.println("response:" + response.message.toString());
- 	                	cb.called(response);
- 	                }
- 	            }
- 	        });
-         request.request();
-         while(request.response==null){
-        	 try {
- 				Thread.sleep(100);
- 			} catch (InterruptedException e) {
- 				e.printStackTrace();
- 			}  
-   	 	}
-    	 return request;	
+    public  void getTransactions(String address,Callback cb){   
+    	
+    	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	 request.json("account", address);
+            	 request.json("ledger_index_min", -1);
+            	 request.json("ledger_index_max", -1);
+            	 request.json("binary", false);
+            	 request.json("count", false);
+            	 request.json("limit", 10);
+            	 request.json("forward", false);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
     }
 
     public Request ping() {

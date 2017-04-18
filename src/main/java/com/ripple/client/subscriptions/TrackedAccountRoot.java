@@ -85,6 +85,7 @@ public class TrackedAccountRoot extends Publisher<TrackedAccountRoot.events> {
     }
 
     private void notifyUpdate() {
+    	System.out.println("notifyUpdate called");
         updated = true;
         emit(OnUpdate.class, this);
     }

@@ -98,6 +98,7 @@ public abstract class Submit {
 		
 
         submit_state = SubmitState.waiting_submit;
+        
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
         ManagedTxn tx = tm.manage(signed.txn);

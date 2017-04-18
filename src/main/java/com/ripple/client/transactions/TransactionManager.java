@@ -123,12 +123,13 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 
 	public void queue(final ManagedTxn tx) {
 		 if (accountRoot.primed()) {
+			System.out.println("queue:accountRoot primed");
 			queue(tx, locallyPreemptedSubmissionSequence());
 		} else {
 			accountRoot.once(TrackedAccountRoot.OnUpdate.class, new TrackedAccountRoot.OnUpdate() {
 				@Override
 				public void called(TrackedAccountRoot accountRoot) {
-
+					System.out.println("queue:accountRoot.once callback called");
 					queue(tx, locallyPreemptedSubmissionSequence());
 				}
 			});
@@ -261,6 +262,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 	}
 
 	private Request doSubmitRequest(final ManagedTxn txn, UInt32 sequence) {
+		System.out.println("---doSubmitRequest called");
 		// Compute the fee for the current load_factor
 		Amount fee = client.serverInfo.transactionFee(txn.txn);
 		// Inside prepare we check if Fee and Sequence are the same, and if so
@@ -276,7 +278,8 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		}
 
 		txn.prepare(keyPair, fee, sequence, lastLedgerSequence);
-
+		System.out.println("after txn.prepare,txn.hash=" + txn.hash);
+		
 		final Request req = client.newRequest(Command.submit);
 		// tx_blob is a hex string, right o' the bat
 		req.json("tx_blob", txn.tx_blob);

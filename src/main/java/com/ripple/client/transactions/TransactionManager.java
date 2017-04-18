@@ -123,10 +123,8 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 
 	public void queue(final ManagedTxn tx) {
 		 if (accountRoot.primed()) {
-			System.out.println("queue:accountRoot primed");
 			queue(tx, locallyPreemptedSubmissionSequence());
 		} else {
-			System.out.println("accountRoot.once called");
 			accountRoot.once(TrackedAccountRoot.OnUpdate.class, new TrackedAccountRoot.OnUpdate() {
 				@Override
 				public void called(TrackedAccountRoot accountRoot) {

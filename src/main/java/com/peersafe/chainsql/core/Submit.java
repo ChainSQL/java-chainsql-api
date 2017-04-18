@@ -96,7 +96,6 @@ public abstract class Submit {
 			return getError("Signing failed,maybe ripple node error");
 		}
 		
-
         submit_state = SubmitState.waiting_submit;
         sync_state = SyncState.waiting_sync;
         
@@ -154,7 +153,7 @@ public abstract class Submit {
 	private void subscribeTx(String txId){
     	EventManager manager = new EventManager(connection);
     	manager.subTx(txId,(data)->{
-    		System.out.println(data);
+    		//System.out.println(data);
     		if(cb != null){
     			cb.called(data);
     		}else if(sync){

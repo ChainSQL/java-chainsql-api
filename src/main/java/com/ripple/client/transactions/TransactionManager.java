@@ -383,30 +383,31 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 			// Do nothing, the transaction has already been submitted
 			break;
 		default:
-			switch (ter.resultClass()) {
-			case tecCLAIM:
-				// Sequence was consumed, may even succeed
-				// so do nothing, just wait until it clears or expires.
-				awaitLastLedgerSequenceExpiry(txn);
-				break;
-			// These are, according to the wiki, all of a final disposition
-			case temMALFORMED:
-			case tefFAILURE:
-			case telLOCAL_ERROR:
-			case terRETRY:
-				awaitLastLedgerSequenceExpiry(txn);
-				if (getPending().isEmpty()) {
-					sequence--;
-				} else {
-					// Plug a Sequence gap and pre-emptively resubmit some txns
-					// rather than waiting for `OnValidatedSequence` which will
-					// take
-					// quite some ledgers.
-					queueSequencePlugTxn(submitSequence);
-					resubmitGreaterThan(submitSequence);
-				}
-				break;
-			}
+			txn.emit(ManagedTxn.OnSubmitError.class, res);
+//			switch (ter.resultClass()) {
+//			case tecCLAIM:
+//				// Sequence was consumed, may even succeed
+//				// so do nothing, just wait until it clears or expires.
+//				awaitLastLedgerSequenceExpiry(txn);
+//				break;
+//			// These are, according to the wiki, all of a final disposition
+//			case temMALFORMED:
+//			case tefFAILURE:
+//			case telLOCAL_ERROR:
+//			case terRETRY:
+//				awaitLastLedgerSequenceExpiry(txn);
+//				if (getPending().isEmpty()) {
+//					sequence--;
+//				} else {
+//					// Plug a Sequence gap and pre-emptively resubmit some txns
+//					// rather than waiting for `OnValidatedSequence` which will
+//					// take
+//					// quite some ledgers.
+//					queueSequencePlugTxn(submitSequence);
+//					resubmitGreaterThan(submitSequence);
+//				}
+//				break;
+//			}
 			break;
 		}
 	}

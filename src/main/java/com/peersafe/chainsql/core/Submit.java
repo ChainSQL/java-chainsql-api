@@ -41,7 +41,6 @@ public abstract class Submit {
 
 	private static final int wait_milli = 50; 
 	private static final int account_wait = 5000;
-	private static final int hash_wait = 5000;
 	private static final int submit_wait = 5000;
 	private static final int sync_maxtime = 200000;
 	/**
@@ -99,6 +98,7 @@ public abstract class Submit {
 		
 
         submit_state = SubmitState.waiting_submit;
+        sync_state = SyncState.waiting_sync;
         
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
@@ -112,15 +112,6 @@ public abstract class Submit {
         }
         tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
                    .onError(this::onSubmitError));
-        
-        //waiting for tx-hash
-        count = hash_wait/wait_milli;
-        while(tx.hash == null){
-        	waiting();
-        	if(--count <= 0){
-        		break;
-        	}
-        }
        
         //subscribe tx
         if(sync || cb != null){

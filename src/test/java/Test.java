@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
+import com.peersafe.chainsql.util.Validate;
 
 
 public class Test {
@@ -17,13 +18,14 @@ public class Test {
 		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "hijack2";
+		  sTableName = "zttest";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
 		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-		//  c.use("rLQcU7QYrKtuLLj481XZq5M7m89TkoEG2z");
-		  
+//		  c.as("rsadxc3pw976e3hfaxUijhbR3ye2orJS6x", "snyjxeAxrSBbGGUdC36CxHQa3neLj");
+//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
 //		  JSONObject obj = new JSONObject();
@@ -37,18 +39,18 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  	//test.getTransactions();
-		  	//test.getLedgerVersion();
-		  	//test.getLedge();
-		  test.testCreateTable();
+//		  	test.getTransactions();
+//		  	test.getLedgerVersion();
+//		  	test.getLedge();
+		  test.getUserToken();
+//		  test.testCreateTable();
 //		  test.testinsert();
-		  //test.testUpdateTable();
-		  //test.testdelete();
+//		  test.testUpdateTable();
+//		  test.testdelete();
 		  //test.testrename();
-			//test.testget();
+//			test.testget();
 		  //test.testdrop();
-//			 test.testassign();
-		     //test.testcelassign();
+//			 test.grant();
 
 //		  try {
 //			Thread.sleep(10000);
@@ -69,19 +71,18 @@ public class Test {
 		
 	    }
 	  
+	public void getUserToken(){
+		c.getUserToken(sTableName);
+	}
+	  
 	public void getLedge(){
 		JSONObject option = new JSONObject();
-		option.put("ledger_index", "validated");
-		option.put("expand", false);
-		option.put("transactions", true);
-		option.put("accounts", true);
-		
+		option.put("ledger_index", 766);
 		c.getLedger(option,(data)->{
-			 System.out.println("creat------"+data);
+			System.out.println("creat------"+data);
 		 });
 	}
 	public void getLedgerVersion(){
-		
 		c.getLedgerVersion((data)->{
 			 System.out.println("creat------"+data);
 		 });
@@ -93,14 +94,14 @@ public class Test {
 	}	
     public void testCreateTable() {
     	List<String> args = c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
-	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
+	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
 	    		 );
     	JSONObject obj;
     	
 //    	obj = c.createTable(sTableName,args).submit();
 //    	System.out.println(obj);
     	
-    	obj = c.createTable(sTableName,args).submit((data)->{
+    	obj = c.createTable(sTableName,args,true).submit((data)->{
     		System.out.println("creat------"+data);
     	});
     	System.out.println(obj);
@@ -111,7 +112,7 @@ public class Test {
 	 
 	 public void testinsert(){
 //		 List<String> orgs = c.array("{'id':1,'age': 333}");
-		 List<String> orgs = c.array("{'age': 53,'name':'小胡'}","{'age': 33,'name':'小明'}");
+		 List<String> orgs = c.array("{'age': 23,'name':'dd','balance':'124'}","{'age': 33,'name':'小r','balance':'300'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -127,8 +128,8 @@ public class Test {
 	 
 
 	  public void testUpdateTable(){
-		  List<String> arr1 = c.array("{'id': 1}");
-		  List<String> arr2 = c.array("{'age': 226}");
+		  List<String> arr1 = c.array("{'id': 2}");
+		  List<String> arr2 = c.array("{'balance':cast(balance as int)+200}");
 		  
 		  JSONObject obj;
 		  obj = c.table(sTableName).get(arr1).update(arr2).submit((data)->{
@@ -143,7 +144,7 @@ public class Test {
 //		  System.out.println(obj);
 	  }
 	  public void testdelete(){
-		  List<String> arr = c.array("{'name': 'lucy'}");
+		  List<String> arr = c.array("{'age': '22'}");
 		  JSONObject obj;
 		  obj = c.table(sTableName).get(arr).delete().submit((data)->{
 			  System.out.println("delete------"+data);
@@ -178,15 +179,13 @@ public class Test {
 		  JSONObject obj = c.table(sTableName).get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
 	 			 System.out.println("testget------"+data);
 		  });
-		  System.out.println(table.getData());
 		  
-		  obj =  c.table(sTableName).get(null).submit();
 		  System.out.println(obj.toString());
 	  }
 	  
-	  public void testassign(){
-		  c.grant(sTableName, "rMgoRgBsh2NRUbEvFLRXHDVniYHS81JC3d",c.array("{insert:false}")).submit((data)->{
-	 			 System.out.println("test1wqw------"+data);
+	  public void grant(){
+		  c.grant(sTableName, "rsadxc3pw976e3hfaxUijhbR3ye2orJS6x",c.array("{insert:true}","{update:true}")).submit((data)->{
+	 			 System.out.println("grant------"+data);
 		  });
 	  }
 	  /*public void testcelassign(){

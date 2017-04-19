@@ -8,6 +8,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.JSONUtil;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.requests.Request;
@@ -28,6 +29,12 @@ public class Table extends Submit{
 	private String exec;
 	private Object data;
 	public String message;
+	private JSONObject json;
+	
+	public List<JSONObject> cache = new ArrayList<JSONObject>();
+	public boolean strictMode = false;
+	public boolean transaction = false;
+	public	EventManager event;
 
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
@@ -37,7 +44,16 @@ public class Table extends Submit{
 			}
 		}
 	    this.exec = "r_insert";
-		return this;
+	    if(this.transaction){
+			json.put("Owner",  connection.scope);
+			json.put("TableName", name);
+			json.put("Raw", this.query);
+			json.put("OpType",Validate.toOpType(this.exec));
+			this.cache.add(json);
+			return null;
+		}else{
+			return this;
+		}
 		
 	}
 	
@@ -50,13 +66,31 @@ public class Table extends Submit{
 			
 		}
 	    this.exec = "r_update";
-		return this;
+	    if(this.transaction){
+			json.put("Owner",  connection.scope);
+			json.put("TableName", name);
+			json.put("Raw", this.query);
+			json.put("OpType",Validate.toOpType(this.exec));
+			this.cache.add(json);
+			return null;
+		}else{
+			return this;
+		}
 		
 	}
 	
 	public Table delete() {
 		this.exec = "r_delete";
-		return this;
+		if(this.transaction){
+			json.put("Owner",  connection.scope);
+			json.put("TableName", name);
+			json.put("Raw", this.query);
+			json.put("OpType",Validate.toOpType(this.exec));
+			this.cache.add(json);
+			return null;
+		}else{
+			return this;
+		}
 		
 	}
 	public Table get(List<String> orgs){
@@ -81,18 +115,28 @@ public class Table extends Submit{
 		return this;
 		
 	}
-	/*public Table sqlAssert(String orgs){
-		String ss = "";
-		if(!"".equals(orgs)&&orgs!=null){
-			 ss= orgs.replace("\'", "\"");
-			
-		}	
-		JSONObject json = new JSONObject();
-		json.put("$limit", ss);
-		this.query.add(json.toString());
-		return this;
+	public void sqlAssert(){
+		if (!this.transaction)
+			try {
+				throw new Exception("you must begin the transaction first");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		if (this.name==null)
+			try {
+				throw new Exception("you must appoint the table name");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		if(this.transaction){
+			json.put("Owner",  connection.scope);
+			json.put("TableName", name);
+			json.put("Raw", this.query);
+			json.put("OpType",Validate.toOpType(this.exec));
+			this.cache.add(json);
+		}
 	}
-	*/
+	
 	public Table limit(String orgs){
 		String ss = "";
 		if(!"".equals(orgs)&&orgs!=null){
@@ -159,7 +203,6 @@ public class Table extends Submit{
 	private JSONObject select(){
 		if(query.size()==0||!query.get(0).substring(0, 1).contains("[")){
 			query.add(0, "[]");
-			
 		}
 		AccountID account = AccountID.fromAddress(connection.scope);
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";

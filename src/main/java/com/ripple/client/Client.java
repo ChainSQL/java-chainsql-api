@@ -1139,9 +1139,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             @Override
             public void beforeRequest(Request request) {
         		request.json("ledger_index", option.get("ledger_index"));
-       		 	request.json("expand",option.get("expand") );
-       		 	request.json("transactions", option.get("transactions"));
-       		 	request.json("accounts", option.get("accounts"));
+       		 	request.json("expand", false);
+       		 	request.json("transactions",true);
+       		 	request.json("accounts",false );
             }
 
             @Override
@@ -1203,7 +1203,30 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
-
+    public Request getUserToken(String scope,String address,String neme){
+    	 Request request = newRequest(Command.g_userToken);
+	   	 JSONObject txjson = new JSONObject();
+	   	 txjson.put("Owner", scope);
+	   	 txjson.put("User", address);
+	   	 txjson.put("TableName", neme);
+	   	 request.json("tx_json", txjson);
+	        request.once(Request.OnResponse.class, new Request.OnResponse() {
+		            public  void called(Response response) {
+		                if (response.succeeded) {
+		                	//cb.called(response);
+		                }
+		            }
+		        });
+	        request.request();
+	        while(request.response==null){
+	       	 try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}  
+	  	 	}
+	   	 return request;	
+    }
     public Request ping() {
         return newRequest(Command.ping);
     }

@@ -2,6 +2,7 @@ package com.peersafe.chainsql.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,11 @@ public class Chainsql extends Submit {
 	private String[] query;
 	private String exec;
 	public	EventManager event;
-	private boolean strictMode;
+	public List<JSONObject> cache = new ArrayList<JSONObject>();
+	private boolean strictMode = false;
+	private boolean transaction = false;
+	private Integer needVerify = 1;
+	private JSONObject json;
 	
 	private SignedTransaction signed;
 
@@ -84,7 +89,13 @@ public class Chainsql extends Submit {
 
 	public Table table(String name) {
 		Table tab = new Table(name);
-		tab.connection = this.connection;
+		 if (this.transaction) {
+			   	tab.transaction = this.transaction;
+			    tab.cache = this.cache;
+			  }
+			  tab.strictMode = this.strictMode;
+			  tab.event = this.event;
+			  tab.connection = this.connection;
 		return tab;
 	}
 	
@@ -100,9 +111,13 @@ public class Chainsql extends Submit {
 	    	return false;
 	    }
 	}
-
 	public Chainsql createTable(String name, List<String> raw) {
+		return createTable(name, raw , false);
+	}
+	
+	public Chainsql createTable(String name, List<String> raw ,boolean confidential) {
 		use(this.connection.address);
+
 		List<JSONObject> strraw = new ArrayList<JSONObject>();
 		for (String s : raw) {
 			JSONObject json = JSONUtil.StrToJson(s);
@@ -114,6 +129,15 @@ public class Chainsql extends Submit {
 			//table.message = e.getLocalizedMessage();
 			System.out.println("Exception:" + e.getLocalizedMessage());
 			//e.printStackTrace();
+		}
+		if(this.transaction){
+			json.put("OpType", 1);
+			json.put("TableName", name);
+			json.put("Raw", strraw);
+			json.put("confidential",confidential);
+			
+			this.cache.add(json);
+			return this;
 		}
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
@@ -143,6 +167,12 @@ public class Chainsql extends Submit {
 	}
 
 	public Chainsql dropTable(String name) {
+		if(this.transaction){
+			json.put("OpType", 2);
+			json.put("TableName", name);
+			this.cache.add(json);
+			return this;
+		}
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, name);
 		if(mapError(map)){
@@ -168,6 +198,13 @@ public class Chainsql extends Submit {
 	}
 
 	public Chainsql renameTable(String oldName, String newName) {
+		if(this.transaction){
+			json.put("OpType", 3);
+			json.put("oldName", oldName);
+			json.put("newName", newName);
+			this.cache.add(json);
+			return this;
+		}
 		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map map = Validate.rippleRes(this.connection.client, account, oldName);
 		if(mapError(map)){
@@ -192,31 +229,38 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
-	public Chainsql grant(String name, String user, List flag) {
-		AccountID account = AccountID.fromAddress(this.connection.address);
-		Map map = Validate.rippleRes(this.connection.client, account, name);
-		if(mapError(map)){
-			return this;
-		}else{
-			return grant(name, user, flag, map);
-		}
-	}
-
-	private Chainsql grant(String name, String user, List<String> flag, Map map) {
-		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
-		STArray arr = Validate.fromJSONArray(str);
-		String fee = this.connection.client.serverInfo.fee_ref + "";
+	public Chainsql grant(String name, String user, List<String> flag) {
 		List<JSONObject> flags = new ArrayList<JSONObject>();
 		for (String s : flag) {
 			JSONObject json = JSONUtil.StrToJson(s);
 			flags.add(json);
 		}
+		if(this.transaction){
+			json.put("OpType", 11);
+			json.put("TableName", name);
+			json.put("Raw", flags);
+			this.cache.add(json);
+			return this;
+		}
+		AccountID account = AccountID.fromAddress(this.connection.address);
+		Map map = Validate.rippleRes(this.connection.client, account, name);
+		if(mapError(map)){
+			return this;
+		}else{
+			return grant(name, user, flags.toString(), map);
+		}
+	}
+
+	private Chainsql grant(String name, String user, String flag, Map map) {
+		String str = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\",\"NameInDB\":\"" + map.get("NameInDB") + "\"}}";
+		STArray arr = Validate.fromJSONArray(str);
+		String fee = this.connection.client.serverInfo.fee_ref + "";
 		TableListSet payment = new TableListSet();
 		payment.as(AccountID.Account, this.connection.address);
 		payment.as(STArray.Tables, arr);
 		payment.as(UInt16.OpType, 11);
 		payment.as(AccountID.User, user);
-		payment.as(Blob.Raw, JSONUtil.toHexString(flags.toString()));
+		payment.as(Blob.Raw, JSONUtil.toHexString(flag.toString()));
 		payment.as(UInt32.Sequence, map.get("Sequence"));
 		payment.as(Amount.Fee, fee);
 
@@ -224,9 +268,37 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
-//	public JSONObject getLedger(){
-//		
-//	}
+	public void beginTran(){
+		 if (this.connection!=null && this.connection.address!=null) {
+		    this.transaction = true;
+		    return;
+		  }
+		
+	}
+	
+	public void commit(Callback cb){
+		HashMap secretMap = new HashMap();
+		List ary = new ArrayList();
+		for(int i = 0;i<this.cache.size();i++){
+			if(this.cache.get(i).get("OpType").toString().indexOf("2,3,5,7") == -1){
+				if(cache.get(i).getInt("OpType")== 1 && cache.get(i).getBoolean("confidential")==true){
+					
+				}
+				if (this.cache.get(i).get("OpType").toString().indexOf("6,8,9,10") != -1) {
+			        this.needVerify = 0;
+			    }
+			    if (cache.get(i).getInt("OpType") != 1) {
+			        ary.add(Validate.getUserToken(this, this.cache.get(i).getString("TableName")));
+			    }
+				
+			}
+		}
+	}
+	
+	public void getUserToken(String name){
+		Validate.getUserToken(this, name);
+	}
+
 	public void getLedger(JSONObject option,Callback cb){
 		this.connection.client.getLedger(option,cb);
 	}

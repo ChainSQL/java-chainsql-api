@@ -44,6 +44,7 @@ import com.ripple.core.coretypes.uint.UInt32;
 import com.ripple.core.types.known.sle.LedgerEntry;
 import com.ripple.core.types.known.sle.entries.AccountRoot;
 import com.ripple.core.types.known.sle.entries.Offer;
+import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.result.TransactionResult;
 import com.ripple.crypto.ecdsa.IKeyPair;
 import com.ripple.crypto.ecdsa.Seed;
@@ -1227,6 +1228,29 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	  	 	}
 	   	 return request;	
     }
+    
+    public Request getTxJson(JSONObject txjson){
+    	Request request = newRequest(Command.t_prepare);
+	   	 	request.json("tx_json", txjson);
+	        request.once(Request.OnResponse.class, new Request.OnResponse() {
+		            public  void called(Response response) {
+		                if (response.succeeded) {
+		                	//System.out.println("response:" + response.message.toString());
+		                	//cb.called(response);
+		                }
+		            }
+		        });
+	        request.request();
+	        while(request.response==null){
+	       	 try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}  
+	  	 	}
+	   	 return request;	
+   }
+    
     public Request ping() {
         return newRequest(Command.ping);
     }

@@ -48,6 +48,7 @@ public enum Command {
     transaction_entry,
     tx,
     tx_history,
+    t_prepare,
     unl_add,
     unl_delete,
     unl_list,

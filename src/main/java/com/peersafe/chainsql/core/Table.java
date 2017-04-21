@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
@@ -57,14 +58,13 @@ public class Table extends Submit{
 		
 	}
 	
-	public Table update(List<String> orgs) {
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
-				this.query.add(0, json);
-			}
-			
+	public Table update(String orgs) {
+		
+		if(!"".equals(orgs)&&orgs!=null){
+			String json = JSONUtil.StrToJsonStr(orgs);
+			this.query.add(0, json);
 		}
+			
 	    this.exec = "r_update";
 	    if(this.transaction){
 			json.put("Owner",  connection.scope);
@@ -165,9 +165,9 @@ public class Table extends Submit{
 
 	private SignedTransaction prepareTransaction(){
 	    AccountID account = AccountID.fromAddress(connection.scope);
-	    Map map = Validate.rippleRes(connection.client, account, name);
+	    Map map = Validate.rippleRes(connection.client, account);
 	    
-	    if(map.get("Sequence") == null || map.get("NameInDB") == null){
+	    if(map.get("Sequence") == null){
 	    	return null;
 	    }
 	    
@@ -175,13 +175,28 @@ public class Table extends Submit{
 	}
 
 	public SignedTransaction prepareSQLStatement(Map map) {
-		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\",\"NameInDB\":\""+map.get("NameInDB")+"\"}}";
-		STArray arr = Validate.fromJSONArray(str);
+		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\"}}";
+		JSONArray table = new JSONArray();
+		table.put(new JSONObject(str));
+		JSONObject txjson = new JSONObject();
+		txjson.put("Account", this.connection.address);
+		txjson.put("Tables", table);
+		txjson.put("Owner", connection.scope);
+		txjson.put("OpType", Validate.toOpType(exec));
+		txjson.put("Raw", query);
+		JSONObject tx_json = Validate.getTxJson(this.connection.client, txjson);
+		String tebles ="";
+		if("success".equals(tx_json.getString("status"))){
+			tebles = tx_json.getJSONObject("result").getJSONArray("Tables").get(0).toString();
+			System.out.println(tebles);
+			
+		}
+		
 		String fee = connection.client.serverInfo.fee_ref+"";
 		SQLStatement payment = new SQLStatement();
-        payment.as(AccountID.Owner,      connection.scope);
+        payment.as(AccountID.Owner,   connection.scope);
         payment.as(AccountID.Account, connection.address);
-        payment.as(STArray.Tables, arr);
+        payment.as(STArray.Tables, Validate.fromJSONArray(tebles));
         payment.as(UInt16.OpType, Validate.toOpType(exec));
         payment.as(Blob.Raw, JSONUtil.toHexString(query.toString()));
         payment.as(UInt32.Sequence, map.get("Sequence"));

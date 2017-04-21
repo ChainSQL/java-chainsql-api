@@ -18,13 +18,13 @@ public class Test {
 		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "zttest";
+		  sTableName = "ctest";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
-		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-//		  c.as("rsadxc3pw976e3hfaxUijhbR3ye2orJS6x", "snyjxeAxrSBbGGUdC36CxHQa3neLj");
-//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 //		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
@@ -42,14 +42,14 @@ public class Test {
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
-		  test.getUserToken();
+//		  test.getUserToken();
 //		  test.testCreateTable();
-//		  test.testinsert();
+		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
-		  //test.testrename();
-//			test.testget();
-		  //test.testdrop();
+//		  test.testrename();
+//		  test.testget();
+//		  test.testdrop();
 //			 test.grant();
 
 //		  try {
@@ -112,7 +112,7 @@ public class Test {
 	 
 	 public void testinsert(){
 //		 List<String> orgs = c.array("{'id':1,'age': 333}");
-		 List<String> orgs = c.array("{'age': 23,'name':'dd','balance':'124'}","{'age': 33,'name':'小r','balance':'300'}");
+		 List<String> orgs = c.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -125,11 +125,10 @@ public class Test {
  		 });
 		 System.out.println(obj);
 	 }
-	 
 
 	  public void testUpdateTable(){
 		  List<String> arr1 = c.array("{'id': 2}");
-		  List<String> arr2 = c.array("{'balance':cast(balance as int)+200}");
+		  String arr2 ="{'balance':200}";
 		  
 		  JSONObject obj;
 		  obj = c.table(sTableName).get(arr1).update(arr2).submit((data)->{
@@ -144,7 +143,7 @@ public class Test {
 //		  System.out.println(obj);
 	  }
 	  public void testdelete(){
-		  List<String> arr = c.array("{'age': '22'}");
+		  List<String> arr = c.array("{'id': '3'}");
 		  JSONObject obj;
 		  obj = c.table(sTableName).get(arr).delete().submit((data)->{
 			  System.out.println("delete------"+data);
@@ -160,7 +159,7 @@ public class Test {
 	  
 	  public void testrename(){
 		  JSONObject obj;
-		  obj = c.renameTable(sTableName, "hijack").submit((data)->{
+		  obj = c.renameTable(sTableName, "aaaaaa").submit((data)->{
 			  System.out.println("rename------"+data);
 		  });
 		  System.out.println(obj);
@@ -184,9 +183,10 @@ public class Test {
 	  }
 	  
 	  public void grant(){
-		  c.grant(sTableName, "rsadxc3pw976e3hfaxUijhbR3ye2orJS6x",c.array("{insert:true}","{update:true}")).submit((data)->{
+		  JSONObject obj = c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}").submit((data)->{
 	 			 System.out.println("grant------"+data);
 		  });
+		  System.out.println(obj.toString());
 	  }
 	  /*public void testcelassign(){
 		  c.grant("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{

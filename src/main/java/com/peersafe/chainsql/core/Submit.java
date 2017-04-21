@@ -10,6 +10,7 @@ import com.ripple.client.responses.Response;
 import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.client.transactions.TransactionManager;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
+import com.ripple.core.types.known.tx.txns.TableListSet;
 
 public abstract class Submit {
 	public Connection connection;
@@ -38,6 +39,7 @@ public abstract class Submit {
 		waiting_sync,
 		sync_response,
 	}
+	
 
 	private static final int wait_milli = 50; 
 	private static final int account_wait = 5000;
@@ -203,5 +205,6 @@ public abstract class Submit {
         submitRes = obj;
         submit_state = SubmitState.submit_error;
     }
+  
 	
 }

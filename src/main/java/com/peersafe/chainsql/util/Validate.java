@@ -1,5 +1,6 @@
 package com.peersafe.chainsql.util;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class Validate {
 		arr.add(obj1);
         return arr;
     }
+	
 	public static JSONObject getUserToken(Chainsql chainsql, String name) {
 		Request UserToken = chainsql.connection.client.getUserToken(chainsql.connection.scope,chainsql.connection.address,name);
 		if(UserToken.response.result!=null){
@@ -55,7 +57,20 @@ public class Validate {
 		}
 		return null;
 	}
-	public static Map rippleRes(Client client,AccountID account ,String name){
+	
+	public static JSONObject getTxJson(Client client, JSONObject tx_json) {
+		Request TxJson = client.getTxJson(tx_json);
+		JSONObject obj = new JSONObject();
+		obj.put("status",TxJson.response.status);
+		if( !"error".equals(TxJson.response.status)){
+			obj.put("result", TxJson.response.result.getJSONObject("tx_json"));
+		}else{
+			obj.put("error_message",TxJson.response.error);
+		}
+		return obj;
+		
+	}
+	public static Map rippleRes(Client client,AccountID account){
 		HashMap<String,Object> map = new HashMap<String,Object>();
 		Request sequence = client.accountInfo(account);
 		if(sequence.response.result!=null){
@@ -64,13 +79,13 @@ public class Validate {
 		}else{
 			// System.out.println("error_message :This result is null");
 		}
-		Request nameindb = client.getNameInDB(name, account);
+	/*	Request nameindb = client.getNameInDB(name, account);
 		if(nameindb.response.result!=null){
 			String NameInDB =  (String)nameindb.response.result.get("nameInDB");
 			map.put("NameInDB", NameInDB);
 		}else{
 			 //System.out.println("error_message :This result is null");
-		}
+		}*/
 		return map;
 	}
 

@@ -7,6 +7,7 @@ import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Validate;
+import com.ripple.core.serialized.enums.TransactionType;
 
 
 public class Test {
@@ -18,13 +19,13 @@ public class Test {
 		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "ctest";
+		  sTableName = "ctesss";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
-//		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
-		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+//		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 //		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
@@ -39,12 +40,13 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
+		  test.testts();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
 //		  test.testCreateTable();
-		  test.testinsert();
+//		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
@@ -70,7 +72,16 @@ public class Test {
 			 */
 		
 	    }
-	  
+	  public void testts(){
+		  c.beginTran();
+//		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
+		  c.table(sTableName).insert(c.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
+		  c.table(sTableName).get(c.array("{'id': 2}")).update("{'balance':200}");
+		  JSONObject obj = c.commit((data)->{
+			  System.out.println("commit------"+data);
+		  });
+		  System.out.println(obj);
+	  } 
 	public void getUserToken(){
 		c.getUserToken(sTableName);
 	}

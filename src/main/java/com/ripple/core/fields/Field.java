@@ -27,7 +27,7 @@ public enum Field {
     WalletSize(12, Type.UInt32),
     OwnerCount(13, Type.UInt32),
     DestinationTag(14, Type.UInt32),
-    TableFlags(15, Type.UInt32),
+    NeedVerify(15, Type.UInt32),
     
     HighQualityIn(16, Type.UInt32),
     HighQualityOut(17, Type.UInt32),
@@ -124,6 +124,8 @@ public enum Field {
     TableName(19, Type.Blob),
     Raw(20, Type.Blob),
     TableNewName(21, Type.Blob),
+    AutoFillField(22, Type.Blob),
+    Statements(23, Type.Blob),
  
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),

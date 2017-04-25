@@ -27,6 +27,8 @@ import com.ripple.core.coretypes.Blob;
 import com.ripple.core.coretypes.STArray;
 import com.ripple.core.coretypes.uint.UInt16;
 import com.ripple.core.coretypes.uint.UInt32;
+import com.ripple.core.serialized.enums.TransactionType;
+import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.TableListSet;
 
@@ -156,17 +158,18 @@ public class Chainsql extends Submit {
 		JSONObject json = new JSONObject();
 		json.put("OpType", 1);
 		json.put("Tables", table);
-		json.put("Raw", JSONUtil.toHexString(strraw.toString()));
 //		json.put("Confidential",confidential);
 		
 		if(this.transaction){
+			json.put("Raw", strraw);
 			this.cache.add(json);
 			return null;
 		}
-		return create(json);
+		return create(json,strraw);
 	}
 
-	private Chainsql create(JSONObject txjson) {
+	private Chainsql create(JSONObject txjson,List<JSONObject> strraw) {
+		txjson.put("Raw", JSONUtil.toHexString(strraw.toString()));
 		TableListSet payment = toPayment(txjson);
 		signed = payment.sign(this.connection.secret);
 		return this;
@@ -221,6 +224,7 @@ public class Chainsql extends Submit {
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		JSONObject txjson = new JSONObject();
+		txjson.put("TransactionType",TransactionType.TableListSet);
 		txjson.put("Tables", table);
 		txjson.put("OpType", 11);
 		txjson.put("User", user);
@@ -248,11 +252,12 @@ public class Chainsql extends Submit {
 		
 	}
 	
-	public void commit(Callback cb){
+	public JSONObject commit(Callback cb){
 		HashMap secretMap = new HashMap();
 		List ary = new ArrayList();
-		for(int i = 0;i<this.cache.size();i++){
-			if(this.cache.get(i).get("OpType").toString().indexOf("2,3,5,7") == -1){
+		List<JSONObject> cache = this.cache;
+		for(int i = 0;i<cache.size();i++){
+			if(cache.get(i).get("OpType").toString().indexOf("2,3,5,7") == -1){
 				if(cache.get(i).getInt("OpType")== 1 && cache.get(i).getBoolean("confidential")==true){
 					
 				}
@@ -260,14 +265,49 @@ public class Chainsql extends Submit {
 			        this.needVerify = 0;
 			    }
 			    if (cache.get(i).getInt("OpType") != 1) {
-			        ary.add(Validate.getUserToken(this, this.cache.get(i).getString("TableName")));
+			        //ary.add(Validate.getUserToken(this, cache.get(i).getString("TableName")));
 			    }
 				
 			}
 		}
+		JSONObject payment = new JSONObject();
+		payment.put("TransactionType",TransactionType.SQLTransaction);
+		payment.put( "Account", this.connection.address);
+		payment.put("Statements", new JSONArray());
+		payment.put("StrictMode",this.strictMode);
+		payment.put("NeedVerify",this.needVerify);
+		
+		
+        for (int i = 0; i < cache.size(); i++) {
+        	/*if(secretMap.get(cache.get(i).get("TableName"))!=null){
+        		
+        	}*/
+        	payment.getJSONArray("Statements").put(cache.get(i));
+        }
+        JSONObject tx_json = Validate.getTxJson(this.connection.client, payment);
+        if("success".equals(tx_json.getString("status"))){
+    		tx_json = tx_json.getJSONObject("result");
+ 		}
+        System.out.println(tx_json);
+        AccountID account = AccountID.fromAddress(this.connection.address);
+		Map map = Validate.rippleRes(this.connection.client, account);
+		String fee = this.connection.client.serverInfo.fee_ref + "";
+		if(mapError(map)){
+			return null;
+		}else{
+			Transaction paymentTS  = new Transaction(TransactionType.SQLTransaction);
+			paymentTS.as(AccountID.Account, tx_json.get("Account"));
+			paymentTS.as(UInt16.TransactionType,TransactionType.SQLTransaction);
+			paymentTS.as(UInt32.NeedVerify,1);
+			paymentTS.as(UInt32.Sequence, map.get("Sequence"));
+			paymentTS.as(Amount.Fee, fee);
+			paymentTS.as(Blob.Statements,JSONUtil.toHexString(tx_json.get("Statements").toString()));
+			
+			signed = paymentTS.sign(this.connection.secret);
+			return submit(cb);
+		}
 	}
 	
-	  
     private TableListSet toPayment(JSONObject json){
     	json.put("Account",this.connection.address);
     	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);

@@ -119,7 +119,7 @@ public class TxFormat extends Format {
             TransactionType.TableListSet,
             Field.Tables,        Requirement.REQUIRED,
             Field.User,          Requirement.OPTIONAL,
-            Field.Flags,    Requirement.OPTIONAL,
+            Field.Flags,    	 Requirement.OPTIONAL,
             Field.Raw,           Requirement.OPTIONAL,
             Field.OpType,  		 Requirement.REQUIRED);
     
@@ -129,6 +129,13 @@ public class TxFormat extends Format {
             Field.Tables,        Requirement.REQUIRED,
             Field.Raw,       	 Requirement.REQUIRED,
             Field.OpType, 		 Requirement.REQUIRED);
+    
+    static public TxFormat SQLTransaction = new TxFormat(
+            TransactionType.SQLTransaction,
+            Field.Account,       		Requirement.REQUIRED,
+            Field.TransactionType,      Requirement.REQUIRED,
+            Field.Statements,    		Requirement.REQUIRED,
+            Field.NeedVerify, 		 	Requirement.REQUIRED);
 
 
     static public TxFormat SuspendedPaymentCreate = new TxFormat(

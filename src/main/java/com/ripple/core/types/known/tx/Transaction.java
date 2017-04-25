@@ -87,6 +87,8 @@ public class Transaction extends STObject {
     public Amount fee() {return get(Amount.Fee);}
     public Blob signingPubKey() {return get(Blob.SigningPubKey);}
     public Blob txnSignature() {return get(Blob.TxnSignature);}
+    public Blob autoFillField() {return get(Blob.AutoFillField);}
+    public Blob statements() {return get(Blob.Statements);}
     public AccountID account() {return get(AccountID.Account);}
     
     
@@ -103,6 +105,8 @@ public class Transaction extends STObject {
     public void signingPubKey(Blob val) {put(Field.SigningPubKey, val);}
     public void txnSignature(Blob val) {put(Field.TxnSignature, val);}
     public void account(AccountID val) {put(Field.Account, val);}
+    public void autoFillField(Blob val) {put(Field.AutoFillField, val);}
+    public void statements(Blob val) {put(Field.Statements, val);}
 
     public Hash256 hash() {
         return get(Hash256.hash);

@@ -30,7 +30,6 @@ public class Table extends Submit{
 	private String exec;
 	private Object data;
 	public String message;
-	private JSONObject json;
 	
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
 	public boolean strictMode = false;
@@ -46,10 +45,7 @@ public class Table extends Submit{
 		}
 	    this.exec = "r_insert";
 	    if(this.transaction){
-			json.put("Owner",  connection.scope);
-			json.put("TableName", name);
-			json.put("Raw", this.query);
-			json.put("OpType",Validate.toOpType(this.exec));
+	    	JSONObject json = Tjson();
 			this.cache.add(json);
 			return null;
 		}else{
@@ -67,10 +63,7 @@ public class Table extends Submit{
 			
 	    this.exec = "r_update";
 	    if(this.transaction){
-			json.put("Owner",  connection.scope);
-			json.put("TableName", name);
-			json.put("Raw", this.query);
-			json.put("OpType",Validate.toOpType(this.exec));
+	    	JSONObject json = Tjson();
 			this.cache.add(json);
 			return null;
 		}else{
@@ -82,10 +75,7 @@ public class Table extends Submit{
 	public Table delete() {
 		this.exec = "r_delete";
 		if(this.transaction){
-			json.put("Owner",  connection.scope);
-			json.put("TableName", name);
-			json.put("Raw", this.query);
-			json.put("OpType",Validate.toOpType(this.exec));
+			JSONObject json = Tjson();
 			this.cache.add(json);
 			return null;
 		}else{
@@ -129,10 +119,7 @@ public class Table extends Submit{
 				e.printStackTrace();
 			}
 		if(this.transaction){
-			json.put("Owner",  connection.scope);
-			json.put("TableName", name);
-			json.put("Raw", this.query);
-			json.put("OpType",Validate.toOpType(this.exec));
+			JSONObject json = Tjson();
 			this.cache.add(json);
 		}
 	}
@@ -173,17 +160,24 @@ public class Table extends Submit{
 	    
         return prepareSQLStatement(map);
 	}
-
-	public SignedTransaction prepareSQLStatement(Map map) {
+	
+	private JSONObject Tjson(){
+		JSONObject json = new JSONObject();
 		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(str));
-		JSONObject txjson = new JSONObject();
+		json.put("Tables", table);
+		json.put("Owner",  connection.scope);
+//		json.put("TableName", name);
+		json.put("Raw", this.query);
+		json.put("OpType",Validate.toOpType(this.exec));
+		return json;
+	}
+	
+	private SignedTransaction prepareSQLStatement(Map map) {
+
+		JSONObject txjson = Tjson();
 		txjson.put("Account", this.connection.address);
-		txjson.put("Tables", table);
-		txjson.put("Owner", connection.scope);
-		txjson.put("OpType", Validate.toOpType(exec));
-		txjson.put("Raw", query);
 		JSONObject tx_json = Validate.getTxJson(this.connection.client, txjson);
 		String tebles ="";
 		if("success".equals(tx_json.getString("status"))){
@@ -222,9 +216,7 @@ public class Table extends Submit{
 		AccountID account = AccountID.fromAddress(connection.scope);
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
 		JSONObject tabjson = new JSONObject(tables);
-
 		JSONObject[] tabarr ={tabjson};
-		//System.out.println(query.toString());
 		Request req = connection.client.select(account,tabarr,query.toString(),(data)->{
 			if(cb != null){
 				Response response = (Response) data;
@@ -257,47 +249,4 @@ public class Table extends Submit{
 	
 	}
 
-
-	public String getOwner() {
-		return owner;
-	}
-	public void setOwner(String owner) {
-		this.owner = owner;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public void setQuery(List<String> query) {
-		this.query = query;
-	}
-	public List getQuery() {
-		return query;
-	}
-	public Connection getConnection() {
-		return connection;
-	}
-	public void setConnection(Connection connection) {
-		this.connection = connection;
-	}
-	public Object getData() {
-		return data;
-	}
-	public void setData(Object data) {
-		this.data = data;
-	}
-	public String getMessage() {
-		return message;
-	}
-	public void setMessage(String message) {
-		this.message = message;
-	}
-	public String getExec() {
-		return exec;
-	}
-	public void setExec(String exec) {
-		this.exec = exec;
-	}	
 }

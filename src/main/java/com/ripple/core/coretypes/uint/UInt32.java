@@ -76,7 +76,7 @@ public class UInt32 extends UInt<UInt32> {
     static public UInt32Field WalletSize = int32Field(Field.WalletSize);
     static public UInt32Field OwnerCount = int32Field(Field.OwnerCount);
     static public UInt32Field DestinationTag = int32Field(Field.DestinationTag);
-    static public UInt32Field TableFlags = int32Field(Field.TableFlags);
+    static public UInt32Field NeedVerify = int32Field(Field.NeedVerify);
     static public UInt32Field HighQualityIn = int32Field(Field.HighQualityIn);
     static public UInt32Field HighQualityOut = int32Field(Field.HighQualityOut);
     static public UInt32Field LowQualityIn = int32Field(Field.LowQualityIn);

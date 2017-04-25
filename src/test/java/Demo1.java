@@ -526,14 +526,14 @@ public class Demo1 {
 //			e.printStackTrace();
 //		}
 //		System.out.println("��һ�½��...");
-		JSONArray jsonArray=(JSONArray)t.getData();
+		/*JSONArray jsonArray=(JSONArray)t.getData();
 		ArrayList<JSONObject> jsonList = new ArrayList<JSONObject>();
 		System.out.println("�����:");
 		for (int j= 0;j<jsonArray.length();j++){  
 			System.out.println(jsonArray.getJSONObject(j));
 			jsonList.add(jsonArray.getJSONObject(j));  
          
-       }  
+       }  */
 //		System.out.println("json:"+json.toString());
 		//TODO �ص������д�����
 		return null;

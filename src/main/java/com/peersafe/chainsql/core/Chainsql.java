@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
-import com.peersafe.chainsql.util.JSONUtil;
+import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.Client.OnLedgerClosed;
 import com.ripple.client.Client.OnPathFind;
@@ -143,15 +143,15 @@ public class Chainsql extends Submit {
 
 		List<JSONObject> strraw = new ArrayList<JSONObject>();
 		for (String s : raw) {
-			JSONObject json = JSONUtil.StrToJson(s);
+			JSONObject json = Util.StrToJson(s);
 			strraw.add(json);
 		}
 		try {
-			JSONUtil.checkinsert(strraw);
+			Util.checkinsert(strraw);
 		} catch (Exception e) {
 			System.out.println("Exception:" + e.getLocalizedMessage());
 		}
-		String tablestr = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\"}}";
+		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(name) + "\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		
@@ -169,14 +169,14 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql create(JSONObject txjson,List<JSONObject> strraw) {
-		txjson.put("Raw", JSONUtil.toHexString(strraw.toString()));
+		txjson.put("Raw", Util.toHexString(strraw.toString()));
 		TableListSet payment = toPayment(txjson);
 		signed = payment.sign(this.connection.secret);
 		return this;
 	}
 
 	public Chainsql dropTable(String name) {
-		String tablestr = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) +"\"}}";
+		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(name) +"\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		
@@ -197,7 +197,7 @@ public class Chainsql extends Submit {
 	}
 
 	public Chainsql renameTable(String oldName, String newName) {
-		String tablestr = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(oldName) + "\",\"TableNewName\":\"" + JSONUtil.toHexString(newName) + "\"}}";
+		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(oldName) + "\",\"TableNewName\":\"" + Util.toHexString(newName) + "\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		JSONObject json = new JSONObject();
@@ -218,9 +218,9 @@ public class Chainsql extends Submit {
 
 	public Chainsql grant(String name, String user, String flag) {
 		List<JSONObject> flags = new ArrayList<JSONObject>();
-		JSONObject json = JSONUtil.StrToJson(flag);
+		JSONObject json = Util.StrToJson(flag);
 		flags.add(json);
-		String tablestr = "{\"Table\":{\"TableName\":\"" + JSONUtil.toHexString(name) + "\"}}";
+		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(name) + "\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		JSONObject txjson = new JSONObject();
@@ -228,7 +228,7 @@ public class Chainsql extends Submit {
 		txjson.put("Tables", table);
 		txjson.put("OpType", 11);
 		txjson.put("User", user);
-		txjson.put("Raw", JSONUtil.toHexString(flags.toString()));
+		txjson.put("Raw", Util.toHexString(flags.toString()));
 		
 		if(this.transaction){
 			this.cache.add(txjson);
@@ -301,7 +301,7 @@ public class Chainsql extends Submit {
 			paymentTS.as(UInt32.NeedVerify,1);
 			paymentTS.as(UInt32.Sequence, map.get("Sequence"));
 			paymentTS.as(Amount.Fee, fee);
-			paymentTS.as(Blob.Statements,JSONUtil.toHexString(tx_json.get("Statements").toString()));
+			paymentTS.as(Blob.Statements,Util.toHexString(tx_json.get("Statements").toString()));
 			
 			signed = paymentTS.sign(this.connection.secret);
 			return submit(cb);

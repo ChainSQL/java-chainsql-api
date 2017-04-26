@@ -40,13 +40,13 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  test.testts();
+//		  test.testts();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
 //		  test.testCreateTable();
-//		  test.testinsert();
+		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();

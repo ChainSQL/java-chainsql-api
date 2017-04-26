@@ -11,7 +11,7 @@ public class HalfSha512 implements BytesSink {
 
     public HalfSha512() {
         try {
-            messageDigest = MessageDigest.getInstance("SHA-512", "RBC");
+            messageDigest = MessageDigest.getInstance("SHA-512", "BC");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -40,6 +40,9 @@ public class HalfSha512 implements BytesSink {
         return new Hash256(half);
     }
 
+    public byte[] digestAllBytes(){
+    	return messageDigest.digest();
+    }
     private byte[] digestBytes() {
         byte[] digest = messageDigest.digest();
         byte[] half = new byte[32];

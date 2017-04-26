@@ -9,7 +9,7 @@ public class Sha512 {
 
     public Sha512() {
         try {
-            messageDigest = MessageDigest.getInstance("SHA-512", "RBC");
+            messageDigest = MessageDigest.getInstance("SHA-512", "BC");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (NoSuchProviderException e) {

@@ -2,7 +2,7 @@ package com.ripple.config;
 
 import com.ripple.encodings.B58IdentiferCodecs;
 import com.ripple.encodings.base58.B58;
-import org.ripple.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.Security;
 

@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
-import com.peersafe.chainsql.util.JSONUtil;
+import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.requests.Request;
 import com.ripple.client.responses.Response;
@@ -39,7 +39,7 @@ public class Table extends Submit{
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
+				String json = Util.StrToJsonStr(s);
 				this.query.add(json);
 			}
 		}
@@ -57,7 +57,7 @@ public class Table extends Submit{
 	public Table update(String orgs) {
 		
 		if(!"".equals(orgs)&&orgs!=null){
-			String json = JSONUtil.StrToJsonStr(orgs);
+			String json = Util.StrToJsonStr(orgs);
 			this.query.add(0, json);
 		}
 			
@@ -86,7 +86,7 @@ public class Table extends Submit{
 	public Table get(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
+				String json = Util.StrToJsonStr(s);
 				this.query.add(json);
 			}
 			
@@ -140,7 +140,7 @@ public class Table extends Submit{
 		List<JSONObject> orderarr = new ArrayList<JSONObject>();
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
-				JSONObject json = JSONUtil.StrToJson(s);
+				JSONObject json = Util.StrToJson(s);
 				orderarr.add(json);
 			}
 		}
@@ -160,10 +160,12 @@ public class Table extends Submit{
 	    
         return prepareSQLStatement(map);
 	}
+
 	
 	private JSONObject Tjson(){
 		JSONObject json = new JSONObject();
-		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\"}}";
+		String str ="{\"Table\":{\"TableName\":\""+Util.toHexString(name)+"\"}}";
+		
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(str));
 		json.put("Tables", table);
@@ -192,7 +194,7 @@ public class Table extends Submit{
         payment.as(AccountID.Account, connection.address);
         payment.as(STArray.Tables, Validate.fromJSONArray(tebles));
         payment.as(UInt16.OpType, Validate.toOpType(exec));
-        payment.as(Blob.Raw, JSONUtil.toHexString(query.toString()));
+        payment.as(Blob.Raw, Util.toHexString(query.toString()));
         payment.as(UInt32.Sequence, map.get("Sequence"));
         payment.as(Amount.Fee, fee);
         SignedTransaction signed = payment.sign(connection.secret);

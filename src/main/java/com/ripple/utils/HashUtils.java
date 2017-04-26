@@ -3,7 +3,7 @@ package com.ripple.utils;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.ripple.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 public class HashUtils {
     private static final MessageDigest digest;

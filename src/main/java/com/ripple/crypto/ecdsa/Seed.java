@@ -1,16 +1,17 @@
 package com.ripple.crypto.ecdsa;
 
+import static com.ripple.config.Config.getB58IdentiferCodecs;
+
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Random;
+
 import com.ripple.config.Config;
 import com.ripple.encodings.B58IdentiferCodecs;
 import com.ripple.encodings.base58.B58;
 import com.ripple.utils.Sha512;
 import com.ripple.utils.Utils;
-
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.util.Arrays;
-
-import static com.ripple.config.Config.getB58IdentiferCodecs;
 
 public class Seed {
     public static byte[] VER_K256 = new byte[]{(byte) B58IdentiferCodecs.VER_FAMILY_SEED};
@@ -106,6 +107,13 @@ public class Seed {
 
     public static IKeyPair getKeyPair(String b58) {
         return getKeyPair(getB58IdentiferCodecs().decodeFamilySeed(b58));
+    }
+    
+    public static IKeyPair randomKeyPair(){
+    	Random r = new Random();
+    	byte[] seedBytes = new byte[16];
+    	r.nextBytes(seedBytes);
+    	return createKeyPair(seedBytes, 0);
     }
 }
 

@@ -97,12 +97,12 @@ public class EventManager {
 		JSONObject tx = data.getJSONObject("transaction");
 
 		if(tx.has("Raw")){
-			tx.put("Raw", JSONUtil.fromHexString(tx.getString("Raw")));
+			tx.put("Raw", Util.fromHexString(tx.getString("Raw")));
 		}
 		if(tx.has("Tables")){
 			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
 			table = table.getJSONObject("Table");
-			table.put("TableName", JSONUtil.fromHexString(table.getString("TableName")));
+			table.put("TableName", Util.fromHexString(table.getString("TableName")));
 		}
 	}
 }

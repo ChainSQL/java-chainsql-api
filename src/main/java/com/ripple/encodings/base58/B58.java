@@ -192,7 +192,6 @@ public class B58 {
      */
     public byte[] decodeChecked(String input, int version) throws EncodingFormatException {
         byte[] buffer = decodeAndCheck(input);
-
         byte actualVersion = buffer[0];
         if (actualVersion != version) {
             throw new EncodingFormatException("Bro, version is wrong yo");

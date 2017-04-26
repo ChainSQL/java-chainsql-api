@@ -18,7 +18,7 @@ public class Test {
 		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "ctesss";
+		  sTableName = "TranTest2";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -39,13 +39,13 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-//		  test.testts();
+		  test.testts();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
-		  test.testCreateTable();
-		  //test.testinsert();
+//		  test.testCreateTable();
+//		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
@@ -73,9 +73,13 @@ public class Test {
 	    }
 	  public void testts(){
 		  c.beginTran();
-//		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
-		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':200}");
+//		  List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+//	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
+//	    		 );
+//		  c.createTable(sTableName,args,true);
+		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
+//		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
+//		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':200}");
 		  JSONObject obj = c.commit((data)->{
 			  System.out.println("commit------"+data);
 		  });

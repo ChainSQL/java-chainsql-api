@@ -168,7 +168,7 @@ public class Table extends Submit{
 		json.put("Tables", table);
 		json.put("Owner",  connection.scope);
 //		json.put("TableName", name);
-		json.put("Raw", this.query);
+		json.put("Raw", Util.toHexString(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		return json;
 	}

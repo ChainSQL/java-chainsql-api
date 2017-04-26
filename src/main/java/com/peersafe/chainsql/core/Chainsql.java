@@ -136,10 +136,10 @@ public class Chainsql extends Submit {
 		JSONObject json = new JSONObject();
 		json.put("OpType", 1);
 		json.put("Tables", table);
+		json.put("Raw", Util.toHexString(strraw.toString()));
 //		json.put("Confidential",confidential);
 		
 		if(this.transaction){
-			json.put("Raw", strraw);
 			this.cache.add(json);
 			return null;
 		}
@@ -147,7 +147,7 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql create(JSONObject txjson,List<JSONObject> strraw) {
-		txjson.put("Raw", Util.toHexString(strraw.toString()));
+
 		TableListSet payment = toPayment(txjson);
 		signed = payment.sign(this.connection.secret);
 		return this;
@@ -202,7 +202,7 @@ public class Chainsql extends Submit {
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		JSONObject txjson = new JSONObject();
-		txjson.put("TransactionType",TransactionType.TableListSet);
+//		txjson.put("TransactionType",TransactionType.TableListSet);
 		txjson.put("Tables", table);
 		txjson.put("OpType", 11);
 		txjson.put("User", user);
@@ -236,7 +236,7 @@ public class Chainsql extends Submit {
 		List<JSONObject> cache = this.cache;
 		for(int i = 0;i<cache.size();i++){
 			if(cache.get(i).get("OpType").toString().indexOf("2,3,5,7") == -1){
-				if(cache.get(i).getInt("OpType")== 1 && cache.get(i).getBoolean("confidential")==true){
+				/*if(cache.get(i).getInt("OpType")== 1 && cache.get(i).getBoolean("confidential")==true){
 					
 				}
 				if (this.cache.get(i).get("OpType").toString().indexOf("6,8,9,10") != -1) {
@@ -244,7 +244,7 @@ public class Chainsql extends Submit {
 			    }
 			    if (cache.get(i).getInt("OpType") != 1) {
 			        //ary.add(Validate.getUserToken(this, cache.get(i).getString("TableName")));
-			    }
+			    }*/
 				
 			}
 		}

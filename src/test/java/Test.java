@@ -37,11 +37,11 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-//		  	test.getTransactions();
+		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.testCreateTable();
-		  test.getTransaction();
+//		  test.getTransaction();
 //		  test.testinsert();
 		  //test.testUpdateTable();
 		  //test.testdelete();
@@ -89,7 +89,7 @@ public class Test {
 //			 System.out.println("creat------"+data);
 //		 });
 		
-		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTddh");
+		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		 System.out.println("getTransactions------"+obj);
 	}	
 	public void getTransaction(){

@@ -15,11 +15,6 @@ import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.Client.OnLedgerClosed;
-import com.ripple.client.Client.OnPathFind;
-import com.ripple.client.Client.OnTBMessage;
-import com.ripple.client.Client.OnTXMessage;
-import com.ripple.client.enums.Message;
 import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.core.coretypes.AccountID;
 import com.ripple.core.coretypes.Amount;
@@ -33,9 +28,6 @@ import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.TableListSet;
 
 public class Chainsql extends Submit {
-	private String owner;
-	private String[] query;
-	private String exec;
 	public	EventManager event;
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
 	private boolean strictMode = false;
@@ -60,20 +52,6 @@ public class Chainsql extends Submit {
 	    Token,
 	    StrictMode
 	}
-
-	 public List array(Object val0, Object... vals){
-		 	List res = new ArrayList();
-		 	if(val0.getClass().isArray()){
-		 		String[] a = (String[]) val0; 
-		 		for(String s:a){
-		 			res.add(s);
-		 		}
-		 	}else{
-		 		  res.add(val0);
-			      res.addAll(Arrays.asList(vals));
-		 	}
-	        return res;
-	 }
 	 
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -127,7 +105,7 @@ public class Chainsql extends Submit {
 		return doSubmit(signed);
 	}
 	
-	private boolean mapError(Map map){
+	private boolean mapError(Map<String,Object> map){
 		if(map.get("Sequence") == null){
 	    	return true;
 	    }else{
@@ -290,7 +268,7 @@ public class Chainsql extends Submit {
  		}
         System.out.println(tx_json);
         AccountID account = AccountID.fromAddress(this.connection.address);
-		Map map = Validate.rippleRes(this.connection.client, account);
+		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
 		if(mapError(map)){
 			return null;
@@ -316,7 +294,7 @@ public class Chainsql extends Submit {
  		}
     	TableListSet payment = new TableListSet();
     	 try {  
-             Iterator it = tx_json.keys();  
+             Iterator<String> it = tx_json.keys();  
              while (it.hasNext()) {  
                  String key = (String) it.next();  
                  Object value = tx_json.get(key);  
@@ -329,7 +307,7 @@ public class Chainsql extends Submit {
     
     	String fee = this.connection.client.serverInfo.fee_ref + "";
  		AccountID account = AccountID.fromAddress(this.connection.address);
-		Map map = Validate.rippleRes(this.connection.client, account);
+		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		if(mapError(map)){
 			return null;
 		}else{
@@ -388,15 +366,15 @@ public class Chainsql extends Submit {
 		Validate.getUserToken(this, name);
 	}
 
-	public void getLedger(JSONObject option,Callback cb){
+	public void getLedger(JSONObject option,Callback<JSONObject> cb){
 		this.connection.client.getLedger(option,cb);
 	}
 	
-	public void getLedgerVersion(Callback cb){
+	public void getLedgerVersion(Callback<JSONObject>  cb){
 		this.connection.client.getLedgerVersion(cb);
 	}
 	
-	public void getTransactions(String address,Callback cb){
+	public void getTransactions(String address,Callback<JSONObject>  cb){
 		this.connection.client.getTransactions(address,cb);	
 	}
 

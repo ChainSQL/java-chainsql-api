@@ -1,8 +1,6 @@
 package com.peersafe.chainsql.util;
 
-import java.sql.Connection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -22,18 +20,8 @@ public class Validate {
 		return result;
 	}
 
-	public static Integer assign(List flag) {
-		Map map = Constant.permission;
-		Integer flags = 0;
-		for(int i=0;i<flag.size();i++){
-			String a = flag.get(i).toString();
-			flags = flags|(Integer) map.get(a);
-		}
-		return flags;
-	}
 	public static Integer toOpType(String  opType) {
-		Constant ps = new Constant();
-		Map map = ps.opType;
+		Map<String,Integer> map = Constant.opType;
 		Integer result = (Integer) map.get(opType);
 
 		return result;
@@ -70,7 +58,7 @@ public class Validate {
 		return obj;
 		
 	}
-	public static Map rippleRes(Client client,AccountID account){
+	public static Map<String,Object> rippleRes(Client client,AccountID account){
 		HashMap<String,Object> map = new HashMap<String,Object>();
 		Request sequence = client.accountInfo(account);
 		if(sequence.response.result!=null){

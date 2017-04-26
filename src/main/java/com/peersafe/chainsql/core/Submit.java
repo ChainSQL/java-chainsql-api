@@ -10,11 +10,10 @@ import com.ripple.client.responses.Response;
 import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.client.transactions.TransactionManager;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.core.types.known.tx.txns.TableListSet;
 
 public abstract class Submit {
 	public Connection connection;
-	protected Callback cb;
+	protected Callback<JSONObject> cb;
 	private SubmitState submit_state;
 	private SyncState sync_state;
 	
@@ -50,7 +49,7 @@ public abstract class Submit {
 	 * @param cb
 	 * @return submit result
 	 */
-	public JSONObject submit(Callback cb){
+	public JSONObject submit(Callback<JSONObject> cb){
 		this.cb = cb;
 
 		return doSubmit();
@@ -157,7 +156,7 @@ public abstract class Submit {
     	manager.subTx(txId,(data)->{
     		//System.out.println(data);
     		if(cb != null){
-    			cb.called(data);
+    			cb.called((JSONObject)data);
     		}else if(sync){
     			JSONObject obj = (JSONObject)data;
     			JSONObject res = new JSONObject();

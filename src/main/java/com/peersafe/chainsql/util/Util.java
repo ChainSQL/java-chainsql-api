@@ -1,10 +1,10 @@
 package com.peersafe.chainsql.util;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -61,7 +61,7 @@ public class Util {
             	throw new Exception("invalid type "+type);
             }
             try {
-            	int PK =(int) json.get("PK");
+//            	int PK =(int) json.get("PK");
             	if (isHavePk) {
     				throw new Exception("the table only have a PK");
     			}
@@ -113,4 +113,25 @@ public class Util {
 	    	baos.write((hexString.indexOf(bytes.charAt(i))<<4 |hexString.indexOf(bytes.charAt(i+1))));
 	    return new String(baos.toByteArray());
 	} 
+	
+//	public static List array(Object val0, Object... vals){
+//	 	List res = new ArrayList();
+//	 	if(val0.getClass().isArray()){
+//	 		String[] a = (String[]) val0; 
+//	 		for(String s:a){
+//	 			res.add(s);
+//	 		}
+//	 	}else{
+//	 		  res.add(val0);
+//		      res.addAll(Arrays.asList(vals));
+//	 	}
+//        return res;
+//	}
+	public static List<String> array(String val0, String... vals){
+	 	List<String> res = new ArrayList<String>();
+	 	res.add(val0);
+	 	res.addAll(Arrays.asList(vals));
+
+        return res;
+	}
 }

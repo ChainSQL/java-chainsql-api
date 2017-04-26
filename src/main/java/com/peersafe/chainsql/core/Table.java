@@ -8,7 +8,6 @@ import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
@@ -25,10 +24,8 @@ import com.ripple.core.types.known.tx.txns.SQLStatement;
 
 public class Table extends Submit{
 	private String name;
-	private String owner;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-	private Object data;
 	public String message;
 	
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
@@ -152,7 +149,7 @@ public class Table extends Submit{
 
 	private SignedTransaction prepareTransaction(){
 	    AccountID account = AccountID.fromAddress(connection.scope);
-	    Map map = Validate.rippleRes(connection.client, account);
+	    Map<String,Object> map = Validate.rippleRes(connection.client, account);
 	    
 	    if(map.get("Sequence") == null){
 	    	return null;
@@ -176,7 +173,7 @@ public class Table extends Submit{
 		return json;
 	}
 	
-	private SignedTransaction prepareSQLStatement(Map map) {
+	private SignedTransaction prepareSQLStatement(Map<String,Object> map) {
 
 		JSONObject txjson = Tjson();
 		txjson.put("Account", this.connection.address);
@@ -233,7 +230,7 @@ public class Table extends Submit{
 		JSONObject obj = new JSONObject();
 		obj.put("status", response.status);
 		if( !"error".equals(response.status)){
-			this.data = response.result.get("lines");
+			//this.data = response.result.get("lines");
 			obj.put("lines", response.result.get("lines"));
 		}else{
 			obj.put("error_message", response.error);

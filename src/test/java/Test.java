@@ -3,11 +3,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
+
 import com.peersafe.chainsql.core.Chainsql;
-import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
-import com.peersafe.chainsql.util.Validate;
-import com.ripple.core.serialized.enums.TransactionType;
+import com.peersafe.chainsql.util.Util;
 
 
 public class Test {
@@ -45,8 +44,8 @@ public class Test {
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
-//		  test.testCreateTable();
-		  test.testinsert();
+		  test.testCreateTable();
+		  //test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
@@ -75,8 +74,8 @@ public class Test {
 	  public void testts(){
 		  c.beginTran();
 //		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
-		  c.table(sTableName).insert(c.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-		  c.table(sTableName).get(c.array("{'id': 2}")).update("{'balance':200}");
+		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
+		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':200}");
 		  JSONObject obj = c.commit((data)->{
 			  System.out.println("commit------"+data);
 		  });
@@ -104,7 +103,7 @@ public class Test {
 		 });
 	}	
     public void testCreateTable() {
-    	List<String> args = c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+    	List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
 	    		 );
     	JSONObject obj;
@@ -122,8 +121,8 @@ public class Test {
     }
 	 
 	 public void testinsert(){
-//		 List<String> orgs = c.array("{'id':1,'age': 333}");
-		 List<String> orgs = c.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
+//		 List<String> orgs = Util.array("{'id':1,'age': 333}");
+		 List<String> orgs = Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -138,7 +137,7 @@ public class Test {
 	 }
 
 	  public void testUpdateTable(){
-		  List<String> arr1 = c.array("{'id': 2}");
+		  List<String> arr1 = Util.array("{'id': 2}");
 		  String arr2 ="{'balance':200}";
 		  
 		  JSONObject obj;
@@ -154,7 +153,7 @@ public class Test {
 //		  System.out.println(obj);
 	  }
 	  public void testdelete(){
-		  List<String> arr = c.array("{'id': '3'}");
+		  List<String> arr = Util.array("{'id': '3'}");
 		  JSONObject obj;
 		  obj = c.table(sTableName).get(arr).delete().submit((data)->{
 			  System.out.println("delete------"+data);
@@ -183,10 +182,10 @@ public class Test {
 	  }
 	  
 	  public void testget(){
-		 // table = c.table("testcas").get(c.array("{'name':'peerb1'}")).limit("{index:0,total:10}").filterWith("[]").submit();
+		 // table = c.table("testcas").get(Util.array("{'name':'peerb1'}")).limit("{index:0,total:10}").filterWith("[]").submit();
 		  
-		/*  table = c.table("testcas").get(c.array("{'name':'peerb1'}")).order(c.array("{age:-1}")).filterWith("[]").submit();*/
-		  JSONObject obj = c.table(sTableName).get(c.array("{age:{$ne:232}}")).order(c.array("{age:-1}")).withFields("[]").submit((data)->{
+		/*  table = c.table("testcas").get(Util.array("{'name':'peerb1'}")).order(Util.array("{age:-1}")).filterWith("[]").submit();*/
+		  JSONObject obj = c.table(sTableName).get(Util.array("{age:{$ne:232}}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
 	 			 System.out.println("testget------"+data);
 		  });
 		  
@@ -200,7 +199,7 @@ public class Test {
 		  System.out.println(obj.toString());
 	  }
 	  /*public void testcelassign(){
-		  c.grant("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",c.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
+		  c.grant("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",Util.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
 	 			 System.out.println("test1wqw------"+data);
 	 		 });
 	  }*/

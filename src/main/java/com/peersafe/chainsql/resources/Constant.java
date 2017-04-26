@@ -4,14 +4,14 @@ import java.util.HashMap;
 
 public class Constant {
 	 	
-		public final static HashMap permission = new HashMap() {{    
+		public final static HashMap<String,Integer> permission = new HashMap<String,Integer>() {{    
 		    put("lsfSelect", 65536);
 		 	put("lsfInsert", 131072);
 			put("lsfUpdate", 262144);
 			put("lsfDelete",524288);
 			put("lsfExecute", 1048576);
 		}}; 
-		public final static HashMap opType = new HashMap() {{    
+		public final static HashMap<String,Integer> opType = new HashMap<String,Integer>() {{    
 			put("t_create", 1);
 			put("t_drop", 2);
 			put("t_rename", 3);

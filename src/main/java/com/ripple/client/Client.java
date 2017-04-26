@@ -1128,7 +1128,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+                //return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            	return false;
             }
 
             @Override
@@ -1138,10 +1139,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }, new Request.Builder<JSONObject>() {
             @Override
             public void beforeRequest(Request request) {
-        		request.json("ledger_index", option.get("ledger_index"));
-       		 	request.json("expand",option.get("expand") );
-       		 	request.json("transactions", option.get("transactions"));
-       		 	request.json("accounts", option.get("accounts"));
+            	request.json("ledger_index", option.get("ledger_index"));
+       		 	request.json("expand", false);
+       		 	request.json("transactions",true);
+       		 	request.json("accounts",false );
             }
 
             @Override
@@ -1154,7 +1155,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            	return false;
             }
 
             @Override
@@ -1178,7 +1179,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            	return false;
             }
 
             @Override

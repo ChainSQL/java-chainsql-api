@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
+
 import com.peersafe.chainsql.core.Chainsql;
-import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
 
 
@@ -37,10 +37,10 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  	//test.getTransactions();
-		  	//test.getLedgerVersion();
-		  	//test.getLedge();
-		  test.testCreateTable();
+//		  	test.getTransactions();
+//		  	test.getLedgerVersion();
+		  	test.getLedge();
+//		  test.testCreateTable();
 //		  test.testinsert();
 		  //test.testUpdateTable();
 		  //test.testdelete();
@@ -70,26 +70,26 @@ public class Test {
 	    }
 	  
 	public void getLedge(){
-		JSONObject option = new JSONObject();
-		option.put("ledger_index", "validated");
-		option.put("expand", false);
-		option.put("transactions", true);
-		option.put("accounts", true);
-		
-		c.getLedger(option,(data)->{
-			 System.out.println("creat------"+data);
-		 });
+
+		JSONObject obj = c.getLedger();
+		System.out.println("getLedger---" + obj);
 	}
 	public void getLedgerVersion(){
 		
-		c.getLedgerVersion((data)->{
-			 System.out.println("creat------"+data);
-		 });
+//		c.getLedgerVersion((data)->{
+//			System.out.println(data);
+//		});
+		JSONObject obj = c.getLedgerVersion();
+		System.out.println("getLedgerVersion---" + obj);
+		
 	}
 	public void getTransactions(){
-		c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",(data)->{
-			 System.out.println("creat------"+data);
-		 });
+//		c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",(data)->{
+//			 System.out.println("creat------"+data);
+//		 });
+		
+		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTddh");
+		 System.out.println("getTransactions------"+obj);
 	}	
     public void testCreateTable() {
     	List<String> args = c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
@@ -111,7 +111,7 @@ public class Test {
 	 
 	 public void testinsert(){
 //		 List<String> orgs = c.array("{'id':1,'age': 333}");
-		 List<String> orgs = c.array("{'age': 53,'name':'小胡'}","{'age': 33,'name':'小明'}");
+		 List<String> orgs = c.array("{'age': 53,'name':'灏忚儭'}","{'age': 33,'name':'灏忔槑'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -214,11 +214,11 @@ public class Test {
 		 			 System.out.println("creat------"+data);
 		 		 });
 		if(json==null){
-			System.out.println("查询结果集为空");
+			System.out.println("鏌ヨ缁撴灉闆嗕负绌�");
 			return null;
 		}
 		System.out.println("json:"+json.toString());
-		//TODO 回调机制有待补充
+		//TODO 鍥炶皟鏈哄埗鏈夊緟琛ュ厖
 		return null;
 	}
 

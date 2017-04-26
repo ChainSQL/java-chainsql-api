@@ -1204,7 +1204,35 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    
+    public  void getTransaction(String hash,Callback cb){   
+    	
+    	makeManagedRequest(Command.tx, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
 
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	 request.json("transaction", hash);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+    			if(response.result.has("meta")){
+    				response.result.remove("meta");
+    			}
+                return response.result;
+            }
+        });
+    }
+   
     public Request ping() {
         return newRequest(Command.ping);
     }

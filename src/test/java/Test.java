@@ -39,8 +39,9 @@ public class Test {
 		  Test test =new Test();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
-		  	test.getLedge();
+//		  	test.getLedge();
 //		  test.testCreateTable();
+		  test.getTransaction();
 //		  test.testinsert();
 		  //test.testUpdateTable();
 		  //test.testdelete();
@@ -91,6 +92,16 @@ public class Test {
 		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTddh");
 		 System.out.println("getTransactions------"+obj);
 	}	
+	public void getTransaction(){
+		String hash = "C637A383BA850F6D487438A2590996CF09ED31E9DB856C9AD881C73E1FF483AA";
+//		JSONObject obj = c.getTransaction(hash);
+//		System.out.println("getTransaction------"+obj);
+		c.getTransaction(hash, (data)->{
+			System.out.println(data);
+		});
+		
+	}
+	
     public void testCreateTable() {
     	List<String> args = c.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"

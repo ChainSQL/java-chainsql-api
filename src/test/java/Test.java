@@ -18,7 +18,7 @@ public class Test {
 		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "TranTest2";
+		  sTableName = "aag";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -39,12 +39,12 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  test.testts();
+//		  test.testts();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
-//		  test.testCreateTable();
+		  test.testCreateTable();
 //		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();

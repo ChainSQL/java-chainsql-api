@@ -29,7 +29,9 @@ public class ECTest {
 //    	String str = "test";
 //    	String hex = Util.bytesToHex(str.getBytes());
 //    	System.out.println(hex);
-//    	byte[] bytes = Util.hexToBytes(hex);
+    	String hex = "3b2a3563a37cdf77";
+    	byte[] bytes = Util.hexToBytes(hex);
+    	System.out.println(new String(bytes));
 //    	System.out.println(Util.bytesToHex(bytes));
 //    	String hex2 = Util.toHexString(str);
 //    	String str2 = Util.fromHexString(hex2);
@@ -49,14 +51,14 @@ public class ECTest {
 //    	}
 //    	System.out.println("");
     	
-    	String res = Ecies.eciesEncrypt("test",publicKey);
-    	//System.out.println(res);
-    	byte[] dec = Ecies.eciesDecrypt(res, secret);
-    	System.out.println(new String(dec));
-    	
-    	String aesEnc = Aes.aesEncrypt("hello12345123456", "test");
-    	byte[] aesDec = Aes.aesDecrypt("hello12345123456", aesEnc);
-    	System.out.println(new String(aesDec));
+//    	String res = Ecies.eciesEncrypt("test",publicKey);
+//    	//System.out.println(res);
+//    	byte[] dec = Ecies.eciesDecrypt(res, secret);
+//    	System.out.println(new String(dec));
+//    	
+//    	String aesEnc = Aes.aesEncrypt("hello12345123456", "test");
+//    	byte[] aesDec = Aes.aesDecrypt("hello12345123456", aesEnc);
+//    	System.out.println(new String(aesDec));
     }
 }  
 

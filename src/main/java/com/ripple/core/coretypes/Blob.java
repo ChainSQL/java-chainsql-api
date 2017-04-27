@@ -104,6 +104,7 @@ public class Blob implements SerializedType {
     static public BlobField MemoFormat = blobField(Field.MemoFormat);
     static public BlobField TableName = blobField(Field.TableName);
     static public BlobField Raw = blobField(Field.Raw);
+    static public BlobField Token = blobField(Field.Token);    
     static public BlobField TableNewName = blobField(Field.TableNewName);
     static public BlobField AutoFillField = blobField(Field.AutoFillField);
     static public BlobField Statements = blobField(Field.Statements);

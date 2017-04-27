@@ -121,6 +121,7 @@ public class TxFormat extends Format {
             Field.User,          Requirement.OPTIONAL,
             Field.Flags,    	 Requirement.OPTIONAL,
             Field.Raw,           Requirement.OPTIONAL,
+            Field.Token,		 Requirement.OPTIONAL,
             Field.OpType,  		 Requirement.REQUIRED);
     
     static public TxFormat SQLStatement = new TxFormat(

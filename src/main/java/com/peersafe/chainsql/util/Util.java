@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import org.json.JSONObject;
 
@@ -21,9 +22,25 @@ public class Util {
         return a;
     }
     
+    public static List<JSONObject> ListToJsonList(List<String> list){
+    	List<JSONObject> listJson = new ArrayList<JSONObject>();
+		for (String s : list) {
+			JSONObject json = Util.StrToJson(s);
+			listJson.add(json);
+		}
+		return listJson;
+    }
+    
+    public static byte[] getRandomBytes(int length){
+    	byte[] bytes = new byte[length];
+    	Random r = new Random();
+    	r.nextBytes(bytes);
+    	return bytes;
+    }
+    
 	public static void checkinsert(List<JSONObject> strraw) throws Exception{
-			boolean isHavePk = false;
-			for (int i = 0; i < strraw.size(); i++) {	
+		boolean isHavePk = false;
+		for (int i = 0; i < strraw.size(); i++) {	
 			JSONObject json = strraw.get(i);
 			String field, type;
 	    	try {
@@ -61,16 +78,17 @@ public class Util {
             	throw new Exception("invalid type "+type);
             }
             try {
-//            	int PK =(int) json.get("PK");
-            	if (isHavePk) {
-    				throw new Exception("the table only have a PK");
-    			}
-            	isHavePk = true;
+            	int PK =(int) json.get("PK");
+            	if(PK == 1){
+            		if (isHavePk) {
+            			throw new Exception("the table only have a PK");
+            		}
+            		isHavePk = true;
+            	}
 			} catch (Exception e) {
 				//throw new Exception("Raw must have  field and type");
 				//e.printStackTrace();
 			}
-    		
 		}
 	}
 	

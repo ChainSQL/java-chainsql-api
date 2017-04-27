@@ -41,8 +41,19 @@ public class Ecies {
     
 	final static String ALGORITHM = "secp256k1";
 
+
+	/**
+	 * 非对称加密
+	 * @param plainText 要加密的内容
+	 * @param publicKey base58格式的publicKey
+	 * @return
+	 */
 	public static String eciesEncrypt (String plainText,String publicKey)
 	{
+		byte [] dataPubB = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		return eciesEncrypt(plainText.getBytes(),dataPubB);
+	}
+	public static String eciesEncrypt(byte[] plainBytes,byte[] publicKey){
 		Security.addProvider(new BouncyCastleProvider());
 
 		//random key-pair
@@ -50,10 +61,10 @@ public class Ecies {
 		byte [] dataPrvA = pair.priv().toByteArray();
 		byte [] dataPubA = pair.pub().toByteArray();
 		//decode publickey
-		byte [] dataPubB = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		
 		String finalHex = "";
 		try{
-			byte[] secret = doECDH(dataPrvA, dataPubB);
+			byte[] secret = doECDH(dataPrvA, publicKey);
 			Sha512 hash = new Sha512(secret);
 			byte[] kdOutput = hash.finish();
 			//System.out.println("kdOutput:" + Util.bytesToHex(kdOutput));
@@ -64,12 +75,12 @@ public class Ecies {
 	        System.arraycopy(kdOutput, AESKeyLength, hmacKey, 0, HMACKeyLength);
 	        //System.out.println("aesKey:" + Util.bytesToHex(aesKey));
 
-	        byte[] macBytes = hMac(hmacKey,plainText.getBytes());
+	        byte[] macBytes = hMac(hmacKey,plainBytes);
 	        //System.out.println("hmac:" + Util.bytesToHex(macBytes));
 	        
-	        byte[] plainBuf = new byte[macBytes.length + plainText.length()];
+	        byte[] plainBuf = new byte[macBytes.length + plainBytes.length];
 	        System.arraycopy(macBytes, 0, plainBuf, 0, macBytes.length);
-	        System.arraycopy(plainText.getBytes(), 0, plainBuf, macBytes.length, plainText.length());
+	        System.arraycopy(plainBytes, 0, plainBuf, macBytes.length, plainBytes.length);
 
 
 	        //generate random iv
@@ -92,7 +103,6 @@ public class Ecies {
 		}
 		return finalHex;
 	}
-	
 	public static byte[] eciesDecrypt (String cipherHex,String privateKey) throws Exception
 	{
 		Security.addProvider(new BouncyCastleProvider());

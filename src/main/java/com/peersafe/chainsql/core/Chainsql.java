@@ -1,7 +1,6 @@
 package com.peersafe.chainsql.core;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +10,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.peersafe.chainsql.crypto.Aes;
+import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
@@ -26,6 +27,8 @@ import com.ripple.core.serialized.enums.TransactionType;
 import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.TableListSet;
+import com.ripple.crypto.ecdsa.IKeyPair;
+import com.ripple.crypto.ecdsa.Seed;
 
 public class Chainsql extends Submit {
 	public	EventManager event;
@@ -33,6 +36,8 @@ public class Chainsql extends Submit {
 	private boolean strictMode = false;
 	private boolean transaction = false;
 	private Integer needVerify = 1;
+	
+	private static final int PASSWORD_LENGTH = 16;  
 	
 	private SignedTransaction signed;
 	
@@ -116,41 +121,59 @@ public class Chainsql extends Submit {
 		return createTable(name, raw , false);
 	}
 	
-	public Chainsql createTable(String name, List<String> raw ,boolean confidential) {
-		use(this.connection.address);
-
-		List<JSONObject> strraw = new ArrayList<JSONObject>();
-		for (String s : raw) {
-			JSONObject json = Util.StrToJson(s);
-			strraw.add(json);
-		}
+	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
+		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
-			Util.checkinsert(strraw);
+			Util.checkinsert(listRaw);
 		} catch (Exception e) {
 			System.out.println("Exception:" + e.getLocalizedMessage());
 		}
-		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(name) + "\"}}";
-		JSONArray table = new JSONArray();
-		table.put(new JSONObject(tablestr));
 		
 		JSONObject json = new JSONObject();
 		json.put("OpType", 1);
-		json.put("Tables", table);
-		json.put("Raw", Util.toHexString(strraw.toString()));
-//		json.put("Confidential",confidential);
+		json.put("Tables", getTableArray(name));
+		
+		String strRaw = listRaw.toString();
+		if(confidential){
+			byte[] password = Util.getRandomBytes(PASSWORD_LENGTH);
+			String token = generateUserToken(this.connection.secret,password);
+			if(token.length() == 0){
+				
+			}
+			json.put("Token", token);
+			strRaw = Aes.aesEncrypt(password, strRaw);
+		}else{
+			strRaw = Util.toHexString(strRaw);
+		}
+		json.put("Raw", strRaw);
 		
 		if(this.transaction){
 			this.cache.add(json);
 			return null;
 		}
-		return create(json,strraw);
+		return create(json);
 	}
 
-	private Chainsql create(JSONObject txjson,List<JSONObject> strraw) {
-
+	private Chainsql create(JSONObject txjson) {
 		TableListSet payment = toPayment(txjson);
 		signed = payment.sign(this.connection.secret);
 		return this;
+	}
+	
+	private String getUserToken(String owner,String user,String tableName){
+		return "";
+	}
+	
+	private String generateUserToken(String seed,byte[] password){
+		IKeyPair keyPair = Seed.getKeyPair(seed);
+		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
+	}
+	
+	private JSONArray getTableArray(String tableName){
+		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\"}}";
+		JSONArray table = new JSONArray();
+		table.put(new JSONObject(tablestr));
+		return table;
 	}
 
 	public Chainsql dropTable(String name) {
@@ -354,6 +377,7 @@ public class Chainsql extends Submit {
             case AutoFillField:
             	break;
             case Token:
+            	payment.as(Blob.Token, value);
             	break;
             case StrictMode:
             	break;

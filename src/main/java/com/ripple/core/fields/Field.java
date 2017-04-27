@@ -119,7 +119,7 @@ public enum Field {
     MemoType(12, Type.Blob),
     MemoData(13, Type.Blob),
     MemoFormat(14, Type.Blob),
-
+    Token(15,Type.Blob),
     Proof(17, Type.Blob),
     TableName(19, Type.Blob),
     Raw(20, Type.Blob),

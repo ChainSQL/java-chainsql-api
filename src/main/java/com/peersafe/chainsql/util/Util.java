@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 
@@ -29,6 +30,12 @@ public class Util {
 			listJson.add(json);
 		}
 		return listJson;
+    }
+    
+    public static JSONArray strToJSONArray(String str){
+		JSONArray array = new JSONArray();
+		array.put(new JSONObject(str));
+		return array;
     }
     
     public static byte[] getRandomBytes(int length){

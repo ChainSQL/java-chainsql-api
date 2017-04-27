@@ -31,7 +31,8 @@ public class ECTest {
 //    	System.out.println(hex);
     	String hex = "3b2a3563a37cdf77";
     	byte[] bytes = Util.hexToBytes(hex);
-    	System.out.println(new String(bytes));
+    	System.out.println(bytes.length);
+    	System.out.println(new String(bytes).getBytes().length);
 //    	System.out.println(Util.bytesToHex(bytes));
 //    	String hex2 = Util.toHexString(str);
 //    	String str2 = Util.fromHexString(hex2);

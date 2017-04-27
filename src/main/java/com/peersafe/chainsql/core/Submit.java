@@ -1,9 +1,11 @@
 package com.peersafe.chainsql.core;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.Util;
 import com.ripple.client.Account;
 import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.client.responses.Response;
@@ -205,5 +207,9 @@ public abstract class Submit {
         submit_state = SubmitState.submit_error;
     }
   
+	protected JSONArray getTableArray(String tableName){
+		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\"}}";
+		return Util.strToJSONArray(tablestr);
+	}
 	
 }

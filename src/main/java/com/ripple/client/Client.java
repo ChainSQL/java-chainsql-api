@@ -1204,12 +1204,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
-    public Request getUserToken(String scope,String address,String neme){
+    public Request getUserToken(String owner,String user,String name){
     	 Request request = newRequest(Command.g_userToken);
 	   	 JSONObject txjson = new JSONObject();
-	   	 txjson.put("Owner", scope);
-	   	 txjson.put("User", address);
-	   	 txjson.put("TableName", neme);
+	   	 txjson.put("Owner", owner);
+	   	 txjson.put("User", user);
+	   	 txjson.put("TableName", name);
 	   	 request.json("tx_json", txjson);
 	        request.once(Request.OnResponse.class, new Request.OnResponse() {
 		            public  void called(Response response) {
@@ -1221,7 +1221,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	        request.request();
 	        while(request.response==null){
 	       	 try {
-					Thread.sleep(100);
+					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}  
@@ -1243,7 +1243,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	        request.request();
 	        while(request.response==null){
 	       	 try {
-					Thread.sleep(100);
+					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}  

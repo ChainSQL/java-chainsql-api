@@ -1,5 +1,7 @@
 package com.peersafe.chainsql.core;
 
+import static com.ripple.config.Config.getB58IdentiferCodecs;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +31,7 @@ import com.ripple.core.types.known.tx.signed.SignedTransaction;
 import com.ripple.core.types.known.tx.txns.TableListSet;
 import com.ripple.crypto.ecdsa.IKeyPair;
 import com.ripple.crypto.ecdsa.Seed;
+import com.ripple.encodings.B58IdentiferCodecs;
 
 public class Chainsql extends Submit {
 	public	EventManager event;
@@ -160,30 +163,15 @@ public class Chainsql extends Submit {
 		return this;
 	}
 	
-	private String getUserToken(String owner,String user,String tableName){
-		return "";
-	}
-	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
 		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
 	}
-	
-	private JSONArray getTableArray(String tableName){
-		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\"}}";
-		JSONArray table = new JSONArray();
-		table.put(new JSONObject(tablestr));
-		return table;
-	}
 
 	public Chainsql dropTable(String name) {
-		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(name) +"\"}}";
-		JSONArray table = new JSONArray();
-		table.put(new JSONObject(tablestr));
-		
 		JSONObject json = new JSONObject();
 		json.put("OpType", 2);
-		json.put("Tables", table);
+		json.put("Tables", getTableArray(name));
 		if(this.transaction){
 			this.cache.add(json);
 			return null;
@@ -217,30 +205,55 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
-	public Chainsql grant(String name, String user, String flag) {
+	public Chainsql grant(String name, String user,String userPublicKey,String flag){
+		JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
+		if(res.get("status").equals("error")){
+			System.out.println(res.getString("error_message"));
+			return null;
+		}
+		String token = res.getString("token");
+		String newToken = "";
+		if(token.length() != 0){
+			try {
+				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				if(password == null){
+					return null;
+				}
+				byte [] pubBytes = getB58IdentiferCodecs().decode(userPublicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+				newToken = Ecies.eciesEncrypt(password, pubBytes);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return grant_inner(name,user,flag,newToken);
+		
+	}
+	
+	public Chainsql grant(String name, String user,String flag) {
+		return grant_inner(name,user,flag,"");
+	}
+
+	private Chainsql grant_inner(String name, String user,String flag,String token) {
 		List<JSONObject> flags = new ArrayList<JSONObject>();
 		JSONObject json = Util.StrToJson(flag);
 		flags.add(json);
-		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(name) + "\"}}";
-		JSONArray table = new JSONArray();
-		table.put(new JSONObject(tablestr));
-		JSONObject txjson = new JSONObject();
-//		txjson.put("TransactionType",TransactionType.TableListSet);
-		txjson.put("Tables", table);
-		txjson.put("OpType", 11);
-		txjson.put("User", user);
-		txjson.put("Raw", Util.toHexString(flags.toString()));
+		JSONObject txJson = new JSONObject();
+		txJson.put("Tables", getTableArray(name));
+		txJson.put("OpType", 11);
+		txJson.put("User", user);
+		txJson.put("Raw", Util.toHexString(flags.toString()));
+		if(token.length() > 0){
+			txJson.put("Token", token);
+		}
 		
 		if(this.transaction){
-			this.cache.add(txjson);
+			this.cache.add(txJson);
 			return null;
 		}
-		return grant(name, txjson);
-		
+		return grant(name, txJson);
 	}
-
-	private Chainsql grant(String name, JSONObject txjson) {
-		TableListSet payment = toPayment(txjson);
+	private Chainsql grant(String name, JSONObject txJson) {
+		TableListSet payment = toPayment(txJson);
 		signed = payment.sign(this.connection.secret);
 		return this;
 	}
@@ -254,23 +267,8 @@ public class Chainsql extends Submit {
 	}
 	
 	public JSONObject commit(Callback cb){
-		HashMap secretMap = new HashMap();
-		List ary = new ArrayList();
 		List<JSONObject> cache = this.cache;
-		for(int i = 0;i<cache.size();i++){
-			if(cache.get(i).get("OpType").toString().indexOf("2,3,5,7") == -1){
-				/*if(cache.get(i).getInt("OpType")== 1 && cache.get(i).getBoolean("confidential")==true){
-					
-				}
-				if (this.cache.get(i).get("OpType").toString().indexOf("6,8,9,10") != -1) {
-			        this.needVerify = 0;
-			    }
-			    if (cache.get(i).getInt("OpType") != 1) {
-			        //ary.add(Validate.getUserToken(this, cache.get(i).getString("TableName")));
-			    }*/
-				
-			}
-		}
+		
 		JSONObject payment = new JSONObject();
 		payment.put("TransactionType",TransactionType.SQLTransaction);
 		payment.put( "Account", this.connection.address);
@@ -280,16 +278,14 @@ public class Chainsql extends Submit {
 		
 		
         for (int i = 0; i < cache.size(); i++) {
-        	/*if(secretMap.get(cache.get(i).get("TableName"))!=null){
-        		
-        	}*/
         	payment.getJSONArray("Statements").put(cache.get(i));
         }
-        JSONObject tx_json = Validate.getTxJson(this.connection.client, payment);
-        if("success".equals(tx_json.getString("status"))){
-    		tx_json = tx_json.getJSONObject("result");
- 		}
-        System.out.println(tx_json);
+        JSONObject result = Validate.getTxJson(this.connection.client, payment);
+		if(result.has("error")){
+			System.out.println("Error:" + result.getString("error_message"));
+			return null;
+		}
+		JSONObject tx_json = result.getJSONObject("tx_json");
         AccountID account = AccountID.fromAddress(this.connection.address);
 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
@@ -299,7 +295,7 @@ public class Chainsql extends Submit {
 			Transaction paymentTS  = new Transaction(TransactionType.SQLTransaction);
 			paymentTS.as(AccountID.Account, tx_json.get("Account"));
 			paymentTS.as(UInt16.TransactionType,TransactionType.SQLTransaction);
-			paymentTS.as(UInt32.NeedVerify,1);
+			paymentTS.as(UInt32.NeedVerify,tx_json.getInt("NeedVerify"));
 			paymentTS.as(UInt32.Sequence, map.get("Sequence"));
 			paymentTS.as(Amount.Fee, fee);
 			paymentTS.as(Blob.Statements,Util.toHexString(tx_json.get("Statements").toString()));
@@ -313,8 +309,9 @@ public class Chainsql extends Submit {
     	json.put("Account",this.connection.address);
     	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);
     	if("success".equals(tx_json.getString("status"))){
-    		tx_json = tx_json.getJSONObject("result");
+    		tx_json = tx_json.getJSONObject("tx_json");
  		}
+    	System.out.println(tx_json);
     	TableListSet payment = new TableListSet();
     	 try {  
              Iterator<String> it = tx_json.keys();  
@@ -385,9 +382,6 @@ public class Chainsql extends Submit {
                 break;
         }
         
-	}
-	public void getUserToken(String name){
-		Validate.getUserToken(this, name);
 	}
 
 	public void getLedger(JSONObject option,Callback<JSONObject> cb){

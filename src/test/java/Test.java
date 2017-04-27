@@ -18,13 +18,13 @@ public class Test {
 		  c.connect("ws://192.168.0.197:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "aag";
+		  sTableName = "aaf";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
-		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-//		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
-//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 //		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
@@ -39,12 +39,12 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-//		  test.testts();
+		  test.testts();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
-		  test.testCreateTable();
+//		  test.testCreateTable();
 //		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
@@ -77,17 +77,14 @@ public class Test {
 //	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
 //	    		 );
 //		  c.createTable(sTableName,args,true);
-		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
-//		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-//		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':200}");
+//		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
+		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
+		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':400}");
 		  JSONObject obj = c.commit((data)->{
 			  System.out.println("commit------"+data);
 		  });
 		  System.out.println(obj);
 	  } 
-	public void getUserToken(){
-		c.getUserToken(sTableName);
-	}
 	  
 	public void getLedge(){
 		JSONObject option = new JSONObject();
@@ -141,7 +138,7 @@ public class Test {
 	 }
 
 	  public void testUpdateTable(){
-		  List<String> arr1 = Util.array("{'id': 2}");
+		  List<String> arr1 = Util.array("{'id': 3}");
 		  String arr2 ="{'balance':200}";
 		  
 		  JSONObject obj;
@@ -197,7 +194,7 @@ public class Test {
 	  }
 	  
 	  public void grant(){
-		  JSONObject obj = c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}").submit((data)->{
+		  JSONObject obj = c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs","{insert:true,update:true,delete:true}").submit((data)->{
 	 			 System.out.println("grant------"+data);
 		  });
 		  System.out.println(obj.toString());

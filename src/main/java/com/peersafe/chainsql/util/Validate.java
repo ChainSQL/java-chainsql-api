@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.core.Chainsql;
+import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
 import com.ripple.client.Client;
 import com.ripple.client.requests.Request;
@@ -36,26 +36,14 @@ public class Validate {
         return arr;
     }
 	
-	public static JSONObject getUserToken(Chainsql chainsql, String name) {
-		Request UserToken = chainsql.connection.client.getUserToken(chainsql.connection.scope,chainsql.connection.address,name);
-		if(UserToken.response.result!=null){
-			
-		}else{
-			 //System.out.println("error_message :This result is null");
-		}
-		return null;
+	public static JSONObject getUserToken(Connection connection,String owner, String name) {
+		Request request = connection.client.getUserToken(owner,connection.address,name);
+		return request.response.result;
 	}
 	
 	public static JSONObject getTxJson(Client client, JSONObject tx_json) {
-		Request TxJson = client.getTxJson(tx_json);
-		JSONObject obj = new JSONObject();
-		obj.put("status",TxJson.response.status);
-		if( !"error".equals(TxJson.response.status)){
-			obj.put("result", TxJson.response.result.getJSONObject("tx_json"));
-		}else{
-			obj.put("error_message",TxJson.response.error);
-		}
-		return obj;
+		Request request = client.getTxJson(tx_json);
+		return request.response.result;
 		
 	}
 	public static Map<String,Object> rippleRes(Client client,AccountID account){

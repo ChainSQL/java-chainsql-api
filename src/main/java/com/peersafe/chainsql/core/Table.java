@@ -8,6 +8,8 @@ import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
+import com.peersafe.chainsql.crypto.Aes;
+import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
@@ -41,13 +43,7 @@ public class Table extends Submit{
 			}
 		}
 	    this.exec = "r_insert";
-	    if(this.transaction){
-	    	JSONObject json = Tjson();
-			this.cache.add(json);
-			return null;
-		}else{
-			return this;
-		}
+	    return dealWithTransaction();
 		
 	}
 	
@@ -59,26 +55,29 @@ public class Table extends Submit{
 		}
 			
 	    this.exec = "r_update";
-	    if(this.transaction){
-	    	JSONObject json = Tjson();
-			this.cache.add(json);
-			return null;
-		}else{
-			return this;
-		}
+	    return dealWithTransaction();
 		
 	}
 	
 	public Table delete() {
 		this.exec = "r_delete";
+		return dealWithTransaction();
+		
+	}
+	
+	private Table dealWithTransaction(){
 		if(this.transaction){
-			JSONObject json = Tjson();
-			this.cache.add(json);
+			JSONObject json;
+			try {
+				json = txJson();
+				this.cache.add(json);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			return null;
 		}else{
 			return this;
 		}
-		
 	}
 	public Table get(List<String> orgs){
 		for(String s: orgs){
@@ -116,8 +115,13 @@ public class Table extends Submit{
 				e.printStackTrace();
 			}
 		if(this.transaction){
-			JSONObject json = Tjson();
+			JSONObject json;
+			try {
+				json = txJson();
 			this.cache.add(json);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -159,31 +163,57 @@ public class Table extends Submit{
 	}
 
 	
-	private JSONObject Tjson(){
+	private JSONObject txJson() throws Exception{
 		JSONObject json = new JSONObject();
-		String str ="{\"Table\":{\"TableName\":\""+Util.toHexString(name)+"\"}}";
-		
-		JSONArray table = new JSONArray();
-		table.put(new JSONObject(str));
-		json.put("Tables", table);
+		json.put("Tables", getTableArray(name));
 		json.put("Owner",  connection.scope);
-//		json.put("TableName", name);
-		json.put("Raw", Util.toHexString(this.query.toString()));
+		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		return json;
 	}
 	
-	private SignedTransaction prepareSQLStatement(Map<String,Object> map) {
-
-		JSONObject txjson = Tjson();
-		txjson.put("Account", this.connection.address);
-		JSONObject tx_json = Validate.getTxJson(this.connection.client, txjson);
-		String tebles ="";
-		if("success".equals(tx_json.getString("status"))){
-			tebles = tx_json.getJSONObject("result").getJSONArray("Tables").get(0).toString();
-			System.out.println(tebles);
-			
+	private String tryEncryptRaw(String strRaw) throws Exception{
+		JSONObject res = Validate.getUserToken(connection,connection.scope,name);
+		if(res.get("status").equals("error")){
+			throw new Exception(res.getString("error_message"));
+		}else{
+			String token = res.getString("token");
+			if(token == ""){
+				strRaw = Util.toHexString(strRaw);
+			}else{
+				try {
+					byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+					if(password == null){
+						return null;
+					}
+					strRaw = Aes.aesEncrypt(password, strRaw);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}	
 		}
+
+		return strRaw;
+	}
+	
+	private SignedTransaction prepareSQLStatement(Map<String,Object> map) {
+		JSONObject txjson;
+		try {
+			txjson = txJson();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		txjson.put("Account", this.connection.address);
+		
+		JSONObject result = Validate.getTxJson(this.connection.client, txjson);
+		if(result.has("error")){
+			System.out.println("Error:" + result.getString("error_message"));
+			return null;
+		}
+		JSONObject tx_json = result.getJSONObject("tx_json");
+		String tebles = tx_json.getJSONArray("Tables").get(0).toString();
 		
 		String fee = connection.client.serverInfo.fee_ref+"";
 		SQLStatement payment = new SQLStatement();
@@ -191,7 +221,7 @@ public class Table extends Submit{
         payment.as(AccountID.Account, connection.address);
         payment.as(STArray.Tables, Validate.fromJSONArray(tebles));
         payment.as(UInt16.OpType, Validate.toOpType(exec));
-        payment.as(Blob.Raw, Util.toHexString(query.toString()));
+        payment.as(Blob.Raw, tx_json.getString("Raw"));
         payment.as(UInt32.Sequence, map.get("Sequence"));
         payment.as(Amount.Fee, fee);
         SignedTransaction signed = payment.sign(connection.secret);

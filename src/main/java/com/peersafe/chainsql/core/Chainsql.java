@@ -36,7 +36,7 @@ import com.ripple.encodings.B58IdentiferCodecs;
 public class Chainsql extends Submit {
 	public	EventManager event;
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
-	private boolean strictMode = false;
+	private boolean strictMode = true;
 	private boolean transaction = false;
 	private Integer needVerify = 1;
 	
@@ -273,19 +273,20 @@ public class Chainsql extends Submit {
 		payment.put("TransactionType",TransactionType.SQLTransaction);
 		payment.put( "Account", this.connection.address);
 		payment.put("Statements", new JSONArray());
-		payment.put("StrictMode",this.strictMode);
 		payment.put("NeedVerify",this.needVerify);
 		
 		
         for (int i = 0; i < cache.size(); i++) {
         	payment.getJSONArray("Statements").put(cache.get(i));
         }
+        System.out.println(payment);
         JSONObject result = Validate.getTxJson(this.connection.client, payment);
-		if(result.has("error")){
+		if(result.getString("status").equals("error")){
 			System.out.println("Error:" + result.getString("error_message"));
 			return null;
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
+		System.out.println(tx_json);
         AccountID account = AccountID.fromAddress(this.connection.address);
 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		String fee = this.connection.client.serverInfo.fee_ref + "";

@@ -129,6 +129,7 @@ public class TxFormat extends Format {
             Field.Owner,         Requirement.REQUIRED,
             Field.Tables,        Requirement.REQUIRED,
             Field.Raw,       	 Requirement.REQUIRED,
+            Field.TxCheckHash,	 Requirement.OPTIONAL,
             Field.OpType, 		 Requirement.REQUIRED);
     
     static public TxFormat SQLTransaction = new TxFormat(

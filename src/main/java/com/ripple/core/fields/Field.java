@@ -134,6 +134,10 @@ public enum Field {
     Target(7, Type.AccountID),
     RegularKey(8, Type.AccountID),
     User(9, Type.AccountID),
+    PrevTxnLedgerHash(10,Type.AccountID),
+    TxnLedgerHash(10,Type.AccountID),    
+    TxCheckHash(10,Type.AccountID),      
+    CreatedLedgerHash(10,Type.AccountID),
 
     ObjectEndMarker(1, Type.STObject),
     TransactionMetaData(2, Type.STObject),

@@ -31,7 +31,7 @@ public class Table extends Submit{
 	public String message;
 	
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
-	public boolean strictMode = false;
+	public boolean strictMode = true;
 	public boolean transaction = false;
 	public	EventManager event;
 
@@ -169,6 +169,7 @@ public class Table extends Submit{
 		json.put("Owner",  connection.scope);
 		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
+		json.put("StrictMode", this.strictMode);
 		return json;
 	}
 	

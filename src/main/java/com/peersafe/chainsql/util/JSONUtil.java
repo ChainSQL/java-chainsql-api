@@ -118,4 +118,19 @@ public class JSONUtil {
 	    baos.write((hexString.indexOf(bytes.charAt(i))<<4 |hexString.indexOf(bytes.charAt(i+1))));
 	    return new String(baos.toByteArray());
 	} 
+	
+	/**
+	 * unhex some fields
+	 * @param data
+	 */
+	public static void unHexData(JSONObject tx){
+		if(tx.has("Raw")){
+			tx.put("Raw", JSONUtil.fromHexString(tx.getString("Raw")));
+		}
+		if(tx.has("Tables")){
+			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
+			table = table.getJSONObject("Table");
+			table.put("TableName", JSONUtil.fromHexString(table.getString("TableName")));
+		}
+	}
 }

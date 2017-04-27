@@ -37,11 +37,11 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  	test.getTransactions();
+//		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.testCreateTable();
-//		  test.getTransaction();
+		  test.getTransaction();
 //		  test.testinsert();
 		  //test.testUpdateTable();
 		  //test.testdelete();
@@ -93,7 +93,7 @@ public class Test {
 		 System.out.println("getTransactions------"+obj);
 	}	
 	public void getTransaction(){
-		String hash = "C637A383BA850F6D487438A2590996CF09ED31E9DB856C9AD881C73E1FF483AA";
+		String hash = "BA1C8DF7EC663842171CEC9806C6B16040F58CECD24D29795C4227E75DA93C74";
 //		JSONObject obj = c.getTransaction(hash);
 //		System.out.println("getTransaction------"+obj);
 		c.getTransaction(hash, (data)->{

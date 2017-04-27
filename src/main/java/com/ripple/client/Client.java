@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.peersafe.chainsql.util.JSONUtil;
 import com.ripple.client.enums.Command;
 import com.ripple.client.enums.Message;
 import com.ripple.client.enums.RPCErr;
@@ -1200,6 +1201,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
+            	JSONArray txs = (JSONArray)response.result.get("transactions");
+            	for(int i=0; i<txs.length(); i++){
+            		JSONObject tx = (JSONObject)txs.get(i);
+            		JSONUtil.unHexData(tx.getJSONObject("tx"));
+            		if(tx.has("meta")){
+            			tx.remove("meta");
+            		}
+            	}
+            	
                 return response.result;
             }
         });
@@ -1228,6 +1238,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     			if(response.result.has("meta")){
     				response.result.remove("meta");
     			}
+    			JSONUtil.unHexData(response.result);
                 return response.result;
             }
         });

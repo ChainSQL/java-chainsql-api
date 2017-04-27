@@ -84,25 +84,8 @@ public class EventManager {
 	
 	private void makeCallback(String key,JSONObject data){
 		if (mapCache.containsKey(key)) {
-	    	 unHexData(data);
+	    	 JSONUtil.unHexData(data.getJSONObject("transaction"));
 	    	 mapCache.get(key).called(data);
 	     }
-	}
-	
-	/**
-	 * unhex some fields
-	 * @param data
-	 */
-	private void unHexData(JSONObject data){
-		JSONObject tx = data.getJSONObject("transaction");
-
-		if(tx.has("Raw")){
-			tx.put("Raw", JSONUtil.fromHexString(tx.getString("Raw")));
-		}
-		if(tx.has("Tables")){
-			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
-			table = table.getJSONObject("Table");
-			table.put("TableName", JSONUtil.fromHexString(table.getString("TableName")));
-		}
 	}
 }

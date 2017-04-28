@@ -179,7 +179,7 @@ public class Table extends Submit{
 			throw new Exception(res.getString("error_message"));
 		}else{
 			String token = res.getString("token");
-			if(token == ""){
+			if(token.equals("")){
 				strRaw = Util.toHexString(strRaw);
 			}else{
 				try {

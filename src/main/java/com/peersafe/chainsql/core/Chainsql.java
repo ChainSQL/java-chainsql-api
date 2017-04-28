@@ -142,7 +142,8 @@ public class Chainsql extends Submit {
 			byte[] password = Util.getRandomBytes(PASSWORD_LENGTH);
 			String token = generateUserToken(this.connection.secret,password);
 			if(token.length() == 0){
-				
+				System.out.println("generateUserToken failed");
+				return null;
 			}
 			json.put("Token", token);
 			strRaw = Aes.aesEncrypt(password, strRaw);

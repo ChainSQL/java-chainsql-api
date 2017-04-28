@@ -160,8 +160,13 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql create(JSONObject txjson) {
-		TableListSet payment = toPayment(txjson);
-		signed = payment.sign(this.connection.secret);
+		TableListSet payment;
+		try {
+			payment = toPayment(txjson);
+			signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 	
@@ -182,8 +187,13 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql drop(JSONObject txjson) {
-		TableListSet payment = toPayment(txjson);
+		TableListSet payment;
+		try {
+			payment = toPayment(txjson);
 		signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 
@@ -202,8 +212,13 @@ public class Chainsql extends Submit {
 		
 	}
 	private Chainsql rename(JSONObject txjson) {
-		TableListSet payment = toPayment(txjson);
-		signed = payment.sign(this.connection.secret);
+		TableListSet payment;
+		try {
+			payment = toPayment(txjson);
+			signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 
@@ -255,8 +270,13 @@ public class Chainsql extends Submit {
 		return grant(name, txJson);
 	}
 	private Chainsql grant(String name, JSONObject txJson) {
-		TableListSet payment = toPayment(txJson);
+		TableListSet payment;
+		try {
+			payment = toPayment(txJson);
 		signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 
@@ -289,7 +309,7 @@ public class Chainsql extends Submit {
         for (int i = 0; i < cache.size(); i++) {
         	payment.getJSONArray("Statements").put(cache.get(i));
         }
-        System.out.println(payment);
+
         JSONObject result = Validate.getTxJson(this.connection.client, payment);
 		if(result.getString("status").equals("error")){
 //			System.out.println("Error:" + result.getString("error_message"));
@@ -298,7 +318,7 @@ public class Chainsql extends Submit {
 			}};
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
-		System.out.println(tx_json);
+		
         AccountID account = AccountID.fromAddress(this.connection.address);
 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
@@ -328,13 +348,15 @@ public class Chainsql extends Submit {
 		}
 	}
 	
-    private TableListSet toPayment(JSONObject json){
+    private TableListSet toPayment(JSONObject json)throws Exception{
     	json.put("Account",this.connection.address);
     	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);
-    	if("success".equals(tx_json.getString("status"))){
+    	if(tx_json.getString("status").equals("error")){
+    		throw new Exception(tx_json.getString("error_message"));
+    	}else{
     		tx_json = tx_json.getJSONObject("tx_json");
- 		}
-    	System.out.println(tx_json);
+    	}
+
     	TableListSet payment = new TableListSet();
     	 try {  
              Iterator<String> it = tx_json.keys();  
@@ -357,9 +379,7 @@ public class Chainsql extends Submit {
 	 		enumPayment(payment,"Sequence",map.get("Sequence"));
 	 		enumPayment(payment,"Fee",fee);
 	    	return payment;
-		}
- 	
-    	
+		}    	
     }
     
 	private void enumPayment(TableListSet payment,String str,Object value){

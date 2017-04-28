@@ -37,7 +37,7 @@ import com.ripple.encodings.B58IdentiferCodecs;
 public class Chainsql extends Submit {
 	public	EventManager event;
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
-	private boolean strictMode = true;
+	private boolean strictMode = false;
 	private boolean transaction = false;
 	private Integer needVerify = 1;
 	
@@ -274,7 +274,6 @@ public class Chainsql extends Submit {
 		return doCommit(cond);
 	}
 	public JSONObject commit(Callback cb){
-		
 		return doCommit(cb);
 	}
 	
@@ -293,8 +292,10 @@ public class Chainsql extends Submit {
         System.out.println(payment);
         JSONObject result = Validate.getTxJson(this.connection.client, payment);
 		if(result.getString("status").equals("error")){
-			System.out.println("Error:" + result.getString("error_message"));
-			return null;
+//			System.out.println("Error:" + result.getString("error_message"));
+			return  new JSONObject(){{
+				put("Error:",result.getString("error_message"));
+			}};
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
 		System.out.println(tx_json);
@@ -302,7 +303,10 @@ public class Chainsql extends Submit {
 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
 		if(mapError(map)){
-			return null;
+			//System.out.println("Error:" +"This Sequence is null");
+			return new JSONObject(){{
+				put("Error:","This Sequence is null");
+			}};
 		}else{
 			Transaction paymentTS  = new Transaction(TransactionType.SQLTransaction);
 			paymentTS.as(AccountID.Account, tx_json.get("Account"));
@@ -314,9 +318,9 @@ public class Chainsql extends Submit {
 			
 			signed = paymentTS.sign(this.connection.secret);
 			if(commitType instanceof SyncCond ){
-				return submit(condition);
+				return submit((SyncCond)commitType);
 			}else if(commitType instanceof Callback){
-				return submit(cb);
+				return submit((Callback<JSONObject>) commitType);
 			}else{
 				return submit();
 			}

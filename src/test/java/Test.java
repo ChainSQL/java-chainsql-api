@@ -15,16 +15,16 @@ public class Test {
 	  public static String sTableName;
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
-		  c.connect("ws://192.168.0.197:6007");
+		  c.connect("ws://192.168.0.148:5008");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "aaf";
+		  sTableName = "testwws";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
 //		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
-		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 //		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
@@ -39,13 +39,13 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  test.testts();
+//		  test.testts();
 //		  	test.getTransactions();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
 //		  test.testCreateTable();
-//		  test.testinsert();
+		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
@@ -79,10 +79,8 @@ public class Test {
 //		  c.createTable(sTableName,args,true);
 //		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
 		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':400}");
-		  JSONObject obj = c.commit((data)->{
-			  System.out.println("commit------"+data);
-		  });
+//		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':400}");
+		  JSONObject obj = c.commit();
 		  System.out.println(obj);
 	  } 
 	  
@@ -112,7 +110,7 @@ public class Test {
 //    	obj = c.createTable(sTableName,args).submit();
 //    	System.out.println(obj);
     	
-    	obj = c.createTable(sTableName,args,true).submit((data)->{
+    	obj = c.createTable(sTableName,args,false).submit((data)->{
     		System.out.println("creat------"+data);
     	});
     	System.out.println(obj);

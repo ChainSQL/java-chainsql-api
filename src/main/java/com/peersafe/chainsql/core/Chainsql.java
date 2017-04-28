@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.net.Connection;
@@ -265,10 +266,19 @@ public class Chainsql extends Submit {
 		  }
 		
 	}
-	
+	public JSONObject commit(){
+		return doCommit("");
+	}
+	public JSONObject commit(SyncCond cond){
+		return doCommit(cond);
+	}
 	public JSONObject commit(Callback cb){
-		List<JSONObject> cache = this.cache;
 		
+		return doCommit(cb);
+	}
+	
+	public JSONObject doCommit(Object  commitType){
+		List<JSONObject> cache = this.cache;
 		JSONObject payment = new JSONObject();
 		payment.put("TransactionType",TransactionType.SQLTransaction);
 		payment.put( "Account", this.connection.address);
@@ -302,7 +312,14 @@ public class Chainsql extends Submit {
 			paymentTS.as(Blob.Statements,Util.toHexString(tx_json.get("Statements").toString()));
 			
 			signed = paymentTS.sign(this.connection.secret);
-			return submit(cb);
+			if(commitType instanceof SyncCond ){
+				return submit(condition);
+			}else if(commitType instanceof Callback){
+				return submit(cb);
+			}else{
+				return submit();
+			}
+			
 		}
 	}
 	

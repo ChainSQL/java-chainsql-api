@@ -23,7 +23,7 @@ public abstract class Submit {
 	private JSONObject syncRes;
 	
 	private boolean sync = false;
-	private SyncCond condition;
+	protected SyncCond condition;
 	
 	public enum SyncCond {
         validate_success,	

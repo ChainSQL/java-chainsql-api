@@ -58,15 +58,15 @@ public class STObjectFormatter {
             case Payment:
                 constructed = new Payment();
                 break;
-            case SuspendedPaymentCreate:
-                break;
-            case SuspendedPaymentFinish:
-                break;
+//            case SuspendedPaymentCreate:
+//                break;
+//            case SuspendedPaymentFinish:
+//                break;
             case AccountSet:
                 constructed = new AccountSet();
                 break;
-            case SuspendedPaymentCancel:
-                break;
+//            case SuspendedPaymentCancel:
+//                break;
             case SetRegularKey:
                 break;
             case NickNameSet:
@@ -100,6 +100,8 @@ public class STObjectFormatter {
             case SQLStatement:
                 constructed = new SQLStatement();
                 break;
+            default:
+            	break;
 
         }
         if (constructed == null) {
@@ -144,6 +146,8 @@ public class STObjectFormatter {
                 break;
             case FeeSettings:
                 break;
+			default:
+				break;
         }
         if (constructed == null) {
             constructed = new LedgerEntry(ledgerEntryType);

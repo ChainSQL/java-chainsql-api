@@ -48,20 +48,13 @@ public class Validate {
 	}
 	public static Map<String,Object> rippleRes(Client client,AccountID account){
 		HashMap<String,Object> map = new HashMap<String,Object>();
-		Request sequence = client.accountInfo(account);
-		if(sequence.response.result!=null){
-			Integer Sequence = (Integer)sequence.response.result.optJSONObject("account_data").get("Sequence");
-			map.put("Sequence", Sequence);
-		}else{
-			// System.out.println("error_message :This result is null");
+		Request request = client.accountInfo(account);
+		if(request.response.result!=null){
+			Integer sequence = (Integer)request.response.result.optJSONObject("account_data").get("Sequence");
+			map.put("Sequence", sequence);
+		}else if(request.response.message.has("error")){
+			map.put("error_message", request.response.message.getString("error_message"));
 		}
-	/*	Request nameindb = client.getNameInDB(name, account);
-		if(nameindb.response.result!=null){
-			String NameInDB =  (String)nameindb.response.result.get("nameInDB");
-			map.put("NameInDB", NameInDB);
-		}else{
-			 //System.out.println("error_message :This result is null");
-		}*/
 		return map;
 	}
 

@@ -56,6 +56,7 @@ public class TxFormat extends Format {
         put(Field.AccountTxnID,        Requirement.OPTIONAL);
         put(Field.LastLedgerSequence,  Requirement.OPTIONAL);
         put(Field.Memos,               Requirement.OPTIONAL);
+        put(Field.Signers,			   Requirement.OPTIONAL);
     }
 
     @Override
@@ -118,8 +119,8 @@ public class TxFormat extends Format {
     static public TxFormat TableListSet = new TxFormat(
             TransactionType.TableListSet,
             Field.Tables,        Requirement.REQUIRED,
+            Field.TableNewName,	 Requirement.OPTIONAL,
             Field.User,          Requirement.OPTIONAL,
-            Field.Flags,    	 Requirement.OPTIONAL,
             Field.Raw,           Requirement.OPTIONAL,
             Field.Token,		 Requirement.OPTIONAL,
             Field.OpType,  		 Requirement.REQUIRED);
@@ -129,38 +130,36 @@ public class TxFormat extends Format {
             Field.Owner,         Requirement.REQUIRED,
             Field.Tables,        Requirement.REQUIRED,
             Field.Raw,       	 Requirement.REQUIRED,
+            Field.AutoFillField, Requirement.OPTIONAL,
             Field.TxCheckHash,	 Requirement.OPTIONAL,
             Field.OpType, 		 Requirement.REQUIRED);
     
     static public TxFormat SQLTransaction = new TxFormat(
             TransactionType.SQLTransaction,
-            Field.Account,       		Requirement.REQUIRED,
-            Field.TransactionType,      Requirement.REQUIRED,
             Field.Statements,    		Requirement.REQUIRED,
             Field.NeedVerify, 		 	Requirement.REQUIRED);
 
 
-    static public TxFormat SuspendedPaymentCreate = new TxFormat(
-            TransactionType.SuspendedPaymentCreate,
-            Field.Destination,      Requirement.REQUIRED,
-            Field.Amount,           Requirement.REQUIRED,
-            Field.Digest,           Requirement.OPTIONAL,
-            Field.CancelAfter,      Requirement.OPTIONAL,
-            Field.FinishAfter,      Requirement.OPTIONAL,
-            Field.DestinationTag,   Requirement.OPTIONAL);
+//    static public TxFormat SuspendedPaymentCreate = new TxFormat(
+//            TransactionType.SuspendedPaymentCreate,
+//            Field.Destination,      Requirement.REQUIRED,
+//            Field.Amount,           Requirement.REQUIRED,
+//            Field.Digest,           Requirement.OPTIONAL,
+//            Field.CancelAfter,      Requirement.OPTIONAL,
+//            Field.FinishAfter,      Requirement.OPTIONAL,
+//            Field.DestinationTag,   Requirement.OPTIONAL);
 
-    static public TxFormat SuspendedPaymentFinish = new TxFormat(
-            TransactionType.SuspendedPaymentFinish,
-            Field.Owner,            Requirement.REQUIRED,
-            Field.OfferSequence,    Requirement.REQUIRED,
-            Field.Method,           Requirement.OPTIONAL,
-            Field.Digest,           Requirement.OPTIONAL,
-            Field.Proof,            Requirement.OPTIONAL);
-
-    static public TxFormat SuspendedPaymentCancel = new TxFormat(
-            TransactionType.SuspendedPaymentCancel,
-            Field.Owner,          Requirement.REQUIRED,
-            Field.OfferSequence,  Requirement.REQUIRED);
+//    static public TxFormat SuspendedPaymentFinish = new TxFormat(
+//            TransactionType.SuspendedPaymentFinish,
+//            Field.Owner,            Requirement.REQUIRED,
+//            Field.OfferSequence,    Requirement.REQUIRED,
+//            Field.Method,           Requirement.OPTIONAL,
+//            Field.Digest,           Requirement.OPTIONAL);
+//
+//    static public TxFormat SuspendedPaymentCancel = new TxFormat(
+//            TransactionType.SuspendedPaymentCancel,
+//            Field.Owner,          Requirement.REQUIRED,
+//            Field.OfferSequence,  Requirement.REQUIRED);
 
     static public TxFormat EnableAmendment = new TxFormat(
             TransactionType.EnableAmendment,

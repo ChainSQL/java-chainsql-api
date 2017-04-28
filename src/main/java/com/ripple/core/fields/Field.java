@@ -12,7 +12,7 @@ public enum Field {
     LedgerEntryType(1, Type.UInt16),
     TransactionType(2, Type.UInt16),
     SignerWeight(3, Type.UInt16),
-    OpType(4, Type.UInt16),
+    OpType(50, Type.UInt16),
     
     Flags(2, Type.UInt32),
     SourceTag(3, Type.UInt32),
@@ -27,7 +27,6 @@ public enum Field {
     WalletSize(12, Type.UInt32),
     OwnerCount(13, Type.UInt32),
     DestinationTag(14, Type.UInt32),
-    NeedVerify(15, Type.UInt32),
     
     HighQualityIn(16, Type.UInt32),
     HighQualityOut(17, Type.UInt32),
@@ -53,6 +52,9 @@ public enum Field {
     CancelAfter(36, Type.UInt32),
     FinishAfter(37, Type.UInt32),
     SignerListID(38, Type.UInt32),
+    TxnLgrSeq(50,Type.UInt32),   
+    CreateLgrSeq(51,Type.UInt32),
+    NeedVerify(52,Type.UInt32),
 
 
     IndexNext(1, Type.UInt64),
@@ -76,13 +78,22 @@ public enum Field {
     RootIndex(8, Type.Hash256),
     // Added in rippled commit: 9486fc416ca7c59b8930b734266eed4d5b714c50
     AccountTxnID(9, Type.Hash256),
+    
     BookDirectory(16, Type.Hash256),
     InvoiceID(17, Type.Hash256),
     Nickname(18, Type.Hash256),
     Amendment(19, Type.Hash256),
     TicketID(20, Type.Hash256),
     Digest(21, Type.Hash256),
+    PayChannel(22,Type.Hash256),
+    PrevTxnLedgerHash(50,Type.Hash256),
+    TxnLedgerHash(51,Type.Hash256), 
+    TxCheckHash(52,Type.Hash256),     
+    CreatedLedgerHash(53,Type.Hash256),
+    CreatedTxnHash(54,Type.Hash256),
 
+
+    
     hash(257, Type.Hash256),
     index(258, Type.Hash256),
 
@@ -119,13 +130,16 @@ public enum Field {
     MemoType(12, Type.Blob),
     MemoData(13, Type.Blob),
     MemoFormat(14, Type.Blob),
-    Token(15,Type.Blob),
-    Proof(17, Type.Blob),
-    TableName(19, Type.Blob),
-    Raw(20, Type.Blob),
-    TableNewName(21, Type.Blob),
-    AutoFillField(22, Type.Blob),
-    Statements(23, Type.Blob),
+    
+    Fulfillment(16,Type.Blob),  
+    Condition(17,Type.Blob),      
+    MasterSignature(18,Type.Blob),
+    Token(50,Type.Blob),           
+    TableName(51,Type.Blob),		
+    Raw(52,Type.Blob),				
+    TableNewName(53,Type.Blob),	
+    AutoFillField(54,Type.Blob),	
+    Statements(55,Type.Blob),
  
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),
@@ -133,11 +147,7 @@ public enum Field {
     Issuer(4, Type.AccountID),
     Target(7, Type.AccountID),
     RegularKey(8, Type.AccountID),
-    User(9, Type.AccountID),
-    PrevTxnLedgerHash(10,Type.AccountID),
-    TxnLedgerHash(10,Type.AccountID),    
-    TxCheckHash(10,Type.AccountID),      
-    CreatedLedgerHash(10,Type.AccountID),
+    User(50, Type.AccountID),
 
     ObjectEndMarker(1, Type.STObject),
     TransactionMetaData(2, Type.STObject),
@@ -150,10 +160,10 @@ public enum Field {
     TemplateEntry(9, Type.STObject),
     Memo(10, Type.STObject),
     SignerEntry(11, Type.STObject),
-    Table(12, Type.STObject),
     Signer(16, Type.STObject),
     // 17 unused
     Majority(18, Type.STObject),
+    Table(50, Type.STObject),
 
     ArrayEndMarker(1, Type.STArray),
 //    SigningAccounts(2, Type.STArray),
@@ -165,11 +175,10 @@ public enum Field {
     AffectedNodes(8, Type.STArray),
     Memos(9, Type.STArray),
     
-    TableEntries(10, Type.STArray),
-    Tables(11, Type.STArray),
-    Users(12, Type.STArray),
-    
     Majorities(16, Type.STArray),
+    TableEntries(50, Type.STArray),
+    Tables(51, Type.STArray),
+    Users(52, Type.STArray),
 
     CloseResolution(1, Type.UInt8),
     Method(2, Type.UInt8),
@@ -179,7 +188,7 @@ public enum Field {
     TakerPaysIssuer(2, Type.Hash160),
     TakerGetsCurrency(3, Type.Hash160),
     TakerGetsIssuer(4, Type.Hash160),
-    NameInDB(5, Type.Hash160),
+    NameInDB(50, Type.Hash160),
 
     Paths(1, Type.PathSet),
 

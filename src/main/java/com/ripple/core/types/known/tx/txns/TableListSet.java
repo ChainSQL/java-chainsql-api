@@ -1,14 +1,5 @@
 package com.ripple.core.types.known.tx.txns;
 
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.Amount;
-import com.ripple.core.coretypes.Blob;
-import com.ripple.core.coretypes.PathSet;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.hash.Hash256;
-import com.ripple.core.coretypes.uint.UInt16;
-import com.ripple.core.coretypes.uint.UInt32;
-import com.ripple.core.fields.Field;
 import com.ripple.core.serialized.enums.TransactionType;
 import com.ripple.core.types.known.tx.Transaction;
 

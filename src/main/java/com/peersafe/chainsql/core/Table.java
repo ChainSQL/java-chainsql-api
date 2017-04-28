@@ -151,12 +151,12 @@ public class Table extends Submit{
     	return this;
 	}
 
-	private SignedTransaction prepareTransaction(){
+	private SignedTransaction prepareTransaction() throws Exception{
 	    AccountID account = AccountID.fromAddress(connection.scope);
 	    Map<String,Object> map = Validate.rippleRes(connection.client, account);
 	    
 	    if(map.get("Sequence") == null){
-	    	return null;
+	    	throw new Exception((String)map.get("error_message"));
 	    }
 	    
         return prepareSQLStatement(map);
@@ -235,7 +235,12 @@ public class Table extends Submit{
 		if(this.exec == "r_get"){
 			return select();
 		}else{
-			return doSubmit(prepareTransaction());
+			try {
+				return doSubmit(prepareTransaction());
+			} catch (Exception e) {
+				e.printStackTrace();
+				return new JSONObject(e.getLocalizedMessage());
+			}
 		}
 	}
 

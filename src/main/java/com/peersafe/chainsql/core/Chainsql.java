@@ -312,7 +312,6 @@ public class Chainsql extends Submit {
 
         JSONObject result = Validate.getTxJson(this.connection.client, payment);
 		if(result.getString("status").equals("error")){
-//			System.out.println("Error:" + result.getString("error_message"));
 			return  new JSONObject(){{
 				put("Error:",result.getString("error_message"));
 			}};
@@ -323,9 +322,8 @@ public class Chainsql extends Submit {
 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		String fee = this.connection.client.serverInfo.fee_ref + "";
 		if(mapError(map)){
-			//System.out.println("Error:" +"This Sequence is null");
 			return new JSONObject(){{
-				put("Error:","This Sequence is null");
+				put("Error:",map.get("error_message"));
 			}};
 		}else{
 			Transaction paymentTS  = new Transaction(TransactionType.SQLTransaction);
@@ -374,7 +372,7 @@ public class Chainsql extends Submit {
  		AccountID account = AccountID.fromAddress(this.connection.address);
 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
 		if(mapError(map)){
-			return null;
+			throw new Exception((String)map.get("error_message"));
 		}else{
 	 		enumPayment(payment,"Sequence",map.get("Sequence"));
 	 		enumPayment(payment,"Fee",fee);

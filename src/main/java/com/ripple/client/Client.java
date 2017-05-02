@@ -1179,7 +1179,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+                //return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            	return false;
             }
 
             @Override
@@ -1192,10 +1193,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             	 request.json("account", address);
             	 request.json("ledger_index_min", -1);
             	 request.json("ledger_index_max", -1);
-            	 request.json("binary", false);
-            	 request.json("count", false);
-            	 request.json("limit", 10);
-            	 request.json("forward", false);
+//            	 request.json("binary", false);
+//            	 request.json("count", false);
+//            	 request.json("limit", 10);
+//            	 request.json("forward", false);
             }
 
             @Override

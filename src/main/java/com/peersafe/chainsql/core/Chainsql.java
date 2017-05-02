@@ -4,7 +4,6 @@ import static com.ripple.config.Config.getB58IdentiferCodecs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,16 +15,9 @@ import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.pubsub.Publisher.Callback;
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.Amount;
-import com.ripple.core.coretypes.Blob;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.uint.UInt16;
-import com.ripple.core.coretypes.uint.UInt32;
 import com.ripple.core.serialized.enums.TransactionType;
 import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.core.types.known.tx.txns.TableListSet;
 import com.ripple.crypto.ecdsa.IKeyPair;
 import com.ripple.crypto.ecdsa.Seed;
 import com.ripple.encodings.B58IdentiferCodecs;
@@ -277,13 +269,13 @@ public class Chainsql extends Submit {
         	statements.put(cache.get(i));
         }
         
-		JSONObject payment = new JSONObject();
-		payment.put("TransactionType",TransactionType.SQLTransaction);
-		payment.put( "Account", this.connection.address);
-		payment.put("Statements", statements);
-		payment.put("NeedVerify",this.needVerify);
+		JSONObject json = new JSONObject();
+		json.put("TransactionType",TransactionType.SQLTransaction);
+		json.put( "Account", this.connection.address);
+		json.put("Statements", statements);
+		json.put("NeedVerify",this.needVerify);
 		
-        JSONObject result = Validate.getTxJson(this.connection.client, payment);
+        JSONObject result = Validate.getTxJson(this.connection.client, json);
 		if(result.getString("status").equals("error")){
 			return  new JSONObject(){{
 				put("Error:",result.getString("error_message"));

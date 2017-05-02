@@ -230,12 +230,14 @@ public abstract class Submit {
 
     private void onSubmitError(Response res) {
         JSONObject obj = new JSONObject();
-        JSONObject tx_json = (JSONObject) res.result.get("tx_json");
+        
         obj.put("status", "error");
         if(res.result.has("engine_result_message"))
         	obj.put("error_message", res.result.getString("engine_result_message"));
-        //JSONObject tx_json = (JSONObject) managed.result.get("tx_json");
-        obj.put("tx_hash", tx_json.getString("hash"));
+        if(res.result.has("")){
+        	JSONObject tx_json = (JSONObject) res.result.get("tx_json");
+        	obj.put("tx_hash", tx_json.getString("hash"));
+        }
         
         submitRes = obj;
         submit_state = SubmitState.submit_error;

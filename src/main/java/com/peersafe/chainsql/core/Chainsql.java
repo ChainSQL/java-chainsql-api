@@ -316,7 +316,7 @@ public class Chainsql extends Submit {
     	}else{
     		tx_json = tx_json.getJSONObject("tx_json");
     	}
-		return toPayment(json,TransactionType.TableListSet);
+		return toPayment(tx_json,TransactionType.TableListSet);
 	}
 
 	public void getLedger(JSONObject option,Callback<JSONObject> cb){

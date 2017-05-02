@@ -1,17 +1,32 @@
 package com.peersafe.chainsql.core;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.Account;
 import com.ripple.client.pubsub.Publisher.Callback;
 import com.ripple.client.responses.Response;
 import com.ripple.client.transactions.ManagedTxn;
 import com.ripple.client.transactions.TransactionManager;
+import com.ripple.core.coretypes.AccountID;
+import com.ripple.core.coretypes.Amount;
+import com.ripple.core.coretypes.Blob;
+import com.ripple.core.coretypes.STArray;
+import com.ripple.core.coretypes.hash.Hash256;
+import com.ripple.core.coretypes.uint.UInt16;
+import com.ripple.core.coretypes.uint.UInt32;
+import com.ripple.core.serialized.enums.TransactionType;
+import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
+import com.ripple.core.types.known.tx.txns.TableListSet;
 
 public abstract class Submit {
 	public Connection connection;
@@ -41,6 +56,25 @@ public abstract class Submit {
 		sync_response,
 	}
 	
+	public enum EPaymentType{
+		Account,
+		Tables,
+		OpType,
+		User,
+		Raw,
+		Sequence,
+		Fee,
+		TransactionType,
+	    TableNewName,
+	    Owner,
+	    Flags,
+	    AutoFillField,
+	    Token,
+	    StrictMode,
+	    NeedVerify,
+	    Statements,
+	    TxCheckHash
+	}
 
 	private static final int wait_milli = 50; 
 	private static final int account_wait = 5000;
@@ -210,6 +244,87 @@ public abstract class Submit {
 	protected JSONArray getTableArray(String tableName){
 		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\"}}";
 		return Util.strToJSONArray(tablestr);
+	}
+	
+	protected boolean mapError(Map<String,Object> map){
+		if(map.get("Sequence") == null){
+	    	return true;
+	    }else{
+	    	return false;
+	    }
+	}
+	
+	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
+    	Transaction payment = new Transaction(type);
+    	 try {  
+             Iterator<String> it = json.keys();  
+             while (it.hasNext()) {  
+                 String key = (String) it.next();  
+                 Object value = json.get(key);  
+                 enumPayment(payment,key,value);
+             }
+         } catch (JSONException e) {  
+             e.printStackTrace();  
+         }  
+     	String fee = this.connection.client.serverInfo.fee_ref + "";
+  		AccountID account = AccountID.fromAddress(this.connection.address);
+ 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
+ 		if(mapError(map)){
+ 			throw new Exception((String)map.get("error_message"));
+ 		}else{
+ 	 		enumPayment(payment,"Sequence",map.get("Sequence"));
+ 	 		enumPayment(payment,"Fee",fee);
+ 	    	return payment;
+ 		}
+    }
+	
+	private void enumPayment(Transaction payment,String strType,Object value){
+		EPaymentType type = EPaymentType.valueOf(strType);
+        switch (type) {
+            case Account:
+            	payment.as(AccountID.Account, value);
+                break;
+            case Tables:
+            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
+                break;
+            case OpType:
+            	payment.as(UInt16.OpType, value);
+                break;
+            case User:
+            	payment.as(AccountID.User, value);
+                break;
+            case Sequence:
+            	payment.as(UInt32.Sequence, value);
+            	break;
+            case Raw:
+            	payment.as(Blob.Raw,  value);
+            	break;
+            case Fee:
+            	payment.as(Amount.Fee, value);
+            	break;
+            case NeedVerify:
+            	payment.as(UInt32.NeedVerify,value);
+            	break;
+            case Statements:
+            	payment.as(Blob.Statements,Util.toHexString(value.toString()));
+            	break;
+            case Owner:
+            	payment.as(AccountID.Owner, value);
+                break;
+            case Flags:
+            	payment.as(UInt32.Flags,value);
+                break;
+            case AutoFillField:
+            	break;
+            case TxCheckHash:
+            	payment.as(Hash256.TxCheckHash, value);
+            	break;
+            case Token:
+            	payment.as(Blob.Token, value);
+            	break;
+            default:
+                break;
+        } 
 	}
 	
 }

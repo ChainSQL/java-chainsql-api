@@ -2,9 +2,7 @@ package com.peersafe.chainsql.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
@@ -16,13 +14,9 @@ import com.peersafe.chainsql.util.Validate;
 import com.ripple.client.requests.Request;
 import com.ripple.client.responses.Response;
 import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.Amount;
-import com.ripple.core.coretypes.Blob;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.uint.UInt16;
-import com.ripple.core.coretypes.uint.UInt32;
+import com.ripple.core.serialized.enums.TransactionType;
+import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.core.types.known.tx.txns.SQLStatement;
 
 public class Table extends Submit{
 	private String name;
@@ -35,6 +29,15 @@ public class Table extends Submit{
 	public boolean transaction = false;
 	public	EventManager event;
 
+	public Table(String name) {
+		super();
+		this.name = name;
+	}
+
+	public Table() {
+		super();
+	}
+	
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
@@ -150,18 +153,6 @@ public class Table extends Submit{
 		this.query.add(json.toString());
     	return this;
 	}
-
-	private SignedTransaction prepareTransaction() throws Exception{
-	    AccountID account = AccountID.fromAddress(connection.scope);
-	    Map<String,Object> map = Validate.rippleRes(connection.client, account);
-	    
-	    if(map.get("Sequence") == null){
-	    	throw new Exception((String)map.get("error_message"));
-	    }
-	    
-        return prepareSQLStatement(map);
-	}
-
 	
 	private JSONObject txJson() throws Exception{
 		JSONObject json = new JSONObject();
@@ -197,7 +188,7 @@ public class Table extends Submit{
 		return strRaw;
 	}
 	
-	private SignedTransaction prepareSQLStatement(Map<String,Object> map) {
+	private SignedTransaction prepareSQLStatement() {
 		JSONObject txjson;
 		try {
 			txjson = txJson();
@@ -214,21 +205,17 @@ public class Table extends Submit{
 			return null;
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
-		String tebles = tx_json.getJSONArray("Tables").get(0).toString();
+		Transaction payment;
 		
-		String fee = connection.client.serverInfo.fee_ref+"";
-		SQLStatement payment = new SQLStatement();
-        payment.as(AccountID.Owner,   connection.scope);
-        payment.as(AccountID.Account, connection.address);
-        payment.as(STArray.Tables, Validate.fromJSONArray(tebles));
-        payment.as(UInt16.OpType, Validate.toOpType(exec));
-        payment.as(Blob.Raw, tx_json.getString("Raw"));
-        payment.as(UInt32.Sequence, map.get("Sequence"));
-        payment.as(Amount.Fee, fee);
-        SignedTransaction signed = payment.sign(connection.secret);
-        
-        return signed;
-	};
+		try {
+			payment = toPayment(tx_json,TransactionType.SQLStatement);
+	        SignedTransaction signed = payment.sign(connection.secret);
+	        return signed;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}   
+	}
 
 	@Override
 	JSONObject doSubmit() {
@@ -236,7 +223,7 @@ public class Table extends Submit{
 			return select();
 		}else{
 			try {
-				return doSubmit(prepareTransaction());
+				return doSubmit(prepareSQLStatement());
 			} catch (Exception e) {
 				e.printStackTrace();
 				return new JSONObject(e.getLocalizedMessage());
@@ -273,15 +260,4 @@ public class Table extends Submit{
 		}
 		return obj;
 	}
-	
-	public Table(String name) {
-		super();
-		this.name = name;
-	}
-
-	public Table() {
-		super();
-	
-	}
-
 }

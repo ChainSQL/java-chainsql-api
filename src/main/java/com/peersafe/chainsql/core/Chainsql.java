@@ -3,16 +3,12 @@ package com.peersafe.chainsql.core;
 import static com.ripple.config.Config.getB58IdentiferCodecs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.net.Connection;
@@ -44,23 +40,6 @@ public class Chainsql extends Submit {
 	private static final int PASSWORD_LENGTH = 16;  
 	
 	private SignedTransaction signed;
-	
-	public enum paymentType{
-		Account,
-		Tables,
-		OpType,
-		User,
-		Raw,
-		Sequence,
-		Fee,
-		TransactionType,
-	    TableNewName,
-	    Owner,
-	    Flags,
-	    AutoFillField,
-	    Token,
-	    StrictMode
-	}
 	 
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -114,13 +93,6 @@ public class Chainsql extends Submit {
 		return doSubmit(signed);
 	}
 	
-	private boolean mapError(Map<String,Object> map){
-		if(map.get("Sequence") == null){
-	    	return true;
-	    }else{
-	    	return false;
-	    }
-	}
 	public Chainsql createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
@@ -160,7 +132,7 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql create(JSONObject txjson) {
-		TableListSet payment;
+		Transaction payment;
 		try {
 			payment = toPayment(txjson);
 			signed = payment.sign(this.connection.secret);
@@ -187,7 +159,7 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql drop(JSONObject txjson) {
-		TableListSet payment;
+		Transaction payment;
 		try {
 			payment = toPayment(txjson);
 		signed = payment.sign(this.connection.secret);
@@ -212,7 +184,7 @@ public class Chainsql extends Submit {
 		
 	}
 	private Chainsql rename(JSONObject txjson) {
-		TableListSet payment;
+		Transaction payment;
 		try {
 			payment = toPayment(txjson);
 			signed = payment.sign(this.connection.secret);
@@ -270,7 +242,7 @@ public class Chainsql extends Submit {
 		return grant(name, txJson);
 	}
 	private Chainsql grant(String name, JSONObject txJson) {
-		TableListSet payment;
+		Transaction payment;
 		try {
 			payment = toPayment(txJson);
 		signed = payment.sign(this.connection.secret);
@@ -298,18 +270,19 @@ public class Chainsql extends Submit {
 	}
 	
 	public JSONObject doCommit(Object  commitType){
-		List<JSONObject> cache = this.cache;
+		List<JSONObject> cache = this.cache;	
+		
+		JSONArray statements = new JSONArray();
+        for (int i = 0; i < cache.size(); i++) {
+        	statements.put(cache.get(i));
+        }
+        
 		JSONObject payment = new JSONObject();
 		payment.put("TransactionType",TransactionType.SQLTransaction);
 		payment.put( "Account", this.connection.address);
-		payment.put("Statements", new JSONArray());
+		payment.put("Statements", statements);
 		payment.put("NeedVerify",this.needVerify);
 		
-		
-        for (int i = 0; i < cache.size(); i++) {
-        	payment.getJSONArray("Statements").put(cache.get(i));
-        }
-
         JSONObject result = Validate.getTxJson(this.connection.client, payment);
 		if(result.getString("status").equals("error")){
 			return  new JSONObject(){{
@@ -317,23 +290,9 @@ public class Chainsql extends Submit {
 			}};
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
-		
-        AccountID account = AccountID.fromAddress(this.connection.address);
-		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
-		String fee = this.connection.client.serverInfo.fee_ref + "";
-		if(mapError(map)){
-			return new JSONObject(){{
-				put("Error:",map.get("error_message"));
-			}};
-		}else{
-			Transaction paymentTS  = new Transaction(TransactionType.SQLTransaction);
-			paymentTS.as(AccountID.Account, tx_json.get("Account"));
-			paymentTS.as(UInt16.TransactionType,TransactionType.SQLTransaction);
-			paymentTS.as(UInt32.NeedVerify,tx_json.getInt("NeedVerify"));
-			paymentTS.as(UInt32.Sequence, map.get("Sequence"));
-			paymentTS.as(Amount.Fee, fee);
-			paymentTS.as(Blob.Statements,Util.toHexString(tx_json.get("Statements").toString()));
-			
+		Transaction paymentTS;
+		try {
+			paymentTS = toPayment(tx_json,TransactionType.SQLTransaction);
 			signed = paymentTS.sign(this.connection.secret);
 			if(commitType instanceof SyncCond ){
 				return submit((SyncCond)commitType);
@@ -342,87 +301,22 @@ public class Chainsql extends Submit {
 			}else{
 				return submit();
 			}
-			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 	
-    private TableListSet toPayment(JSONObject json)throws Exception{
-    	json.put("Account",this.connection.address);
+	private Transaction toPayment(JSONObject json) throws Exception{
+		json.put("Account",this.connection.address);
     	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);
     	if(tx_json.getString("status").equals("error")){
     		throw new Exception(tx_json.getString("error_message"));
     	}else{
     		tx_json = tx_json.getJSONObject("tx_json");
     	}
-
-    	TableListSet payment = new TableListSet();
-    	 try {  
-             Iterator<String> it = tx_json.keys();  
-             while (it.hasNext()) {  
-                 String key = (String) it.next();  
-                 Object value = tx_json.get(key);  
-                 enumPayment(payment,key,value);
-             }  
-         } catch (JSONException e) {  
-             e.printStackTrace();  
-         }
-    	 
-    
-    	String fee = this.connection.client.serverInfo.fee_ref + "";
- 		AccountID account = AccountID.fromAddress(this.connection.address);
-		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
-		if(mapError(map)){
-			throw new Exception((String)map.get("error_message"));
-		}else{
-	 		enumPayment(payment,"Sequence",map.get("Sequence"));
-	 		enumPayment(payment,"Fee",fee);
-	    	return payment;
-		}    	
-    }
-    
-	private void enumPayment(TableListSet payment,String str,Object value){
-		paymentType type = paymentType.valueOf(str);
-        switch (type) {
-            case Account:
-            	payment.as(AccountID.Account, value);
-                break;
-            case Tables:
-            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
-                break;
-            case OpType:
-            	payment.as(UInt16.OpType, value);
-                break;
-            case User:
-            	payment.as(AccountID.User, value);
-                break;
-            case Sequence:
-            	payment.as(UInt32.Sequence, value);
-            	break;
-            case Raw:
-            	payment.as(Blob.Raw,  value);
-            	break;
-            case Fee:
-            	payment.as(Amount.Fee, value);
-            	break;
-            case TransactionType:
-                break;
-            case TableNewName:
-                break;
-            case Owner:
-                break;
-            case Flags:
-                break;
-            case AutoFillField:
-            	break;
-            case Token:
-            	payment.as(Blob.Token, value);
-            	break;
-            case StrictMode:
-            	break;
-            default:
-                break;
-        }
-        
+		return toPayment(json,TransactionType.TableListSet);
 	}
 
 	public void getLedger(JSONObject option,Callback<JSONObject> cb){

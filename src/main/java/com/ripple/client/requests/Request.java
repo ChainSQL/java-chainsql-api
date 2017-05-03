@@ -1,14 +1,15 @@
 package com.ripple.client.requests;
 
+import java.util.Iterator;
+import java.util.logging.Logger;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.ripple.client.Client;
 import com.ripple.client.enums.Command;
 import com.ripple.client.pubsub.Publisher;
 import com.ripple.client.responses.Response;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Iterator;
-import java.util.logging.Logger;
 
 // We can just shift to using delegation
 public class Request extends Publisher<Request.events> {

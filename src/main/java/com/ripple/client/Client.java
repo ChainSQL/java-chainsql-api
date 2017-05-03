@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.peersafe.chainsql.util.Util;
 import com.ripple.client.enums.Command;
 import com.ripple.client.enums.Message;
 import com.ripple.client.enums.RPCErr;
@@ -44,7 +45,6 @@ import com.ripple.core.coretypes.uint.UInt32;
 import com.ripple.core.types.known.sle.LedgerEntry;
 import com.ripple.core.types.known.sle.entries.AccountRoot;
 import com.ripple.core.types.known.sle.entries.Offer;
-import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.result.TransactionResult;
 import com.ripple.crypto.ecdsa.IKeyPair;
 import com.ripple.crypto.ecdsa.Seed;
@@ -1129,7 +1129,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+                //return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            	return false;
             }
 
             @Override
@@ -1139,7 +1140,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }, new Request.Builder<JSONObject>() {
             @Override
             public void beforeRequest(Request request) {
-        		request.json("ledger_index", option.get("ledger_index"));
+            	request.json("ledger_index", option.get("ledger_index"));
        		 	request.json("expand", false);
        		 	request.json("transactions",true);
        		 	request.json("accounts",false );
@@ -1155,7 +1156,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
+            	return false;
             }
 
             @Override
@@ -1179,7 +1180,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                //return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
             	return false;
             }
 
@@ -1190,21 +1190,31 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }, new Request.Builder<JSONObject>() {
             @Override
             public void beforeRequest(Request request) {
-            	 request.json("account", address);
-            	 request.json("ledger_index_min", -1);
-            	 request.json("ledger_index_max", -1);
-//            	 request.json("binary", false);
-//            	 request.json("count", false);
-//            	 request.json("limit", 10);
-//            	 request.json("forward", false);
+	           	 request.json("account", address);
+	           	 request.json("ledger_index_min", -1);
+	           	 request.json("ledger_index_max", -1);
+	           	 request.json("binary", false);
+	           	 request.json("count", false);
+	           	 request.json("limit", 10);
+	           	 request.json("forward", false);
             }
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
+            	JSONArray txs = (JSONArray)response.result.get("transactions");
+            	for(int i=0; i<txs.length(); i++){
+            		JSONObject tx = (JSONObject)txs.get(i);
+            		Util.unHexData(tx.getJSONObject("tx"));
+            		if(tx.has("meta")){
+            			tx.remove("meta");
+            		}
+            	}
+            	
                 return response.result;
             }
         });
     }
+
     public Request getUserToken(String owner,String user,String name){
     	 Request request = newRequest(Command.g_userToken);
 	   	 JSONObject txjson = new JSONObject();
@@ -1252,6 +1262,35 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	   	 return request;	
    }
     
+    public  void getTransaction(String hash,Callback cb){   
+    	
+    	makeManagedRequest(Command.tx, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	 request.json("transaction", hash);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+    			if(response.result.has("meta")){
+    				response.result.remove("meta");
+    			}
+    			Util.unHexData(response.result);
+                return response.result;
+            }
+        });
+    }
+   
     public Request ping() {
         return newRequest(Command.ping);
     }

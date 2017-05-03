@@ -1,25 +1,21 @@
 package com.ripple.java8.example;
 
+import static com.ripple.core.coretypes.AccountID.fromAddress;
+import static com.ripple.java8.utils.Print.print;
+import static com.ripple.java8.utils.Print.printErr;
+
+import java.math.BigDecimal;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.ripple.client.Account;
 import com.ripple.client.Client;
 import com.ripple.client.payments.PaymentFlow;
 import com.ripple.client.transactions.ManagedTxn;
-import com.ripple.client.transactions.Submission;
 import com.ripple.client.transactions.TransactionManager;
 import com.ripple.client.transport.impl.JavaWebSocketTransportImpl;
 import com.ripple.core.coretypes.AccountID;
 import com.ripple.core.coretypes.Currency;
 import com.ripple.core.coretypes.uint.UInt32;
-import com.ripple.crypto.ecdsa.Seed;
-import com.ripple.java8.utils.Func;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.ripple.core.coretypes.AccountID.fromAddress;
-import static com.ripple.java8.utils.Print.print;
-import static com.ripple.java8.utils.Print.printErr;
 
 /**
  *

@@ -113,7 +113,7 @@ public abstract class Submit {
 	
 	abstract JSONObject doSubmit();
 	
-	private void waiting(){
+	protected void waiting(){
       	try {
 			Thread.sleep(50);
 		} catch (InterruptedException e) {

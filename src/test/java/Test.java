@@ -5,7 +5,6 @@ import java.util.List;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.core.Chainsql;
-import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
 
@@ -16,7 +15,7 @@ public class Test {
 	  public static String sTableName;
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
-		  c.connect("ws://192.168.0.148:5008");
+		  c.connect("ws://192.168.0.110:6007");
 		  //c.connect("ws://192.168.0.230:6006");
 		  
 		  sTableName = "asdf";
@@ -40,12 +39,13 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  Test test =new Test();
-		  test.testts();
-//		  	test.getTransactions();
+//		  test.testts();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
 //		  test.testCreateTable();
+//		  test.getTransaction();
+		  	test.getTransactions();
 //		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
@@ -100,10 +100,24 @@ public class Test {
 		 });
 	}
 	public void getTransactions(){
-		c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",(data)->{
-			 System.out.println("creat------"+data);
-		 });
+//		c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",(data)->{
+//			 System.out.println("creat------"+data);
+//		 });
+		
+		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		JSONObject obj = c.getTransactions("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
+		 System.out.println("getTransactions------"+obj);
 	}	
+	public void getTransaction(){
+		String hash = "86F1E4A48DF756DD0B22640C9B64BFB6B2CA2C696BA8744F5A1CC8DE4D8778F6";
+//		JSONObject obj = c.getTransaction(hash);
+//		System.out.println("getTransaction------"+obj);
+		c.getTransaction(hash, (data)->{
+			System.out.println(data);
+		});
+		
+	}
+	
     public void testCreateTable() {
     	List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
@@ -225,11 +239,11 @@ public class Test {
 		 			 System.out.println("creat------"+data);
 		 		 });
 		if(json==null){
-			System.out.println("查询结果集为空");
+			System.out.println("鏌ヨ缁撴灉闆嗕负绌�");
 			return null;
 		}
 		System.out.println("json:"+json.toString());
-		//TODO 回调机制有待补充
+		//TODO 鍥炶皟鏈哄埗鏈夊緟琛ュ厖
 		return null;
 	}
 

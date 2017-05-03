@@ -1,14 +1,15 @@
 package com.ripple.client;
 
-import com.ripple.client.requests.Request;
-import com.ripple.client.transport.TransportEventHandler;
-import com.ripple.client.transport.WebSocketTransport;
-import org.json.JSONObject;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.PriorityQueue;
+
+import org.json.JSONObject;
+
+import com.ripple.client.requests.Request;
+import com.ripple.client.transport.TransportEventHandler;
+import com.ripple.client.transport.WebSocketTransport;
 
 public class MockPair {
     public RippledMock server = new RippledMock();

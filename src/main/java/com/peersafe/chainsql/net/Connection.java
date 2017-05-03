@@ -6,7 +6,6 @@ import java.io.IOException;
 import com.ripple.client.Client;
 import com.ripple.client.transport.impl.JavaWebSocketTransportImpl;
 
-
 public class Connection implements Closeable {
 
 	public String address;

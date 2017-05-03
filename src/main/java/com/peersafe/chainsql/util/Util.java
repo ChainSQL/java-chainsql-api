@@ -159,4 +159,19 @@ public class Util {
 
         return res;
 	}
+	
+	/**
+	 * unhex some fields
+	 * @param data
+	 */
+	public static void unHexData(JSONObject tx){
+		if(tx.has("Raw")){
+			tx.put("Raw", fromHexString(tx.getString("Raw")));
+		}
+		if(tx.has("Tables")){
+			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
+			table = table.getJSONObject("Table");
+			table.put("TableName", fromHexString(table.getString("TableName")));
+		}
+	}
 }

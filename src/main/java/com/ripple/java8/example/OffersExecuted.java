@@ -1,5 +1,9 @@
 package com.ripple.java8.example;
 
+import static com.ripple.java8.utils.Print.print;
+
+import java.util.logging.Level;
+
 import com.ripple.client.Client;
 import com.ripple.client.subscriptions.ServerInfo;
 import com.ripple.client.subscriptions.SubscriptionManager;
@@ -8,10 +12,6 @@ import com.ripple.core.coretypes.Amount;
 import com.ripple.core.coretypes.STObject;
 import com.ripple.core.types.known.sle.entries.Offer;
 import com.ripple.core.types.known.tx.result.TransactionResult;
-
-import java.util.logging.Level;
-
-import static com.ripple.java8.utils.Print.print;
 
 /**
  * This example subscribes to all transactions and prints executed

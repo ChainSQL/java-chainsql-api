@@ -32,7 +32,8 @@ public class Chainsql extends Submit {
 	private static final int PASSWORD_LENGTH = 16;  
 	
 	private SignedTransaction signed;
-	 
+	private JSONObject retJson;
+	
 	public void as(String address, String secret) {
 		this.connection.address = address;
 		this.connection.secret = secret;
@@ -254,6 +255,139 @@ public class Chainsql extends Submit {
 	public JSONObject commit(){
 		return doCommit("");
 	}
+	
+	public JSONObject getLedger(){
+		JSONObject option = new JSONObject();
+		option.put("ledger_index",  "validated");
+		retJson = null;
+		this.connection.client.getLedger(option,(data)->{
+			if(data == null){
+				retJson = new JSONObject();
+			}else{
+				retJson = (JSONObject) data;
+			}
+		});
+		while(retJson == null){
+			waiting();
+		}
+		
+		if(retJson.has("ledger")){
+			return retJson;
+		}else{
+			return null;
+		}
+	}
+	
+	public JSONObject getLedger(Integer ledger_index){
+		JSONObject option = new JSONObject();
+		option.put("ledger_index",  ledger_index);
+		retJson = null;
+		this.connection.client.getLedger(option,(data)->{
+			if(data == null){
+				retJson = new JSONObject();
+			}else{
+				retJson = (JSONObject) data;
+			}
+		});
+		while(retJson == null){
+			waiting();
+		}
+		
+		if(retJson.has("ledger")){
+			return retJson;
+		}else{
+			return null;
+		}
+		
+	}
+	
+	public void getLedger(Callback cb){
+		JSONObject option = new JSONObject();
+		option.put("ledger_index",  "validated");
+		this.connection.client.getLedger(option,cb);
+	}
+	
+	public void getLedger(Integer ledger_index,Callback cb){
+		JSONObject option = new JSONObject();
+		option.put("ledger_index", ledger_index);
+		this.connection.client.getLedger(option,cb);
+		
+	}
+	
+	public JSONObject getLedgerVersion(){
+		
+		retJson = null;
+		this.connection.client.getLedgerVersion((data)->{
+			if(data == null){
+				retJson = new JSONObject();
+			}else{
+				retJson = (JSONObject) data;
+			}
+		});
+		while(retJson == null){
+			waiting();
+		}
+		
+		if(retJson.has("ledger_current_index")){
+			return retJson;
+		}else{
+			return null;
+		}
+		
+	}
+	public void getLedgerVersion(Callback cb){
+		this.connection.client.getLedgerVersion(cb);	
+	}
+	public JSONObject getTransactions(String address){
+		retJson = null;
+		this.connection.client.getTransactions(address,(data)->{
+			if(data == null){
+				retJson = new JSONObject();
+			}else{
+				retJson = (JSONObject) data;
+			}
+		});
+		while(retJson == null){
+			waiting();
+		}
+		
+		if(retJson.has("transactions")){
+			return retJson;
+		}else{
+			return null;
+		}
+		
+	}
+	public void getTransactions(String address,Callback cb){
+		this.connection.client.getTransactions(address,cb);	
+	}
+	
+	public JSONObject getTransaction(String hash){
+		retJson = null;
+		this.connection.client.getTransaction(hash,(data)->{
+			if(data == null){
+				retJson = new JSONObject();
+			}else{
+				retJson = (JSONObject) data;
+			}
+		});
+		while(retJson == null){
+			waiting();
+		}
+		
+		if(retJson.has("ledger_index")){
+			return retJson;
+		}else{
+			return null;
+		}
+	}
+	public void getTransaction(String hash,Callback cb){
+		this.connection.client.getTransaction(hash, cb);
+	}
+    
+	public Connection getConnection() {
+		return connection;
+	}
 	public JSONObject commit(SyncCond cond){
 		return doCommit(cond);
 	}
@@ -313,14 +447,6 @@ public class Chainsql extends Submit {
 
 	public void getLedger(JSONObject option,Callback<JSONObject> cb){
 		this.connection.client.getLedger(option,cb);
-	}
-	
-	public void getLedgerVersion(Callback<JSONObject>  cb){
-		this.connection.client.getLedgerVersion(cb);
-	}
-	
-	public void getTransactions(String address,Callback<JSONObject>  cb){
-		this.connection.client.getTransactions(address,cb);	
 	}
 
 }

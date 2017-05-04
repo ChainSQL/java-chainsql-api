@@ -7,7 +7,8 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
-import com.peersafe.chainsql.net.Connection;;
+import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.util.Util;;
 
 
 public class Demo1 {
@@ -495,7 +496,7 @@ public class Demo1 {
 	public JSONObject update(String tableName,String col,String whereCond){
 		ArrayList<String> whereList=new ArrayList<String>();
 		whereList.add(whereCond);
-		return r.table(tableName).get(whereList).update(col).submit(SyncCond.db_success);
+		return r.table(tableName).get(whereList).update(Util.array(col)).submit(SyncCond.db_success);
 	}
 	/**
 	 * ɾ������������where������ɾ��ָ������

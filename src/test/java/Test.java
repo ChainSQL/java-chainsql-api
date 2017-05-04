@@ -15,16 +15,16 @@ public class Test {
 	  public static String sTableName;
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
+		  //c.connect("ws://192.168.0.151:6006");
 		  c.connect("ws://192.168.0.110:6007");
-		  //c.connect("ws://192.168.0.230:6006");
 		  
-		  sTableName = "asdf";
+		  sTableName = "hiyou2";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
 		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 //		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
-//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 //		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
@@ -45,15 +45,16 @@ public class Test {
 //		  test.getUserToken();
 //		  test.testCreateTable();
 //		  test.getTransaction();
-		  	test.getTransactions();
+//		  	test.getTransactions();
 //		  test.testinsert();
-//		  test.testUpdateTable();
+		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
 //		  test.testget();
 //		  test.testdrop();
-//			 test.grant();
-
+//		  test.grant();
+//		  test.getChainInfo();
+//		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
 //		  } catch (InterruptedException e) {
@@ -80,7 +81,7 @@ public class Test {
 //		  c.createTable(sTableName,args,true);
 //		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
 		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'balance':400}");
+		  c.table(sTableName).get(Util.array("{'id': 2}")).update(Util.array("{'balance':400}"));
 		  JSONObject obj = c.commit((data)->{
 				 System.out.println("creat------"+data);
 			 });
@@ -124,13 +125,13 @@ public class Test {
 	    		 );
     	JSONObject obj;
     	
-//    	obj = c.createTable(sTableName,args).submit();
-//    	System.out.println(obj);
-    	
-    	obj = c.createTable(sTableName,args,false).submit((data)->{
-    		System.out.println("creat------"+data);
-    	});
+    	obj = c.createTable(sTableName,args).submit();
     	System.out.println(obj);
+    	
+//    	obj = c.createTable(sTableName,args,true).submit((data)->{
+//    		System.out.println("creat------"+data);
+//    	});
+//    	System.out.println(obj);
     	
 //    	obj = c.createTable(sTableName, args).submit(SyncCond.db_success);
 //    	System.out.println(obj);
@@ -138,7 +139,7 @@ public class Test {
 	 
 	 public void testinsert(){
 //		 List<String> orgs = Util.array("{'id':1,'age': 333}");
-		 List<String> orgs = Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
+		 List<String> orgs = Util.array("{'age': 23,'name':'你好','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
@@ -154,10 +155,9 @@ public class Test {
 
 	  public void testUpdateTable(){
 		  List<String> arr1 = Util.array("{'id': 3}");
-		  String arr2 ="{'balance':200}";
 		  
 		  JSONObject obj;
-		  obj = c.table(sTableName).get(arr1).update(arr2).submit((data)->{
+		  obj = c.table(sTableName).get(arr1).update(Util.array("{'balance':200}")).submit((data)->{
 	 			 System.out.println("update------"+data);
 	 		 });
 		  System.out.println(obj);
@@ -209,16 +209,23 @@ public class Test {
 	  }
 	  
 	  public void grant(){
-		  JSONObject obj = c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs","{insert:true,update:true,delete:true}").submit((data)->{
+//		  JSONObject obj = c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs","{insert:true,update:true,delete:true}").submit((data)->{
+//	 			 System.out.println("grant------"+data);
+//		  });
+		  JSONObject obj = c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true,delete:true}").submit((data)->{
 	 			 System.out.println("grant------"+data);
 		  });
 		  System.out.println(obj.toString());
 	  }
-	  /*public void testcelassign(){
-		  c.grant("tabke", "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr",Util.array("{insert:true}","{lsfSelect:true}","{lsfUpdate:false}"),(data)->{
-	 			 System.out.println("test1wqw------"+data);
-	 		 });
-	  }*/
+	  
+	  public void getChainInfo(){
+		  JSONObject ret = c.getChainInfo();
+		  System.out.println(ret);
+	  }
+	  public void getServerInfo(){
+		  JSONObject ret = c.getServerInfo();
+		  System.out.println(ret);
+	  }
 	public void testdrop(){
 		JSONObject obj;
 		obj = c.dropTable(sTableName).submit((data)->{

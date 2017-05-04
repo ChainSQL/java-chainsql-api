@@ -49,6 +49,7 @@ public enum Command {
     tx,
     tx_history,
     t_prepare,
+    tx_count,
     unl_add,
     unl_delete,
     unl_list,

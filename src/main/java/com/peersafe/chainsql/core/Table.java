@@ -50,13 +50,14 @@ public class Table extends Submit{
 		
 	}
 	
-	public Table update(String orgs) {
+	public Table update(List<String> orgs) {
 		
-		if(!"".equals(orgs)&&orgs!=null){
-			String json = Util.StrToJsonStr(orgs);
-			this.query.add(0, json);
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(0, json);
+			}			
 		}
-			
 	    this.exec = "r_update";
 	    return dealWithTransaction();
 		
@@ -155,6 +156,8 @@ public class Table extends Submit{
 	}
 	
 	private JSONObject txJson() throws Exception{
+
+		System.out.println(this.query.toString());
 		JSONObject json = new JSONObject();
 		json.put("Tables", getTableArray(name));
 		json.put("Owner",  connection.scope);

@@ -256,6 +256,29 @@ public class Chainsql extends Submit {
 		return doCommit("");
 	}
 	
+	public JSONObject getServerInfo(){
+		return connection.client.getServerInfo();
+	}
+	public JSONObject getChainInfo(){
+		JSONObject obj = new JSONObject();
+		
+		JSONObject firstLedger = getLedger(2);
+		JSONObject lastLedger = getLedger();
+		if(firstLedger == null){
+			System.out.println("error_message:" + "get first ledger failed ,please ensure connecting to a full-history server");
+		}else{
+			obj.put("tx_count", getTransactionCount());
+			int seconds1 = firstLedger.getJSONObject("ledger").getInt("close_time");
+			int seconds2 = lastLedger.getJSONObject("ledger").getInt("close_time");
+			obj.put("chain_time", seconds2 - seconds1);
+		}
+		return obj;
+	}
+	
+	private JSONObject getTransactionCount(){
+		return connection.client.getTransactionCount();
+	}
+	
 	public JSONObject getLedger(){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index",  "validated");

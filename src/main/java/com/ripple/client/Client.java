@@ -1214,6 +1214,32 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    
+    public JSONObject getTransactionCount(){
+    	Request request = newRequest(Command.tx_count);
+	        request.request();
+	        while(request.response==null){
+	       	 try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}  
+	  	 	}
+	   	 return request.response.result;	
+    }
+    
+    public JSONObject getServerInfo(){
+    	Request request = newRequest(Command.server_info);
+        request.request();
+        while(request.response==null){
+       	 try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}  
+  	 	}
+   	 return request.response.result;
+    }
 
     public Request getUserToken(String owner,String user,String name){
     	 Request request = newRequest(Command.g_userToken);

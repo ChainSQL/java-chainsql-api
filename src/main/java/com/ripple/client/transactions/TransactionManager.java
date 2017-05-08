@@ -281,10 +281,11 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		// tx_blob is a hex string, right o' the bat
 		req.json("tx_blob", txn.tx_blob);
 
+		System.out.println("before request");
 		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
 			@Override
 			public void called(Response response) {
-				//System.out.println("response:" + response.message.toString());
+				System.out.println("response:" + response.message.toString());
 
 				handleSubmitSuccess(txn, response);
 			}
@@ -293,6 +294,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		req.once(Request.OnError.class, new Request.OnError() {
 			@Override
 			public void called(Response response) {
+				System.out.println("response:" + response.message.toString());
 				handleSubmitError(txn, response);
 			}
 		});
@@ -335,7 +337,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 			return;
 		}
 
-		//System.out.println(res.message);
+		System.out.println("handleSubmitSuccess" + res.message);
 		EngineResult ter = EngineResult.tesSUCCESS;
 		try{
 			ter = res.engineResult();

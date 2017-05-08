@@ -668,7 +668,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	//System.out.println("response:" + jsonObject);
+            	System.out.println("requestAccountRoot response:" + jsonObject);
                 if (response.succeeded) {
                     accountRoot.setFromJSON(jsonObject);
                 } else {

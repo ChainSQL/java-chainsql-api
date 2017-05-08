@@ -38,12 +38,6 @@
 			<artifactId>i2p</artifactId>
 			<version>0.9.26</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
-		<dependency>	
-		    <groupId>org.bouncycastle</groupId>
-		    <artifactId>bcprov-jdk15on</artifactId>
-		    <version>1.56</version>
-		</dependency>
 
 	</dependencies>
 

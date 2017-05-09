@@ -1131,7 +1131,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    	 	}
     	 return request;	
     }
-    public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback cb){
+    public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
 	   	 JSONObject txjson = new JSONObject();
 	   	 txjson.put("Owner", account);
@@ -1158,7 +1158,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	  	 	}
 	   	 return request;	
 	   }
-    public  void getLedger(JSONObject option,Callback cb){  
+    public  void getLedger(JSONObject option,Callback<JSONObject> cb){  
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1185,7 +1185,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
       }
-    public  void getLedgerVersion(Callback cb){   	
+    public  void getLedgerVersion(Callback<JSONObject> cb){   	
     	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1208,7 +1208,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
      }    
     
-    public  void getTransactions(String address,Callback cb){
+    public  void getTransactions(String address,Callback<JSONObject> cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1321,7 +1321,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	   	 return request;	
    }
     
-    public  void getTransaction(String hash,Callback cb){   
+    public  void getTransaction(String hash,Callback<JSONObject> cb){   
     	
     	makeManagedRequest(Command.tx, new Manager<JSONObject>() {
             @Override

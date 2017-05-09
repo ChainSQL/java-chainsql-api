@@ -4,7 +4,6 @@ import static com.ripple.config.Config.getB58IdentiferCodecs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,8 +33,9 @@ public class Chainsql extends Submit {
 	
 	private SignedTransaction signed;
 	private JSONObject retJson;
-	private Callback reconnectCb = null;
-	private Callback reconnectedCB = null;
+	//reconnect callback when disconnected
+	private Callback<JSONObject> reconnectCb = null;
+	private Callback<JSONObject> reconnectedCB = null;
 	
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -68,10 +68,10 @@ public class Chainsql extends Submit {
 		return connection;
 	}
 
-	public void onReconnected(Callback cb){
+	public void onReconnected(Callback<JSONObject> cb){
 		this.reconnectedCB = cb;
 	}
-	public void onReconnecting(Callback cb){
+	public void onReconnecting(Callback<JSONObject> cb){
 		this.reconnectCb = cb;
 	}
 	
@@ -315,30 +315,17 @@ public class Chainsql extends Submit {
 	}
 	
 	public JSONObject getLedger(){
-		JSONObject option = new JSONObject();
-		option.put("ledger_index",  "validated");
-		retJson = null;
-		this.connection.client.getLedger(option,(data)->{
-			if(data == null){
-				retJson = new JSONObject();
-			}else{
-				retJson = (JSONObject) data;
-			}
-		});
-		while(retJson == null){
-			waiting();
-		}
-		
-		if(retJson.has("ledger")){
-			return retJson;
-		}else{
-			return null;
-		}
+		return getLedger(-1);
 	}
 	
 	public JSONObject getLedger(Integer ledger_index){
 		JSONObject option = new JSONObject();
-		option.put("ledger_index",  ledger_index);
+		if(ledger_index == -1){
+			option.put("ledger_index",  "validated");
+		}else{
+			option.put("ledger_index",  ledger_index);
+		}
+		
 		retJson = null;
 		this.connection.client.getLedger(option,(data)->{
 			if(data == null){
@@ -359,17 +346,21 @@ public class Chainsql extends Submit {
 		
 	}
 	
-	public void getLedger(Callback cb){
+	public void getLedger(Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index",  "validated");
 		this.connection.client.getLedger(option,cb);
 	}
 	
-	public void getLedger(Integer ledger_index,Callback cb){
+	public void getLedger(Integer ledger_index,Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index", ledger_index);
 		this.connection.client.getLedger(option,cb);
 		
+	}
+	
+	public void getLedger(JSONObject option,Callback<JSONObject> cb){
+		this.connection.client.getLedger(option,cb);
 	}
 	
 	public JSONObject getLedgerVersion(){
@@ -393,7 +384,7 @@ public class Chainsql extends Submit {
 		}
 		
 	}
-	public void getLedgerVersion(Callback cb){
+	public void getLedgerVersion(Callback<JSONObject> cb){
 		this.connection.client.getLedgerVersion(cb);	
 	}
 	public JSONObject getTransactions(String address){
@@ -416,7 +407,7 @@ public class Chainsql extends Submit {
 		}
 		
 	}
-	public void getTransactions(String address,Callback cb){
+	public void getTransactions(String address,Callback<JSONObject> cb){
 		this.connection.client.getTransactions(address,cb);	
 	}
 	
@@ -439,7 +430,7 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
-	public void getTransaction(String hash,Callback cb){
+	public void getTransaction(String hash,Callback<JSONObject> cb){
 		this.connection.client.getTransaction(hash, cb);
 	}
     
@@ -449,10 +440,15 @@ public class Chainsql extends Submit {
 	public JSONObject commit(SyncCond cond){
 		return doCommit(cond);
 	}
-	public JSONObject commit(Callback cb){
+	public JSONObject commit(Callback<?> cb){
 		return doCommit(cb);
 	}
 	
+	/**
+	 * sqlTransaction commit
+	 * @param commitType
+	 * @return
+	 */
 	public JSONObject doCommit(Object  commitType){
 		List<JSONObject> cache = this.cache;	
 		
@@ -502,9 +498,4 @@ public class Chainsql extends Submit {
     	}
 		return toPayment(tx_json,TransactionType.TableListSet);
 	}
-
-	public void getLedger(JSONObject option,Callback<JSONObject> cb){
-		this.connection.client.getLedger(option,cb);
-	}
-
 }

@@ -15,10 +15,12 @@ public class Test {
 	  public static String sTableName;
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
-		  //c.connect("ws://192.168.0.151:6006");
-		  c.connect("ws://192.168.0.110:6007");
+		  //c.connect("ws://192.168.0.110:6010");
+		 //c.connect("ws://192.168.0.148:6006");
+		   c.connect("ws://192.168.0.110:6007");
+		   // c.connect("ws://101.201.40.124:5006");
 		  
-		  sTableName = "hiyou2";
+		  sTableName = "hiyou";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -37,22 +39,30 @@ public class Test {
 //		  JSONObject table = obj.getJSONObject("tables");
 //		  table.put("table", "nihao");
 //		  System.out.println(obj);
-		  
+		  c.event.subTable("hiyou", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data)->{
+			  System.out.println(data);
+		  });
+		  c.onReconnecting((data)->{
+			  System.out.println("Reconnecting started");
+		  });
 		  Test test =new Test();
 //		  test.testts();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
 //		  test.testCreateTable();
-//		  test.getTransaction();
-//		  	test.getTransactions();
+		 // c.connection.client.getAccountInfo(null);
+
 //		  test.testinsert();
-		  test.testUpdateTable();
+//		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
 //		  test.testget();
 //		  test.testdrop();
-//		  test.grant();
+//		  test.grant();		 
+		  
+		  //	test.getTransactions();
+		  	 test.getTransaction();
 //		  test.getChainInfo();
 //		  test.getServerInfo();
 //		  try {
@@ -105,17 +115,17 @@ public class Test {
 //			 System.out.println("creat------"+data);
 //		 });
 		
-		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-//		JSONObject obj = c.getTransactions("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
+//		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		JSONObject obj = c.getTransactions("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 		 System.out.println("getTransactions------"+obj);
 	}	
 	public void getTransaction(){
-		String hash = "86F1E4A48DF756DD0B22640C9B64BFB6B2CA2C696BA8744F5A1CC8DE4D8778F6";
-//		JSONObject obj = c.getTransaction(hash);
-//		System.out.println("getTransaction------"+obj);
-		c.getTransaction(hash, (data)->{
-			System.out.println(data);
-		});
+		String hash = "79D6FCCF41163A32854873727F7F8B8A9C924E1DCA61F4E6009495F8F837A406";
+		JSONObject obj = c.getTransaction(hash);
+		System.out.println("getTransaction------"+obj);
+//		c.getTransaction(hash, (data)->{
+//			System.out.println(data);
+//		});
 		
 	}
 	
@@ -138,8 +148,9 @@ public class Test {
     }
 	 
 	 public void testinsert(){
-//		 List<String> orgs = Util.array("{'id':1,'age': 333}");
-		 List<String> orgs = Util.array("{'age': 23,'name':'你好','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
+		 List<String> orgs = Util.array("{'id':1,'age': 333}");
+//		 List<String> orgs = Util.array("{'PAYERNAME':'张三1_111','ORISENDBANKNO':'', 'PAYERBANKNO':'100000000001', 'SESSIONID':'1', 'LIQUIDSTATUS':'0', 'DEBITCREDITFLAG':'0', 'PAYBACKREASON':'', 'PAYERACCT':'1000000000000111', 'RECVBANKNO':'100000000002', 'CURRTYPE':'156', 'AMOUNT':'12000', 'SENDBANKNO':'100000000001', 'AGENTSERIALNO':'201704050000000000000314', 'ORIAGENTSERIALNO':'', 'ORIWORKDATE':'', 'LIQUIDDATE':'20170405', 'PAYEEACCT':'2000000000000123', 'PAYEEBANKNO':'100000000002', 'PAYBACKFLAG':'00', 'PAYEENAME':'李四2_123', 'WORKDATE':'20170405'}");
+//		 List<String> orgs = Util.array("{'age': 23,'name':'你好','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);

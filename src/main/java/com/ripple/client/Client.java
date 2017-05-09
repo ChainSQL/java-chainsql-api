@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +67,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public static interface OnStateChange extends events<Client> {}
     public static interface OnPathFind extends events<JSONObject> {}
     public static interface OnValidatedTransaction extends events<TransactionResult> {}
+    public static interface OnReconnecting extends events<JSONObject> {}
 
     // Fluent binders
     public Client onValidatedTransaction(OnValidatedTransaction cb) {
@@ -90,6 +92,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         on(OnMessage.class, cb);
         return this;
     } 
+	
+	public Client onReconnecting(OnReconnecting cb){
+        on(OnReconnecting.class, cb);
+        return this;
+	}
 	
     public Client onConnected(OnConnected onConnected) {
         this.on(OnConnected.class, onConnected);
@@ -155,6 +162,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     private static final int MAX_REQUEST_COUNT = 10; 
     
+    private ScheduledFuture reconnect_future = null;
     // Constructor
     public Client(WebSocketTransport ws) {
         this.ws = ws;
@@ -240,10 +248,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     public void disconnect() {
-        manuallyDisconnected = true;
-        ws.disconnect();
+    	disconnectInner();
         service.shutdownNow();
         // our disconnect handler should do the rest
+    }
+    private void disconnectInner(){
+        manuallyDisconnected = true;
+        ws.disconnect();
     }
 
     private void emitOnDisconnected() {
@@ -285,8 +296,22 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     public void reconnect() {
-        disconnect();
-        connect(previousUri);
+    	emit(OnReconnecting.class,null);
+    	
+    	log(Level.INFO, "reconnecting");
+    	disconnectInner();
+    	reconnect_future = service.scheduleAtFixedRate(new Runnable(){
+			@Override
+			public void run() {
+				if(connected){
+					reconnect_future.cancel(true);
+				}else{
+					disconnectInner();
+			        connect(previousUri);
+				}
+			}
+        	
+        }, 0,2000, TimeUnit.MILLISECONDS);
     }
 
     void manageTimedOutRequests() {
@@ -668,7 +693,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	System.out.println("requestAccountRoot response:" + jsonObject);
+            	//System.out.println("requestAccountRoot response:" + jsonObject);
                 if (response.succeeded) {
                     accountRoot.setFromJSON(jsonObject);
                 } else {
@@ -756,6 +781,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.once(Request.OnTimeout.class, new Request.OnTimeout() {
             @Override
             public void called(Response args) {
+            	System.out.println("timeout");
                 if (!responded[0] && manager.retryOnUnsuccessful(null)) {
                     logRetry(request, "Request timed out");
                     request.clearAllListeners();
@@ -1173,10 +1199,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 return response.result;
             }
         });
-     }
+     }    
     
-    public  void getTransactions(String address,Callback cb){   
-    	
+    public  void getTransactions(String address,Callback cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1193,14 +1218,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("account", address);
 	           	 request.json("ledger_index_min", -1);
 	           	 request.json("ledger_index_max", -1);
-	           	 request.json("binary", false);
-	           	 request.json("count", false);
-	           	 request.json("limit", 10);
-	           	 request.json("forward", false);
+//	           	 request.json("binary", false);
+//	           	 request.json("count", true);
+	           	 request.json("limit", 1);
+//	           	 request.json("forward", false);
             }
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
+            	
             	JSONArray txs = (JSONArray)response.result.get("transactions");
             	for(int i=0; i<txs.length(); i++){
             		JSONObject tx = (JSONObject)txs.get(i);

@@ -33,6 +33,7 @@ public class Chainsql extends Submit {
 	
 	private SignedTransaction signed;
 	private JSONObject retJson;
+	private Callback reconnectCb = null;
 	
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -57,8 +58,19 @@ public class Chainsql extends Submit {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("connect success");
 		this.event = new EventManager(this.connection);
+		this.connection.client.onReconnecting(this::onReconnecting);
 		return connection;
+	}
+	
+	private void onReconnecting(JSONObject cb){
+		if(reconnectCb != null){
+			reconnectCb.called(cb);
+		}
+	}
+	public void onReconnecting(Callback cb){
+		this.reconnectCb = cb;
 	}
 
 	public void disconnect() {
@@ -261,18 +273,27 @@ public class Chainsql extends Submit {
 	}
 	public JSONObject getChainInfo(){
 		JSONObject obj = new JSONObject();
-		
-		JSONObject firstLedger = getLedger(2);
-		JSONObject lastLedger = getLedger();
-		if(firstLedger == null){
-			System.out.println("error_message:" + "get first ledger failed ,please ensure connecting to a full-history server");
-		}else{
-			obj.put("tx_count", getTransactionCount());
-			int seconds1 = firstLedger.getJSONObject("ledger").getInt("close_time");
-			int seconds2 = lastLedger.getJSONObject("ledger").getInt("close_time");
-			obj.put("chain_time", seconds2 - seconds1);
+		try{
+			JSONObject serverInfo = getServerInfo();		
+			String ledger_range = serverInfo.getJSONObject("info").getString("complete_ledgers");
+			int startLedger = Integer.parseInt(ledger_range.substring(0, ledger_range.indexOf('-')));
+			int skipedTime = (startLedger - 1) * 3;
+			
+			JSONObject firstLedger = getLedger(startLedger);
+			JSONObject lastLedger = getLedger();
+			if(firstLedger == null){
+				System.out.println("error_message:" + "get first ledger failed ,please ensure connecting to a full-history server");
+			}else{
+				obj.put("tx_count", getTransactionCount());
+				int seconds1 = firstLedger.getJSONObject("ledger").getInt("close_time");
+				int seconds2 = lastLedger.getJSONObject("ledger").getInt("close_time");
+				obj.put("chain_time", seconds2 - seconds1 + skipedTime);
+			}
+			return obj;
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		return obj;
+		return null;
 	}
 	
 	private JSONObject getTransactionCount(){

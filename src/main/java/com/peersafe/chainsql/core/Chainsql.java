@@ -84,6 +84,7 @@ public class Chainsql extends Submit {
 		if(reconnectedCB != null){
 			reconnectedCB.called(cb);
 		}
+		event.reSubscribe();
 	}
 	
 	public void disconnect() {

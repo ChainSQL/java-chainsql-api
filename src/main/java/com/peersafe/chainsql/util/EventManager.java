@@ -20,6 +20,21 @@ public class EventManager {
 		this.onMessage = false;
 	}
 	
+	public void reSubscribe(){
+		int ownerLen = this.connection.address.length();
+		for(String key : mapCache.keySet()){
+			String name = key.substring(0,key.length() - ownerLen);
+			String owner = key.substring(key.length() - ownerLen);
+			
+	 		JSONObject messageTx = new JSONObject();
+			messageTx.put("command", "subscribe");
+			messageTx.put("owner", owner);
+			messageTx.put("tablename", name);
+			
+			this.connection.client.subscriptions.addMessage(messageTx);
+		}
+	}
+	
 	public void subTable(String name, String owner ,Callback cb) {
  		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");

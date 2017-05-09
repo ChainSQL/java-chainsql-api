@@ -123,7 +123,7 @@ public class Test {
 		 System.out.println("getTransactions------"+obj);
 	}	
 	public void getTransaction(){
-		String hash = "79D6FCCF41163A32854873727F7F8B8A9C924E1DCA61F4E6009495F8F837A406";
+		String hash = "2B28FE849128D35F54C2872456610E2423CB6880490DED0EAD8C184551710502";
 		JSONObject obj = c.getTransaction(hash);
 		System.out.println("getTransaction------"+obj);
 //		c.getTransaction(hash, (data)->{

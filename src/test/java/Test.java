@@ -45,6 +45,9 @@ public class Test {
 		  c.onReconnecting((data)->{
 			  System.out.println("Reconnecting started");
 		  });
+		  c.onReconnected((data)->{
+			  System.out.println("Reconnected");
+		  });
 		  Test test =new Test();
 //		  test.testts();
 //		  	test.getLedgerVersion();

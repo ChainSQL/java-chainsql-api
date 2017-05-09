@@ -68,6 +68,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public static interface OnPathFind extends events<JSONObject> {}
     public static interface OnValidatedTransaction extends events<TransactionResult> {}
     public static interface OnReconnecting extends events<JSONObject> {}
+    public static interface OnReconnected extends events<JSONObject> {}
 
     // Fluent binders
     public Client onValidatedTransaction(OnValidatedTransaction cb) {
@@ -98,6 +99,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
 	}
 	
+	public Client onReconnected(OnReconnected cb){
+        on(OnReconnected.class, cb);
+        return this;
+	}
     public Client onConnected(OnConnected onConnected) {
         this.on(OnConnected.class, onConnected);
         return this;
@@ -304,6 +309,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 			@Override
 			public void run() {
 				if(connected){
+					System.out.println("reconnected");
+					emit(OnReconnected.class,null);
 					reconnect_future.cancel(true);
 				}else{
 					disconnectInner();

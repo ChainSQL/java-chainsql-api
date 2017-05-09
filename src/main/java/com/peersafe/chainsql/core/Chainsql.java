@@ -4,6 +4,7 @@ import static com.ripple.config.Config.getB58IdentiferCodecs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,6 +35,7 @@ public class Chainsql extends Submit {
 	private SignedTransaction signed;
 	private JSONObject retJson;
 	private Callback reconnectCb = null;
+	private Callback reconnectedCB = null;
 	
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -61,7 +63,16 @@ public class Chainsql extends Submit {
 		System.out.println("connect success");
 		this.event = new EventManager(this.connection);
 		this.connection.client.onReconnecting(this::onReconnecting);
+		this.connection.client.onReconnected(this::onReconnected);
+		
 		return connection;
+	}
+
+	public void onReconnected(Callback cb){
+		this.reconnectedCB = cb;
+	}
+	public void onReconnecting(Callback cb){
+		this.reconnectCb = cb;
 	}
 	
 	private void onReconnecting(JSONObject cb){
@@ -69,10 +80,12 @@ public class Chainsql extends Submit {
 			reconnectCb.called(cb);
 		}
 	}
-	public void onReconnecting(Callback cb){
-		this.reconnectCb = cb;
+	private void onReconnected(JSONObject cb){
+		if(reconnectedCB != null){
+			reconnectedCB.called(cb);
+		}
 	}
-
+	
 	public void disconnect() {
 		this.connection.disconnect();
 	}

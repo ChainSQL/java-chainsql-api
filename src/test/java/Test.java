@@ -17,14 +17,14 @@ public class Test {
 		  //c.connect("ws://192.168.0.193:6006");
 		  //c.connect("ws://192.168.0.110:6010");
 		 //c.connect("ws://192.168.0.148:6006");
-		   c.connect("ws://192.168.0.110:6007");
+		   c.connect("ws://192.168.0.110:6010");
 		   // c.connect("ws://101.201.40.124:5006");
 		  
-		  sTableName = "hiyou";
+		  sTableName = "T_BBPS_CASH";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
-		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		  c.as("rsadxc3pw976e3hfaxUijhbR3ye2orJS6x", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 //		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
 		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 //		  
@@ -39,15 +39,19 @@ public class Test {
 //		  JSONObject table = obj.getJSONObject("tables");
 //		  table.put("table", "nihao");
 //		  System.out.println(obj);
-		  c.event.subTable("hiyou", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data)->{
-			  System.out.println(data);
-		  });
-		  c.onReconnecting((data)->{
-			  System.out.println("Reconnecting started");
-		  });
-		  c.onReconnected((data)->{
-			  System.out.println("Reconnected");
-		  });
+		  
+		  
+//		  c.event.subTable("hiyou", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data)->{
+//			  System.out.println(data);
+//		  });
+//		  c.onReconnecting((data)->{
+//			  System.out.println("Reconnecting started");
+//		  });
+//		  c.onReconnected((data)->{
+//			  System.out.println("Reconnected");
+//		  });
+		  
+		  
 		  Test test =new Test();
 //		  test.testts();
 //		  	test.getLedgerVersion();
@@ -57,7 +61,7 @@ public class Test {
 		 // c.connection.client.getAccountInfo(null);
 
 //		  test.testinsert();
-//		  test.testUpdateTable();
+		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
 //		  test.testget();
@@ -65,7 +69,7 @@ public class Test {
 //		  test.grant();		 
 		  
 		  //	test.getTransactions();
-		  	 test.getTransaction();
+		  //	 test.getTransaction();
 //		  test.getChainInfo();
 //		  test.getServerInfo();
 //		  try {
@@ -157,7 +161,7 @@ public class Test {
 		 JSONObject obj;
 //		 obj = c.table(sTableName).insert(orgs).submit();
 //		 System.out.println(obj);
-		 
+		 orgs = Util.array("{'BANKNO':'100000000006'}");
 //		 obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 //		 System.out.println(obj);
 		 
@@ -168,10 +172,10 @@ public class Test {
 	 }
 
 	  public void testUpdateTable(){
-		  List<String> arr1 = Util.array("{'id': 3}");
+		  List<String> arr1 = Util.array("{'id': 6}");
 		  
 		  JSONObject obj;
-		  obj = c.table(sTableName).get(arr1).update(Util.array("{'balance':200}")).submit((data)->{
+		  obj = c.table(sTableName).get(arr1).update(Util.array("{'BALANCE':200}")).submit((data)->{
 	 			 System.out.println("update------"+data);
 	 		 });
 		  System.out.println(obj);

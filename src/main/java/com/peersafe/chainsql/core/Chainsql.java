@@ -292,6 +292,7 @@ public class Chainsql extends Submit {
 			String ledger_range = serverInfo.getJSONObject("info").getString("complete_ledgers");
 			int startLedger = Integer.parseInt(ledger_range.substring(0, ledger_range.indexOf('-')));
 			int skipedTime = (startLedger - 1) * 3;
+			startLedger = Math.max(startLedger,2);
 			
 			JSONObject firstLedger = getLedger(startLedger);
 			JSONObject lastLedger = getLedger();

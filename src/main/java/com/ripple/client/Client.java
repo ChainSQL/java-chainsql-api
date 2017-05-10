@@ -466,6 +466,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     @Override
     public void onMessage(final JSONObject msg) {
+    	//System.out.println(msg);
         resetReconnectStatus();
         run(new Runnable() {
             @Override
@@ -1227,7 +1228,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("ledger_index_max", -1);
 //	           	 request.json("binary", false);
 //	           	 request.json("count", true);
-	           	 request.json("limit", 1);
+	           	 request.json("limit", 10);
 //	           	 request.json("forward", false);
             }
 

@@ -2,9 +2,11 @@ package com.peersafe.chainsql.core;
 
 import static com.ripple.config.Config.getB58IdentiferCodecs;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -438,13 +440,18 @@ public class Chainsql extends Submit {
 	}
 	
 	public JSONObject generateAccount(){
-		JSONObject wallet = this.connection.client.walletPropose();
-		if(wallet == null || wallet.has("error"))
-			return wallet;
+		Security.addProvider(new BouncyCastleProvider());
+		Seed seed = Seed.randomSeed();
+		IKeyPair keyPair = seed.keyPair();
+		byte[] pubBytes = keyPair.canonicalPubBytes();
+		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
+		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		String address = getB58IdentiferCodecs().encodeAddress(pubBytes);
+		
 		JSONObject obj = new JSONObject();
-		obj.put("secret", wallet.getString("master_seed"));
-		obj.put("account_id", wallet.getString("account_id"));
-		obj.put("public_key", wallet.getString("public_key"));
+		obj.put("secret", secretKey);
+		obj.put("account_id", publicKey);
+		obj.put("public_key", address);
 		return obj;
 	}
     

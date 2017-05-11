@@ -74,7 +74,7 @@ public class Test {
 		  //	test.getTransactions();
 //		  	 test.getTransaction();
 		  test.getChainInfo();
-//		  test.generateAccount();
+		  test.generateAccount();
 //		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);

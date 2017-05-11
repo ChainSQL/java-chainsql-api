@@ -1259,19 +1259,19 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
    
     
-    public JSONObject walletPropose(){
-        Request request = newRequest(Command.wallet_propose);
-        request.request();
-        
-        waiting(request);
-        if(request.response == null){
-        	return null;
-        }else if(request.response.message.has("error")){
-        	return request.response.message;
-        }else{
-        	return request.response.result;
-        }   		
-    }
+//    public JSONObject walletPropose(){
+//        Request request = newRequest(Command.wallet_propose);
+//        request.request();
+//        
+//        waiting(request);
+//        if(request.response == null){
+//        	return null;
+//        }else if(request.response.message.has("error")){
+//        	return request.response.message;
+//        }else{
+//        	return request.response.result;
+//        }   		
+//    }
     
     public Request ping() {
         return newRequest(Command.ping);

@@ -450,8 +450,8 @@ public class Chainsql extends Submit {
 		
 		JSONObject obj = new JSONObject();
 		obj.put("secret", secretKey);
-		obj.put("account_id", publicKey);
-		obj.put("public_key", address);
+		obj.put("account_id", address);
+		obj.put("public_key", publicKey);
 		return obj;
 	}
     

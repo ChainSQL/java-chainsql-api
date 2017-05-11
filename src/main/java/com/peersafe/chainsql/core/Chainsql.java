@@ -290,7 +290,9 @@ public class Chainsql extends Submit {
 		try{
 			JSONObject serverInfo = getServerInfo();		
 			String ledger_range = serverInfo.getJSONObject("info").getString("complete_ledgers");
-			int startLedger = Integer.parseInt(ledger_range.substring(0, ledger_range.indexOf('-')));
+			int startIndex = ledger_range.indexOf(',') == -1 ? 0 : ledger_range.lastIndexOf(',') + 1;
+			int endIndex = ledger_range.lastIndexOf('-');
+			int startLedger = Integer.parseInt(ledger_range.substring(startIndex,endIndex));
 			int skipedTime = (startLedger - 1) * 3;
 			startLedger = Math.max(startLedger,2);
 			
@@ -336,7 +338,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("ledger")){
@@ -375,7 +377,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("ledger_current_index")){
@@ -398,7 +400,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("transactions")){
@@ -422,7 +424,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("ledger_index")){
@@ -433,6 +435,17 @@ public class Chainsql extends Submit {
 	}
 	public void getTransaction(String hash,Callback<JSONObject> cb){
 		this.connection.client.getTransaction(hash, cb);
+	}
+	
+	public JSONObject generateAccount(){
+		JSONObject wallet = this.connection.client.walletPropose();
+		if(wallet == null || wallet.has("error"))
+			return wallet;
+		JSONObject obj = new JSONObject();
+		obj.put("secret", wallet.getString("master_seed"));
+		obj.put("account_id", wallet.getString("account_id"));
+		obj.put("public_key", wallet.getString("public_key"));
+		return obj;
 	}
     
 	public Connection getConnection() {

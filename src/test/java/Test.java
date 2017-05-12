@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
+import com.ripple.core.coretypes.AccountID;
 
 
 public class Test {
@@ -15,10 +16,10 @@ public class Test {
 	  public static String sTableName;
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
-		  c.connect("ws://192.168.0.110:6008");
+		 // c.connect("ws://192.168.0.110:6008");
 		 //c.connect("ws://192.168.0.148:6006");
 
-		  // c.connect("ws://192.168.0.110:6007");
+		   c.connect("ws://192.168.0.110:6007");
 		  //  c.connect("ws://101.201.40.124:7006");
 		  
 		  sTableName = "hime2";
@@ -44,9 +45,9 @@ public class Test {
 //		  System.out.println(obj);
 		  
 		  
-		  c.event.subTable("hiyou", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data)->{
-			  System.out.println(data);
-		  });
+//		  c.event.subTable("hiyou", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data)->{
+//			  System.out.println(data);
+//		  });
 //		  c.onReconnecting((data)->{
 //			  System.out.println("Reconnecting started");
 //		  });
@@ -54,7 +55,7 @@ public class Test {
 //			  System.out.println("Reconnected");
 //		  });
 		  
-		  
+		  AccountID.fromAddress("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  Test test =new Test();
 //		  test.testts();
 //		  	test.getLedgerVersion();
@@ -75,6 +76,7 @@ public class Test {
 //		  	 test.getTransaction();
 		  test.getChainInfo();
 		  test.generateAccount();
+		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 //		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
@@ -242,6 +244,11 @@ public class Test {
 	  public void generateAccount(){
 		  System.out.println(c.generateAccount());
 	  }
+	  
+	  public void activateAccount(String account){
+		  JSONObject ret = c.activateAccount(account).submit();
+		  System.out.println(ret);
+	  }
 	public void testdrop(){
 		JSONObject obj;
 		obj = c.dropTable(sTableName).submit((data)->{
@@ -255,6 +262,8 @@ public class Test {
 //		obj = c.dropTable(sTableName).submit(SyncCond.db_success);
 //		System.out.println(obj);
 	}
+	
+	
 	public ArrayList<String> select(String tableName,String filterWith,String whereCond){
 		ArrayList<String> cond=new ArrayList<String>();
 		cond.add(whereCond);

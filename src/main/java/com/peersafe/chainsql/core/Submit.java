@@ -57,6 +57,8 @@ public abstract class Submit {
 	
 	public enum EPaymentType{
 		Account,
+		Destination,
+		Amount,
 		Tables,
 		OpType,
 		User,
@@ -277,6 +279,12 @@ public abstract class Submit {
             case Account:
             	payment.as(AccountID.Account, value);
                 break;
+            case Destination:
+            	payment.as(AccountID.Destination, value);
+            	break;
+            case Amount:
+            	payment.as(Amount.Amount, value);
+            	break;
             case Tables:
             	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
                 break;

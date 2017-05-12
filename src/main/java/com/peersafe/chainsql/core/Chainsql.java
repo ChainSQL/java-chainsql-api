@@ -6,6 +6,7 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -183,7 +184,7 @@ public class Chainsql extends Submit {
 		Transaction payment;
 		try {
 			payment = toPayment(txjson);
-		signed = payment.sign(this.connection.secret);
+			signed = payment.sign(this.connection.secret);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -267,6 +268,21 @@ public class Chainsql extends Submit {
 		try {
 			payment = toPayment(txJson);
 		signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this;
+	}
+	
+	public Chainsql activateAccount(String accountId){
+		JSONObject obj = new JSONObject();
+		obj.put("Account", this.connection.address);
+		obj.put("Destination", accountId);
+		obj.put("Amount", "20000000");
+		Transaction payment;
+		try {
+			payment = toPayment(obj,TransactionType.Payment);
+			signed = payment.sign(this.connection.secret);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -444,9 +460,17 @@ public class Chainsql extends Submit {
 		Seed seed = Seed.randomSeed();
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
+		byte[] o;
+		{
+			RIPEMD160Digest d = new RIPEMD160Digest();
+		    d.update (pubBytes, 0, pubBytes.length);
+		    o = new byte[d.getDigestSize()];
+		    d.doFinal (o, 0);
+		}
+
 		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
 		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-		String address = getB58IdentiferCodecs().encodeAddress(pubBytes);
+		String address = getB58IdentiferCodecs().encodeAddress(o);
 		
 		JSONObject obj = new JSONObject();
 		obj.put("secret", secretKey);
@@ -454,7 +478,7 @@ public class Chainsql extends Submit {
 		obj.put("public_key", publicKey);
 		return obj;
 	}
-    
+	
 	public Connection getConnection() {
 		return connection;
 	}

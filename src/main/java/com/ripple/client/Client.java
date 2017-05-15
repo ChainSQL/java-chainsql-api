@@ -314,7 +314,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 					reconnect_future.cancel(true);
 				}else{
 					disconnectInner();
-			        connect(previousUri);
+					doConnect(previousUri);
 				}
 			}
         	

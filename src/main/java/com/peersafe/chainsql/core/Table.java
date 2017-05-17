@@ -11,12 +11,12 @@ import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.requests.Request;
-import com.ripple.client.responses.Response;
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.serialized.enums.TransactionType;
-import com.ripple.core.types.known.tx.Transaction;
-import com.ripple.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.client.responses.Response;
+import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 
 public class Table extends Submit{
 	private String name;

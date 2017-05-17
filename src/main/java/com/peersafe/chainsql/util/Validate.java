@@ -7,11 +7,11 @@ import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
-import com.ripple.client.Client;
-import com.ripple.client.requests.Request;
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.STObject;
+import com.peersafe.base.client.Client;
+import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.coretypes.STArray;
+import com.peersafe.base.core.coretypes.STObject;
 
 public class Validate {
 	public Object create(String obj) {

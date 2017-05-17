@@ -1,6 +1,6 @@
 package com.peersafe.chainsql.crypto;
 
-import static com.ripple.config.Config.getB58IdentiferCodecs;
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -27,10 +27,10 @@ import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 
 import com.peersafe.chainsql.util.Util;
-import com.ripple.crypto.ecdsa.IKeyPair;
-import com.ripple.crypto.ecdsa.Seed;
-import com.ripple.encodings.B58IdentiferCodecs;
-import com.ripple.utils.Sha512;
+import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.utils.Sha512;
 
 public class Ecies {
 	public static final int AESKeyLength = 32;

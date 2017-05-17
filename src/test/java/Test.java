@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
-import com.ripple.core.coretypes.AccountID;
+import com.peersafe.base.core.coretypes.AccountID;
 
 
 public class Test {

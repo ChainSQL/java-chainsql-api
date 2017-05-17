@@ -5,7 +5,7 @@ import java.util.HashMap;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.net.Connection;
-import com.ripple.client.pubsub.Publisher.Callback;
+import com.peersafe.base.client.pubsub.Publisher.Callback;
 
 public class EventManager {
 	public Connection connection;

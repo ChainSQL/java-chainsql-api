@@ -1,4 +1,4 @@
-import static com.ripple.config.Config.getB58IdentiferCodecs;
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 import java.security.Security;
 
@@ -7,7 +7,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.Util;
-import com.ripple.encodings.B58IdentiferCodecs;  
+import com.peersafe.base.encodings.B58IdentiferCodecs;  
 
 public class ECTest {  
 	public static final String secret = "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz";

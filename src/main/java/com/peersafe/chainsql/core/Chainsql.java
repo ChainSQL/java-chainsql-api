@@ -1,6 +1,6 @@
 package com.peersafe.chainsql.core;
 
-import static com.ripple.config.Config.getB58IdentiferCodecs;
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 import java.security.Security;
 import java.util.ArrayList;
@@ -17,13 +17,13 @@ import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.pubsub.Publisher.Callback;
-import com.ripple.core.serialized.enums.TransactionType;
-import com.ripple.core.types.known.tx.Transaction;
-import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.crypto.ecdsa.IKeyPair;
-import com.ripple.crypto.ecdsa.Seed;
-import com.ripple.encodings.B58IdentiferCodecs;
+import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.encodings.B58IdentiferCodecs;
 
 public class Chainsql extends Submit {
 	public	EventManager event;

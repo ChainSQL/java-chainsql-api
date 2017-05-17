@@ -3,8 +3,8 @@ package com.peersafe.chainsql.net;
 import java.io.Closeable;
 import java.io.IOException;
 
-import com.ripple.client.Client;
-import com.ripple.client.transport.impl.JavaWebSocketTransportImpl;
+import com.peersafe.base.client.Client;
+import com.peersafe.base.client.transport.impl.JavaWebSocketTransportImpl;
 
 public class Connection implements Closeable {
 

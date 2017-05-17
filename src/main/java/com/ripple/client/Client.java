@@ -314,7 +314,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 					reconnect_future.cancel(true);
 				}else{
 					disconnectInner();
-			        connect(previousUri);
+					doConnect(previousUri);
 				}
 			}
         	
@@ -1060,78 +1060,25 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         req.json("account", account.address);
         return req;
 
-    }
-
-    public void getRipplemsg(String name ,AccountID account){
-    	accountInfo(account);
-    	getNameInDB( name,account);
-    }
-    
+    }    
     
     public Request accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
-        request.once(Request.OnResponse.class, new Request.OnResponse() {
-            public void called(Response response) {
-                if (response.succeeded) {
-                  //SEQUENCE = (int) response.result.optJSONObject("account_data").get("Sequence");
-                }
-            }
-        });
+
         request.request();
-        while(request.response==null){
-        	 try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}  
-   	 	}
+        waiting(request);
    		return request;
     }
     
     public Request messageTx(JSONObject messageTx){
     	 Request request = newRequest(Command.subscribe);
     	 request.json("tx_json", messageTx);
-         request.once(Request.OnResponse.class, new Request.OnResponse() {
-             public void called(Response response) {
-                 if (response.succeeded) {
-                   //SEQUENCE = (int) response.result.optJSONObject("account_data").get("Sequence");
-                 }
-             }
-         });
          request.request();
-         while(request.response==null){
-         	 try {
- 				Thread.sleep(100);
- 			} catch (InterruptedException e) {
- 				e.printStackTrace();
- 			}  
-	 	}
-		return request;
+         waiting(request);
+         return request;
     }
-    public  Request getNameInDB(String name ,AccountID account){   	
-    	 Request request = newRequest(Command.g_dbname);
-    	 JSONObject txjson = new JSONObject();
-    	 txjson.put("Account", account.address);
-    	 txjson.put("TableName", name); 
-       	 request.json("tx_json", txjson);
-         request.once(Request.OnResponse.class, new Request.OnResponse() {
-	            public  void called(Response response) {
-	                if (response.succeeded) {
-	   
-	                }
-	            }
-	        });
-         request.request();
-         while(request.response==null){
-        	 try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}  
-   	 	}
-    	 return request;	
-    }
+    
     public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
 	   	 JSONObject txjson = new JSONObject();
@@ -1140,30 +1087,23 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	   	 txjson.put("Raw", raw);
 	   	 txjson.put("OpType", 7);
 	   	 request.json("tx_json", txjson);
-	        request.once(Request.OnResponse.class, new Request.OnResponse() {
-		            public  void called(Response response) {
-		                if (response.succeeded) {
-		                	//System.out.println("response:" + response.message.toString());
-		                	cb.called(response);
-		                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
-		                }
-		            }
-		        });
-	        request.request();
-	        while(request.response==null){
-	       	 try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}  
-	  	 	}
-	   	 return request;	
-	   }
+	   	 request.once(Request.OnResponse.class, new Request.OnResponse() {
+	            public  void called(Response response) {
+	                if (response.succeeded) {
+	                	//System.out.println("response:" + response.message.toString());
+	                	cb.called(response);
+	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
+	                }
+	            }
+	        });
+        request.request();
+        waiting(request);
+   	 	return request;	
+	}
     public  void getLedger(JSONObject option,Callback<JSONObject> cb){  
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
-                //return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;
             	return false;
             }
 
@@ -1226,15 +1166,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("account", address);
 	           	 request.json("ledger_index_min", -1);
 	           	 request.json("ledger_index_max", -1);
-//	           	 request.json("binary", false);
-//	           	 request.json("count", true);
 	           	 request.json("limit", 10);
-//	           	 request.json("forward", false);
             }
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-            	
             	JSONArray txs = (JSONArray)response.result.get("transactions");
             	for(int i=0; i<txs.length(); i++){
             		JSONObject tx = (JSONObject)txs.get(i);
@@ -1248,31 +1184,28 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    private void waiting(Request request){
+        int count = 100;
+        while(request.response==null){
+        	Util.waiting(); 
+        	if(--count == 0){
+        		break;
+        	}
+   	 	}
+    }
     
     public JSONObject getTransactionCount(){
     	Request request = newRequest(Command.tx_count);
-	        request.request();
-	        while(request.response==null){
-	       	 try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}  
-	  	 	}
-	   	 return request.response.result;	
+	    request.request();
+	    waiting(request);
+	   	return request.response.result;	
     }
     
     public JSONObject getServerInfo(){
     	Request request = newRequest(Command.server_info);
         request.request();
-        while(request.response==null){
-       	 try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}  
-  	 	}
-   	 return request.response.result;
+        waiting(request);
+   	 	return request.response.result;
     }
 
     public Request getUserToken(String owner,String user,String name){
@@ -1282,44 +1215,18 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	   	 txjson.put("User", user);
 	   	 txjson.put("TableName", name);
 	   	 request.json("tx_json", txjson);
-	        request.once(Request.OnResponse.class, new Request.OnResponse() {
-		            public  void called(Response response) {
-		                if (response.succeeded) {
-		                	//cb.called(response);
-		                }
-		            }
-		        });
-	        request.request();
-	        while(request.response==null){
-	       	 try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}  
-	  	 	}
+
+         request.request();
+         waiting(request);
 	   	 return request;	
     }
     
     public Request getTxJson(JSONObject txjson){
     	Request request = newRequest(Command.t_prepare);
-	   	 	request.json("tx_json", txjson);
-	        request.once(Request.OnResponse.class, new Request.OnResponse() {
-		            public  void called(Response response) {
-		                if (response.succeeded) {
-		                	//System.out.println("response:" + response.message.toString());
-		                	//cb.called(response);
-		                }
-		            }
-		        });
-	        request.request();
-	        while(request.response==null){
-	       	 try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}  
-	  	 	}
-	   	 return request;	
+	   	request.json("tx_json", txjson);
+	    request.request();
+	    waiting(request);
+	    return request;	
    }
     
     public  void getTransaction(String hash,Callback<JSONObject> cb){   
@@ -1351,6 +1258,21 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
    
+    
+//    public JSONObject walletPropose(){
+//        Request request = newRequest(Command.wallet_propose);
+//        request.request();
+//        
+//        waiting(request);
+//        if(request.response == null){
+//        	return null;
+//        }else if(request.response.message.has("error")){
+//        	return request.response.message;
+//        }else{
+//        	return request.response.result;
+//        }   		
+//    }
+    
     public Request ping() {
         return newRequest(Command.ping);
     }
@@ -1382,9 +1304,4 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("taker_pays", pay.toJSON());
         return request;
     }
-    
-    public void Response(Response response){
-    	
-    }
-
 }

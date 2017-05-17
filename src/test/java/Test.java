@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
+import com.ripple.core.coretypes.AccountID;
 
 
 public class Test {
@@ -15,18 +16,21 @@ public class Test {
 	  public static String sTableName;
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
-		  //c.connect("ws://192.168.0.110:6010");
+		 // c.connect("ws://192.168.0.110:6008");
 		 //c.connect("ws://192.168.0.148:6006");
-		   c.connect("ws://192.168.0.110:6010");
-		   // c.connect("ws://101.201.40.124:5006");
+
+		   c.connect("ws://192.168.0.110:6007");
+		  //  c.connect("ws://101.201.40.124:7006");
 		  
-		  sTableName = "T_BBPS_CASH";
+		  sTableName = "hime2";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
-		  c.as("rsadxc3pw976e3hfaxUijhbR3ye2orJS6x", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 //		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
 		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		  
+		  //c.disconnect();
 //		  
 		// c.event.subTable("testcssas", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  
@@ -51,17 +55,17 @@ public class Test {
 //			  System.out.println("Reconnected");
 //		  });
 		  
-		  
+		  AccountID.fromAddress("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  Test test =new Test();
 //		  test.testts();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
-//		  test.testCreateTable();
+		  //test.testCreateTable();
 		 // c.connection.client.getAccountInfo(null);
 
 //		  test.testinsert();
-		  test.testUpdateTable();
+//		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
 //		  test.testget();
@@ -69,8 +73,10 @@ public class Test {
 //		  test.grant();		 
 		  
 		  //	test.getTransactions();
-		  //	 test.getTransaction();
-//		  test.getChainInfo();
+//		  	 test.getTransaction();
+		  test.getChainInfo();
+		  test.generateAccount();
+		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 //		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
@@ -79,15 +85,6 @@ public class Test {
 //		  }
 //		  
 //		  c.disconnect();
-			 //System.out.println("```````````");
-			// test.testget();
-			/* try {
-				Runtime.getRuntime().exec("taskkill /F /IM javaw.exe");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			 */
 		
 	    }
 	  public void testts(){
@@ -122,8 +119,8 @@ public class Test {
 //			 System.out.println("creat------"+data);
 //		 });
 		
-//		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-		JSONObject obj = c.getTransactions("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
+		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		JSONObject obj = c.getTransactions("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 		 System.out.println("getTransactions------"+obj);
 	}	
 	public void getTransaction(){
@@ -244,6 +241,14 @@ public class Test {
 		  JSONObject ret = c.getServerInfo();
 		  System.out.println(ret);
 	  }
+	  public void generateAccount(){
+		  System.out.println(c.generateAccount());
+	  }
+	  
+	  public void activateAccount(String account){
+		  JSONObject ret = c.activateAccount(account).submit();
+		  System.out.println(ret);
+	  }
 	public void testdrop(){
 		JSONObject obj;
 		obj = c.dropTable(sTableName).submit((data)->{
@@ -257,6 +262,8 @@ public class Test {
 //		obj = c.dropTable(sTableName).submit(SyncCond.db_success);
 //		System.out.println(obj);
 	}
+	
+	
 	public ArrayList<String> select(String tableName,String filterWith,String whereCond){
 		ArrayList<String> cond=new ArrayList<String>();
 		cond.add(whereCond);

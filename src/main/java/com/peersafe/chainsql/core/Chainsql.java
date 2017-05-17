@@ -2,9 +2,12 @@ package com.peersafe.chainsql.core;
 
 import static com.ripple.config.Config.getB58IdentiferCodecs;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -181,7 +184,7 @@ public class Chainsql extends Submit {
 		Transaction payment;
 		try {
 			payment = toPayment(txjson);
-		signed = payment.sign(this.connection.secret);
+			signed = payment.sign(this.connection.secret);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -270,6 +273,21 @@ public class Chainsql extends Submit {
 		}
 		return this;
 	}
+	
+	public Chainsql activateAccount(String accountId){
+		JSONObject obj = new JSONObject();
+		obj.put("Account", this.connection.address);
+		obj.put("Destination", accountId);
+		obj.put("Amount", "20000000");
+		Transaction payment;
+		try {
+			payment = toPayment(obj,TransactionType.Payment);
+			signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this;
+	}
 
 	public void beginTran(){
 		 if (this.connection!=null && this.connection.address!=null) {
@@ -290,7 +308,9 @@ public class Chainsql extends Submit {
 		try{
 			JSONObject serverInfo = getServerInfo();		
 			String ledger_range = serverInfo.getJSONObject("info").getString("complete_ledgers");
-			int startLedger = Integer.parseInt(ledger_range.substring(0, ledger_range.indexOf('-')));
+			int startIndex = ledger_range.indexOf(',') == -1 ? 0 : ledger_range.lastIndexOf(',') + 1;
+			int endIndex = ledger_range.lastIndexOf('-');
+			int startLedger = Integer.parseInt(ledger_range.substring(startIndex,endIndex));
 			int skipedTime = (startLedger - 1) * 3;
 			startLedger = Math.max(startLedger,2);
 			
@@ -336,7 +356,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("ledger")){
@@ -375,7 +395,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("ledger_current_index")){
@@ -398,7 +418,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("transactions")){
@@ -422,7 +442,7 @@ public class Chainsql extends Submit {
 			}
 		});
 		while(retJson == null){
-			waiting();
+			Util.waiting();
 		}
 		
 		if(retJson.has("ledger_index")){
@@ -434,7 +454,31 @@ public class Chainsql extends Submit {
 	public void getTransaction(String hash,Callback<JSONObject> cb){
 		this.connection.client.getTransaction(hash, cb);
 	}
-    
+	
+	public JSONObject generateAccount(){
+		Security.addProvider(new BouncyCastleProvider());
+		Seed seed = Seed.randomSeed();
+		IKeyPair keyPair = seed.keyPair();
+		byte[] pubBytes = keyPair.canonicalPubBytes();
+		byte[] o;
+		{
+			RIPEMD160Digest d = new RIPEMD160Digest();
+		    d.update (pubBytes, 0, pubBytes.length);
+		    o = new byte[d.getDigestSize()];
+		    d.doFinal (o, 0);
+		}
+
+		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
+		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		String address = getB58IdentiferCodecs().encodeAddress(o);
+		
+		JSONObject obj = new JSONObject();
+		obj.put("secret", secretKey);
+		obj.put("account_id", address);
+		obj.put("public_key", publicKey);
+		return obj;
+	}
+	
 	public Connection getConnection() {
 		return connection;
 	}

@@ -109,6 +109,13 @@ public class Seed {
         return getKeyPair(getB58IdentiferCodecs().decodeFamilySeed(b58));
     }
     
+    public static Seed randomSeed(){
+    	Random r = new Random();
+    	byte[] seedBytes = new byte[16];
+    	r.nextBytes(seedBytes);
+    	return new Seed(seedBytes);
+    }
+    
     public static IKeyPair randomKeyPair(){
     	Random r = new Random();
     	byte[] seedBytes = new byte[16];

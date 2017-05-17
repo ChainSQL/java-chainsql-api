@@ -21,7 +21,7 @@ public class CreatePayment {
 	        // We need a valid seed
 
 	           new Client(new JavaWebSocketTransportImpl())
-	                    .connect("ws://192.168.0.162:6006", (c) ->
+	                    .connect("ws://192.168.0.110:6007", (c) ->
 	                        new CreatePayment(c, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"));
 	 
 	    }
@@ -33,10 +33,10 @@ public class CreatePayment {
 	        Payment payment = new Payment();
 
 	        payment.as(AccountID.Account,     "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh")
-	             	.as(AccountID.Destination, "rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr")
+	             	.as(AccountID.Destination, "rKuHVwdAsL4Ldm2CftWZGNR5pLVbBFDuwk")
 	             	.as(Amount.Fee,            "10")
 	             	.as(UInt32.Sequence,        1)
-	             	.as(Amount.Amount, "1000000000");
+	             	.as(Amount.Amount, "100000000");
 
 	        tm.queue(tm.manage(payment)
 	            .onValidated(this::onValidated)

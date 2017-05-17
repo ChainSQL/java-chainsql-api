@@ -281,7 +281,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		// tx_blob is a hex string, right o' the bat
 		req.json("tx_blob", txn.tx_blob);
 
-		System.out.println("before request");
+		//System.out.println("before request");
 		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
 			@Override
 			public void called(Response response) {

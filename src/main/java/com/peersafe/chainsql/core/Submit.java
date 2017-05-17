@@ -26,7 +26,6 @@ import com.ripple.core.coretypes.uint.UInt32;
 import com.ripple.core.serialized.enums.TransactionType;
 import com.ripple.core.types.known.tx.Transaction;
 import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.core.types.known.tx.txns.TableListSet;
 
 public abstract class Submit {
 	public Connection connection;
@@ -58,6 +57,8 @@ public abstract class Submit {
 	
 	public enum EPaymentType{
 		Account,
+		Destination,
+		Amount,
 		Tables,
 		OpType,
 		User,
@@ -112,14 +113,6 @@ public abstract class Submit {
 	}
 	
 	abstract JSONObject doSubmit();
-	
-	protected void waiting(){
-      	try {
-			Thread.sleep(50);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
 
 	private JSONObject getError(String err){
 		JSONObject obj = new JSONObject();
@@ -141,7 +134,7 @@ public abstract class Submit {
         ManagedTxn tx = tm.manage(signed.txn);
         int count = account_wait/wait_milli;
         while(!account.getAccountRoot().primed()){
-        	waiting();
+        	Util.waiting();
         	if(--count <= 0){
         		break;
         	}
@@ -160,7 +153,7 @@ public abstract class Submit {
         //wait until submit return
         count = submit_wait / wait_milli;
         while(submit_state == SubmitState.waiting_submit){
-        	waiting();
+        	Util.waiting();
         	if(--count <= 0){
         		submit_state = SubmitState.submit_error;
         		submitRes = getError("waiting submit result timeout");
@@ -174,7 +167,7 @@ public abstract class Submit {
         	}else{
         		count = sync_maxtime / wait_milli;
             	while(sync_state != SyncState.sync_response){
-            		waiting();
+            		Util.waiting();
             		if(--count <= 0){
             			syncRes = getError("waiting sync result timeout");
             			break;
@@ -286,6 +279,12 @@ public abstract class Submit {
             case Account:
             	payment.as(AccountID.Account, value);
                 break;
+            case Destination:
+            	payment.as(AccountID.Destination, value);
+            	break;
+            case Amount:
+            	payment.as(Amount.Amount, value);
+            	break;
             case Tables:
             	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
                 break;

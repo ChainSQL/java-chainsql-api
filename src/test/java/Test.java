@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
-import com.peersafe.base.core.coretypes.AccountID;
 
 
 public class Test {
@@ -17,9 +17,9 @@ public class Test {
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
 		 // c.connect("ws://192.168.0.110:6008");
-		 //c.connect("ws://192.168.0.148:6006");
+		 c.connect("ws://192.168.0.148:6006");
 
-		   c.connect("ws://192.168.0.110:6007");
+		  // c.connect("ws://192.168.0.110:6007");
 		  //  c.connect("ws://101.201.40.124:7006");
 		  
 		  sTableName = "hime2";

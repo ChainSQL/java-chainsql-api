@@ -2,6 +2,7 @@ package com.peersafe.chainsql.core;
 
 import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
+import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +13,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.crypto.Aes;
-import com.peersafe.chainsql.crypto.Ecies;
-import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.util.EventManager;
-import com.peersafe.chainsql.util.Util;
-import com.peersafe.chainsql.util.Validate;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
@@ -25,6 +20,12 @@ import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.chainsql.crypto.Aes;
+import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.util.Validate;
 
 public class Chainsql extends Submit {
 	public	EventManager event;
@@ -282,12 +283,18 @@ public class Chainsql extends Submit {
 		}
 		return this;
 	}
-	
-	public Chainsql activateAccount(String accountId){
+	/**
+	 * Start a payment transaction, can be used to activate account 
+	 * @param accountId The Address of an account.
+	 * @param count		Count of coins to transfer.
+	 * @return
+	 */
+	public Chainsql pay(String accountId,int count){
 		JSONObject obj = new JSONObject();
 		obj.put("Account", this.connection.address);
 		obj.put("Destination", accountId);
-		obj.put("Amount", "20000000");
+		BigInteger amount = BigInteger.valueOf(count * 1000000);
+		obj.put("Amount", amount.toString());
 		Transaction payment;
 		try {
 			payment = toPayment(obj,TransactionType.Payment);
@@ -464,7 +471,7 @@ public class Chainsql extends Submit {
 		this.connection.client.getTransaction(hash, cb);
 	}
 	
-	public JSONObject generateAccount(){
+	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.randomSeed();
 		IKeyPair keyPair = seed.keyPair();

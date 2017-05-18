@@ -242,11 +242,11 @@ public class Test {
 		  System.out.println(ret);
 	  }
 	  public void generateAccount(){
-		  System.out.println(c.generateAccount());
+		  System.out.println(c.generateAddress());
 	  }
 	  
 	  public void activateAccount(String account){
-		  JSONObject ret = c.activateAccount(account).submit();
+		  JSONObject ret = c.pay(account,200).submit();
 		  System.out.println(ret);
 	  }
 	public void testdrop(){

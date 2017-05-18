@@ -1,14 +1,15 @@
 package com.peersafe.base.client.transport.impl;
 
-import com.peersafe.base.client.transport.TransportEventHandler;
-import com.peersafe.base.client.transport.WebSocketTransport;
+import java.lang.ref.WeakReference;
+import java.net.URI;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
-import java.lang.ref.WeakReference;
-import java.net.URI;
+import com.peersafe.base.client.transport.TransportEventHandler;
+import com.peersafe.base.client.transport.WebSocketTransport;
 
 class WS extends WebSocketClient {
 
@@ -16,6 +17,7 @@ class WS extends WebSocketClient {
 
     public WS(URI serverURI) {
         super(serverURI, new Draft_17());
+ //       super(serverURI);
     }
 
     public void muteEventHandler() {
@@ -36,7 +38,7 @@ class WS extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-    	//System.out.println(message);
+//    	System.out.println(message);
         TransportEventHandler handler = h.get();
         if (handler != null) {
             handler.onMessage(new JSONObject(message));

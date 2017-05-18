@@ -4,6 +4,7 @@ import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
@@ -69,6 +70,14 @@ public class Chainsql extends Submit {
 		this.connection.client.onReconnected(this::onReconnected);
 		
 		return connection;
+	}
+	
+	public static List<String> array(String val0, String... vals){
+	 	List<String> res = new ArrayList<String>();
+	 	res.add(val0);
+	 	res.addAll(Arrays.asList(vals));
+
+        return res;
 	}
 
 	public void onReconnected(Callback<JSONObject> cb){

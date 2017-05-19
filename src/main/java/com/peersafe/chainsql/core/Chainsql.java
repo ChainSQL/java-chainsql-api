@@ -42,6 +42,11 @@ public class Chainsql extends Submit {
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
 	
+	/**
+	 * Assigning the operating user.
+	 * @param address Account address,start with a lower case 'r'.
+	 * @param secret  Account secret,start with a lower case 's'.
+	 */
 	public void as(String address, String secret) {
 		this.connection.address = address;
 		this.connection.secret = secret;
@@ -50,12 +55,21 @@ public class Chainsql extends Submit {
 		}
 	}
 
+	/**
+	 * Assigning table owner.
+	 * @param address Address of table owner.
+	 */
 	public void use(String address) {
 		this.connection.scope = address;
 	}
 
 	public static final Chainsql c = new Chainsql();
 
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,eg:"ws://127.0.0.1:5006".
+	 * @return Connection object after connected.
+	 */
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
 		while (!connection.client.connected) {
@@ -73,6 +87,12 @@ public class Chainsql extends Submit {
 		return connection;
 	}
 	
+	/**
+	 * Transfer variable number of Strings to List<String>
+	 * @param val0
+	 * @param vals
+	 * @return
+	 */
 	public static List<String> array(String val0, String... vals){
 	 	List<String> res = new ArrayList<String>();
 	 	res.add(val0);
@@ -81,9 +101,17 @@ public class Chainsql extends Submit {
         return res;
 	}
 
+	/**
+	 * Subscribe 'reconnected' event,cb.called trigger when connection lost and reconnect succeed.
+	 * @param cb
+	 */
 	public void onReconnected(Callback<JSONObject> cb){
 		this.reconnectedCB = cb;
 	}
+	/**
+	 * Subscribe 'reconnecting' event,cb.called trigger when connection lost and reconnecting started.
+	 * @param cb
+	 */
 	public void onReconnecting(Callback<JSONObject> cb){
 		this.reconnectCb = cb;
 	}
@@ -104,10 +132,21 @@ public class Chainsql extends Submit {
 		this.connection.disconnect();
 	}
 
+	/**
+	 * Set restrict mode.
+	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
+	 * to a table and some other user interrupts this by making an operation to this identical table.  
+	 * @param falg True to enable restrict mode and false to disable restrict mode.
+	 */
 	public void setRestrict(boolean falg) {
 		this.strictMode = falg;
 	}
 
+	/**
+	 * Create a Table object by giving a table name.
+	 * @param name Name of a table.
+	 * @return Table object.
+	 */
 	public Table table(String name) {
 		Table tab = new Table(name);
 		 if (this.transaction) {
@@ -125,10 +164,23 @@ public class Chainsql extends Submit {
 		return doSubmit(signed);
 	}
 	
+	/**
+	 * A create table operation.
+	 * @param name Table name
+	 * @param raw  Option or conditions to create a table.
+	 * @return	You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
 	
+	/**
+	 * A create table operation.
+	 * @param name Table name.
+	 * @param rawList Option or conditions to create a table.
+	 * @param confidential Table will be confidential or not.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
@@ -179,6 +231,11 @@ public class Chainsql extends Submit {
 		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
 	}
 
+	/**
+	 * A drop table operation.
+	 * @param name Table name.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql dropTable(String name) {
 		JSONObject json = new JSONObject();
 		json.put("OpType", 2);
@@ -201,6 +258,12 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
+	/**
+	 * Rename a table.
+	 * @param oldName
+	 * @param newName
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql renameTable(String oldName, String newName) {
 		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(oldName) + "\",\"TableNewName\":\"" + Util.toHexString(newName) + "\"}}";
 		JSONArray table = new JSONArray();
@@ -226,6 +289,16 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
+	/**
+	 * Grant a user with authorities to operate a table.
+	 * @param name Table name
+	 * @param user User address,start with a lower case 'r'.
+	 * @param userPublicKey User's public key,start with a lower case 'a'.
+	 * 						Will be used if the table is confidential.
+	 * @param flag Options to notify the authorities.eg:"{insert:true,delete:false}" means 
+	 * 			   the user can insert to this table,but cannot delete from this table.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql grant(String name, String user,String userPublicKey,String flag){
 		JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
 		if(res.get("status").equals("error")){
@@ -249,7 +322,14 @@ public class Chainsql extends Submit {
 		return grant_inner(name,user,flag,newToken);
 		
 	}
-	
+	/**
+	 * Grant a user with authorities to operate a table.
+	 * @param name Table name
+	 * @param user User address,start with a lower case 'r'.
+	 * @param flag Options to notify the authorities.eg:"{insert:true,delete:false}" means 
+	 * 			   the user can insert to this table,but cannot delete from this table.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql grant(String name, String user,String flag) {
 		return grant_inner(name,user,flag,"");
 	}
@@ -287,7 +367,7 @@ public class Chainsql extends Submit {
 	 * Start a payment transaction, can be used to activate account 
 	 * @param accountId The Address of an account.
 	 * @param count		Count of coins to transfer.
-	 * @return
+	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql pay(String accountId,int count){
 		JSONObject obj = new JSONObject();
@@ -305,6 +385,10 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
+	/**
+	 * Begin a sql-transaction type operation.
+	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
+	 */
 	public void beginTran(){
 		 if (this.connection!=null && this.connection.address!=null) {
 		    this.transaction = true;
@@ -312,10 +396,18 @@ public class Chainsql extends Submit {
 		  }
 		
 	}
+	/**
+	 * Commit a sql-transaction type operation.
+	 * @return
+	 */
 	public JSONObject commit(){
 		return doCommit("");
 	}
 	
+	/**
+	 * Get server info.
+	 * @return Server's informations.
+	 */
 	public JSONObject getServerInfo(){
 		return connection.client.getServerInfo();
 	}
@@ -351,10 +443,19 @@ public class Chainsql extends Submit {
 		return connection.client.getTransactionCount();
 	}
 	
+	/**
+	 * Get the newest generated ledger.
+	 * @return
+	 */
 	public JSONObject getLedger(){
 		return getLedger(-1);
 	}
 	
+	/**
+	 * Get the ledger identified by ledger_index.
+	 * @param ledger_index Index of a ledger.
+	 * @return Ledger informations.
+	 */
 	public JSONObject getLedger(Integer ledger_index){
 		JSONObject option = new JSONObject();
 		if(ledger_index == -1){
@@ -382,13 +483,20 @@ public class Chainsql extends Submit {
 		}
 		
 	}
-	
+	/**
+	 * An asynchronous api to get the ledger identified by ledger_index.
+	 * @return Ledger informations.
+	 */
 	public void getLedger(Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index",  "validated");
 		this.connection.client.getLedger(option,cb);
 	}
-	
+	/**
+	 * Get the ledger identified by ledger_index.
+	 * @param ledger_index
+	 * @param cb
+	 */
 	public void getLedger(Integer ledger_index,Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index", ledger_index);
@@ -396,10 +504,10 @@ public class Chainsql extends Submit {
 		
 	}
 	
-	public void getLedger(JSONObject option,Callback<JSONObject> cb){
-		this.connection.client.getLedger(option,cb);
-	}
-	
+	/**
+	 * Get newest validated ledger index
+	 * @return
+	 */
 	public JSONObject getLedgerVersion(){
 		
 		retJson = null;
@@ -421,9 +529,18 @@ public class Chainsql extends Submit {
 		}
 		
 	}
+	/**
+	 * Get newest validated ledger index,asynchronous.
+	 * @return
+	 */
 	public void getLedgerVersion(Callback<JSONObject> cb){
 		this.connection.client.getLedgerVersion(cb);	
 	}
+	/**
+	 * Get trasactions submitted by notified account.
+	 * @param address Account address.
+	 * @return Result.
+	 */
 	public JSONObject getTransactions(String address){
 		retJson = null;
 		this.connection.client.getTransactions(address,(data)->{
@@ -442,12 +559,21 @@ public class Chainsql extends Submit {
 		}else{
 			return null;
 		}
-		
 	}
+	/**
+	 * Get trasactions submitted by notified account,asynchronous.
+	 * @param address Account address.
+	 * @return Result.
+	 */
 	public void getTransactions(String address,Callback<JSONObject> cb){
 		this.connection.client.getTransactions(address,cb);	
 	}
 	
+	/**
+	 * Get transaction identified by hash.
+	 * @param hash Transaction hash.
+	 * @return Transaction information.
+	 */
 	public JSONObject getTransaction(String hash){
 		retJson = null;
 		this.connection.client.getTransaction(hash,(data)->{
@@ -467,10 +593,22 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
+	/**
+	 * Get transaction by hash asynrhonously.
+	 * @param hash Transaction hash.
+	 * @param cb
+	 */
 	public void getTransaction(String hash,Callback<JSONObject> cb){
 		this.connection.client.getTransaction(hash, cb);
 	}
 	
+	/**
+	 * Generate a new account.
+	 * @return Contains folling fields:
+	 * 		   secret:Account secret.
+	 * 		   account_id:Account address.
+	 * 		   public_key:Account publickey. 
+	 */
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.randomSeed();
@@ -498,13 +636,7 @@ public class Chainsql extends Submit {
 	public Connection getConnection() {
 		return connection;
 	}
-	public JSONObject commit(SyncCond cond){
-		return doCommit(cond);
-	}
-	public JSONObject commit(Callback<?> cb){
-		return doCommit(cb);
-	}
-	
+
 	/**
 	 * sqlTransaction commit
 	 * @param commitType
@@ -547,6 +679,22 @@ public class Chainsql extends Submit {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	/**
+	 * Commit sql-transactoin synchronously.
+	 * @param cond Return condition.
+	 * @return Commit result.
+	 */
+	public JSONObject commit(SyncCond cond){
+		return doCommit(cond);
+	}
+	/**
+	 * Commit sql-transactoin asynchronously.
+	 * @param cb Callback object.
+	 * @return Commit result.
+	 */
+	public JSONObject commit(Callback<?> cb){
+		return doCommit(cb);
 	}
 	
 	private Transaction toPayment(JSONObject json) throws Exception{

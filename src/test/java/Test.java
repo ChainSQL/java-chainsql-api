@@ -103,9 +103,7 @@ public class Test {
 	  } 
 	  
 	public void getLedge(){
-		JSONObject option = new JSONObject();
-		option.put("ledger_index", 766);
-		c.getLedger(option,(data)->{
+		c.getLedger(766,(data)->{
 			System.out.println("creat------"+data);
 		 });
 	}

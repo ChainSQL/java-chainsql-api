@@ -70,6 +70,7 @@ public class Chainsql extends Submit {
 	 * @param url Websocket url to connect,eg:"ws://127.0.0.1:5006".
 	 * @return Connection object after connected.
 	 */
+	@SuppressWarnings("resource")
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
 		while (!connection.client.connected) {
@@ -127,7 +128,9 @@ public class Chainsql extends Submit {
 		}
 		event.reSubscribe();
 	}
-	
+	/**
+	 * Disconnect the websocket connection.
+	 */
 	public void disconnect() {
 		this.connection.disconnect();
 	}
@@ -212,25 +215,28 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return create(json);
-	}
-
-	private Chainsql create(JSONObject txjson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
+		return prepare(json);
 	}
 	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
 		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
 	}
-
+	/**
+	 * Recreate a table, for slimming the chain.
+	 * @param name Table name.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
+	public Chainsql recreateTable(String name){
+		JSONObject json = new JSONObject();
+		json.put("OpType", 2);
+		json.put("Tables", getTableArray(name));
+		if(this.transaction){
+			this.cache.add(json);
+			return null;
+		}
+		return prepare(json);
+	}
 	/**
 	 * A drop table operation.
 	 * @param name Table name.
@@ -244,18 +250,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return drop(json);
-	}
-
-	private Chainsql drop(JSONObject txjson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
+		return prepare(json);
 	}
 
 	/**
@@ -275,18 +270,8 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return rename(json);
+		return prepare(json);
 		
-	}
-	private Chainsql rename(JSONObject txjson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
 	}
 
 	/**
@@ -351,17 +336,7 @@ public class Chainsql extends Submit {
 			this.cache.add(txJson);
 			return null;
 		}
-		return grant(name, txJson);
-	}
-	private Chainsql grant(String name, JSONObject txJson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txJson);
-		signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
+		return prepare(txJson);
 	}
 	/**
 	 * Start a payment transaction, can be used to activate account 
@@ -642,6 +617,7 @@ public class Chainsql extends Submit {
 	 * @param commitType
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public JSONObject doCommit(Object  commitType){
 		List<JSONObject> cache = this.cache;	
 		
@@ -697,6 +673,16 @@ public class Chainsql extends Submit {
 		return doCommit(cb);
 	}
 	
+	private Chainsql prepare(JSONObject txjson){
+		Transaction payment;
+		try {
+			payment = toPayment(txjson);
+			signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this;
+	}
 	private Transaction toPayment(JSONObject json) throws Exception{
 		json.put("Account",this.connection.address);
     	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);

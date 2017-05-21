@@ -70,45 +70,90 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public static interface OnReconnecting extends events<JSONObject> {}
     public static interface OnReconnected extends events<JSONObject> {}
 
-    // Fluent binders
+    /**
+     * Trigger when a transaction validated.
+     * @param cb
+     * @return
+     */
     public Client onValidatedTransaction(OnValidatedTransaction cb) {
         on(OnValidatedTransaction.class, cb);
         return this;
     }
 
+    /**
+     * Trigger when ledger closed
+     * @param cb
+     * @return
+     */
 	public Client onLedgerClosed(OnLedgerClosed cb) {
         on(OnLedgerClosed.class, cb);
         return this;
     }
+	
+	/**
+	 * Trigger when transaction related to a subscribed table validate_success or db_success.
+	 * @param cb
+	 * @return
+	 */
 	public Client OnTBMessage(OnTBMessage cb) {
         on(OnTBMessage.class, cb);
         return this;
     }
+	/**
+	 * Trigger when a subscribed  transaction validate_success or db_success.
+	 * @param cb
+	 * @return
+	 */
 	public Client OnTXMessage(OnTXMessage cb) {
         on(OnTXMessage.class, cb);
         return this;
     }
 
+	/**
+	 * Trigger when websocket message received.
+	 * @param cb
+	 * @return
+	 */
 	public Client OnMessage(OnMessage cb) {
         on(OnMessage.class, cb);
         return this;
     } 
 	
+	/**
+	 * Trigger when reconnecting to a server begins.
+	 * @param cb
+	 * @return
+	 */
 	public Client onReconnecting(OnReconnecting cb){
         on(OnReconnecting.class, cb);
         return this;
 	}
 	
+	/**
+	 * Trigger when reconnect to a server succeed.
+	 * @param cb
+	 * @return
+	 */
 	public Client onReconnected(OnReconnected cb){
         on(OnReconnected.class, cb);
         return this;
 	}
+	
+	/**
+	 * Trigger when websocket connection succeed.
+	 * @param onConnected
+	 * @return
+	 */
     public Client onConnected(OnConnected onConnected) {
         this.on(OnConnected.class, onConnected);
         return this;
     }
 
-    // Event handler sugar
+    /**
+     * Trigger when websocket connection disconnected.
+     * @param cb
+     * @return
+     */
     public Client onDisconnected(OnDisconnected cb) {
         on(OnDisconnected.class, cb);
         return this;
@@ -168,7 +213,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private static final int MAX_REQUEST_COUNT = 10; 
     
     private ScheduledFuture reconnect_future = null;
-    // Constructor
+    /**
+     *  Constructor
+     * @param ws
+     */
     public Client(WebSocketTransport ws) {
         this.ws = ws;
         ws.setHandler(this);
@@ -192,32 +240,42 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private int reconnectDelay() {
         return 1000;
     }
-    public boolean isManuallyDisconnected() {
-        return manuallyDisconnected;
-    }
 
-    // ### Setters
-
-    public void reconnectDormantAfter(long reconnectDormantAfter) {
-        this.reconnectDormantAfter = reconnectDormantAfter;
-    }
-
+    /**
+     * 
+     * @param transactionSubscriptionManager
+     * @return
+     */
     public Client transactionSubscriptionManager(TransactionSubscriptionManager transactionSubscriptionManager) {
         this.transactionSubscriptionManager = transactionSubscriptionManager;
         return this;
     }
-
-    // ### Helpers
-
+    
+    /**
+     * Log tools.
+     * @param level
+     * @param fmt
+     * @param args
+     */
     public static void log(Level level, String fmt, Object... args) {
         if (logger.isLoggable(level)) {
             logger.log(level, fmt, args);
         }
     }
 
+    /**
+     * 
+     * @param object
+     * @return
+     */
     public static String prettyJSON(JSONObject object) {
         return object.toString(4);
     }
+    /**
+     * 
+     * @param s
+     * @return
+     */
     public static JSONObject parseJSON(String s) {
         return new JSONObject(s);
     }
@@ -246,17 +304,25 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+    /**
+     * 
+     * @param uri
+     */
     public void doConnect(String uri) {
         log(Level.INFO, "Connecting to " + uri);
         previousUri = uri;
         ws.connect(URI.create(uri));
     }
 
+    /**
+     * Disconnect from websocket-url
+     */
     public void disconnect() {
     	disconnectInner();
         service.shutdownNow();
         // our disconnect handler should do the rest
     }
+    
     private void disconnectInner(){
         manuallyDisconnected = true;
         ws.disconnect();
@@ -300,6 +366,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
 
+    /**
+     * 
+     */
     public void reconnect() {
     	emit(OnReconnecting.class,null);
     	
@@ -339,8 +408,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
 
-    // ### Handler binders binder
-
+    /**
+     *  Handler binders binder
+     * @param s
+     * @param onConnected
+     */
     public void connect(final String s, final OnConnected onConnected) {
         run(new Runnable() {
             public void run() {
@@ -350,6 +422,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
 
+    /**
+     * 
+     * @param onDisconnected
+     */
     public void disconnect(final OnDisconnected onDisconnected) {
         run(new Runnable() {
             public void run() {
@@ -359,6 +435,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
 
+    /**
+     * 
+     * @param nextTick
+     * @param onConnected
+     */
     public void whenConnected(boolean nextTick, final OnConnected onConnected) {
         if (connected) {
             if (nextTick) {
@@ -376,20 +457,35 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
 
+    /**
+     * 
+     * @param onConnected
+     */
     public void nowOrWhenConnected(OnConnected onConnected) {
         whenConnected(false, onConnected);
     }
 
+    /**
+     * 
+     * @param onConnected
+     */
     public void nextTickOrWhenConnected(OnConnected onConnected) {
         whenConnected(true, onConnected);
     }
 
+    /**
+     * 
+     */
     public void dispose() {
         ws = null;
     }
 
     /* -------------------------------- EXECUTOR -------------------------------- */
 
+    /**
+     * 
+     * @param runnable
+     */
     public void run(Runnable runnable) {
         // What if we are already in the client thread?? What happens then ?
         if (runningOnClientThread()) {
@@ -399,11 +495,16 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
 
+    /**
+     * Start a scheduled task.
+     * @param ms
+     * @param runnable
+     */
     public void schedule(long ms, Runnable runnable) {
         service.schedule(errorHandling(runnable), ms, TimeUnit.MILLISECONDS);
     }
 
-    public boolean runningOnClientThread() {
+    private boolean runningOnClientThread() {
         return clientThread != null && Thread.currentThread().getId() == clientThread.getId();
     }
 
@@ -475,16 +576,24 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
-
+    /**
+     * 
+     */
     @Override
     public void onConnecting(int attempt) {
     }
 
+    /**
+     * 
+     */
     @Override
     public void onError(Exception error) {
         onException(error);
     }
 
+    /**
+     * 
+     */
     @Override
     public void onDisconnected(boolean willReconnect) {
         run(new Runnable() {
@@ -495,6 +604,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
 
+    /**
+     * 
+     */
     @Override
     public void onConnected() {
         run(new Runnable() {
@@ -506,6 +618,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /* ----------------------- CLIENT THREAD EVENT HANDLER ---------------------- */
 
+    /**
+     * 
+     * @param msg
+     */
     public void onMessageInClientThread(JSONObject msg) {
     	String str = msg.optString("type",null);
         Message type = Message.valueOf(str);
@@ -610,6 +726,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
 
+    /**
+     * 
+     * @param tr
+     */
     public void onTransactionResult(TransactionResult tr) {
         log(Level.INFO, "Transaction {0} is validated", tr.hash);
         Map<AccountID, STObject> affected = tr.modifiedRoots();
@@ -639,7 +759,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         emit(OnValidatedTransaction.class, tr);
     }
 
-    public void sendMessage(JSONObject object) {
+    private void sendMessage(JSONObject object) {
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Send: {0}", prettyJSON(object));
         }
@@ -661,12 +781,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /* -------------------------------- ACCOUNTS -------------------------------- */
 
+    /**
+     * Request account information.
+     * @param masterSeed
+     * @return
+     */
     public Account accountFromSeed(String masterSeed) {
         IKeyPair kp = Seed.fromBase58(masterSeed).keyPair();
         return account(AccountID.fromKeyPair(kp), kp);
     }
 
-    public Account account(final AccountID id, IKeyPair keyPair) {
+    private Account account(final AccountID id, IKeyPair keyPair) {
         if (accounts.containsKey(id)) {
             return accounts.get(id);
         } else {
@@ -749,10 +874,19 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /* ------------------------------ REQUESTS ------------------------------ */
 
+    /**
+     * Create a new request.
+     * @param cmd Command name.
+     * @return
+     */
     public Request newRequest(Command cmd) {
         return new Request(cmd, cmdIDs++, this);
     }
 
+    /**
+     * Send a request message.
+     * @param request
+     */
     public void sendRequest(final Request request) {
     	//System.out.println("request:"+request.json());
         Logger reqLog = Request.logger;
@@ -775,12 +909,18 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
 
-    // ### Managed Requests API
+    /**
+     *  Managed Requests API
+     * @param cmd
+     * @param manager
+     * @param builder
+     * @return
+     */
     public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder){
     	return makeManagedRequest(cmd,manager,builder,0);
     }
     
-    public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder,int depth) {
+    private <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder,int depth) {
     	if(depth > MAX_REQUEST_COUNT){
     		return null;
     	}
@@ -857,10 +997,21 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     // ### Managed Requests
 
+    /**
+     * 
+     * @param accountID
+     * @return
+     */
     public AccountTxPager accountTxPager(AccountID accountID) {
         return new AccountTxPager(this, accountID, null);
     }
 
+    /**
+     * Request for a ledger_entry.
+     * @param index
+     * @param ledger_index
+     * @param cb
+     */
     public void requestLedgerEntry(final Hash256 index, final Number ledger_index, final Manager<LedgerEntry> cb) {
         makeManagedRequest(Command.ledger_entry, cb, new Request.Builder<LedgerEntry>() {
             @Override
@@ -888,44 +1039,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return l;
     }
 
-    public void requestAccountInfo(final AccountID addy, final Manager<AccountRoot> manager) {
-        makeManagedRequest(Command.account_info, manager, new Request.Builder<AccountRoot>() {
-            @Override
-            public void beforeRequest(Request request) {
-                request.json("account", addy);
-            }
-
-            @Override
-            public AccountRoot buildTypedResponse(Response response) {
-                JSONObject root = response.result.optJSONObject("account_data");
-                return (AccountRoot) STObject.fromJSONObject(root);
-            }
-        });
-    }
-
-    public void requestLedgerData(final long ledger_index, final Manager<ArrayList<LedgerEntry>> manager) {
-        makeManagedRequest(Command.ledger_data, manager, new Request.Builder<ArrayList<LedgerEntry>>() {
-            @Override
-            public void beforeRequest(Request request) {
-                request.json("ledger_index", ledger_index);
-                request.json("binary", true);
-            }
-
-            @Override
-            public ArrayList<LedgerEntry> buildTypedResponse(Response response) {
-                JSONArray state = response.result.getJSONArray("state");
-                ArrayList<LedgerEntry> result = new ArrayList<LedgerEntry>();
-                for (int i = 0; i < state.length(); i++) {
-                    JSONObject stateObject = state.getJSONObject(i);
-                    LedgerEntry le = (LedgerEntry) STObject.fromHex(stateObject.getString("data"));
-                    le.index(Hash256.fromHex(stateObject.getString("index")));
-                    result.add(le);
-                }
-                return result;
-            }
-        });
-    }
-
+    /**
+     * Request for account_lines.
+     * @param addy
+     * @param manager
+     */
     public void requestAccountLines(final AccountID addy, final Manager<ArrayList<AccountLine>> manager) {
         makeManagedRequest(Command.account_lines, manager, new Request.Builder<ArrayList<AccountLine>>() {
             @Override
@@ -946,31 +1064,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
 
-    public void requestHostID(final Callback<String> callback) {
-        makeManagedRequest(Command.server_info, new Manager<String>() {
-            @Override
-            public void cb(Response response, String hostid) throws JSONException {
-                callback.called(hostid);
-            }
-
-            @Override
-            public boolean retryOnUnsuccessful(Response r) {
-                return true;
-            }
-        }, new Request.Builder<String>() {
-            @Override
-            public void beforeRequest(Request request) {
-
-            }
-
-            @Override
-            public String buildTypedResponse(Response response) {
-                JSONObject info = response.result.getJSONObject("info");
-                return info.getString("hostid");
-            }
-        });
-    }
-
+    /**
+     * Request for book_offers.
+     * @param ledger_index
+     * @param get
+     * @param pay
+     * @param cb
+     */
     public void requestBookOffers(final Number ledger_index,
                                   final Issue get,
                                   final Issue pay,
@@ -999,69 +1099,27 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
 
-    public void requestLedger(final Number ledger_index, final Manager<JSONObject> cb) {
-        makeManagedRequest(Command.ledger, cb, new Request.Builder<JSONObject>() {
-            @Override
-            public void beforeRequest(Request request) {
-                request.json("ledger_index", ledgerIndex(ledger_index));
-            }
-
-            @Override
-            public JSONObject buildTypedResponse(Response response) {
-                return response.result.optJSONObject("ledger");
-            }
-        });
-    }
-
-    public void requestTransaction(final Hash256 hash, final Manager<TransactionResult> cb) {
-        makeManagedRequest(Command.tx, cb, new Request.Builder<TransactionResult>() {
-            @Override
-            public void beforeRequest(Request request) {
-                request.json("binary", true);
-                request.json("transaction", hash);
-            }
-
-            @Override
-            public TransactionResult buildTypedResponse(Response response) {
-                return new TransactionResult(response.result, TransactionResult.Source.request_tx_binary);
-            }
-        });
-    }
-
-    // TODO: some nice way of using lambdas for the common case
-    // sending null, is one way of indicating `some` kind of error
-    // but that's kind of lame.
-    @Deprecated // before it even got started
-    public void requestTransaction(final Hash256 hash, final Callback<TransactionResult> cb) {
-        requestTransaction(hash, new Manager<TransactionResult>() {
-            @Override
-            public void cb(Response response, TransactionResult transactionResult) throws JSONException {
-                if (response.succeeded) {
-                    cb.called(transactionResult);
-                } else {
-                    throw new RuntimeException("Failed" + response.message);
-                }
-            }
-        });
-    }
-
+ 
     // ### Request builders
     // These all return Request
-
+    /**
+     * Submit a transaction
+     * @param tx_blob
+     * @param fail_hard
+     * @return
+     */
     public Request submit(String tx_blob, boolean fail_hard) {
         Request req = newRequest(Command.submit);
         req.json("tx_blob", tx_blob);
         req.json("fail_hard", fail_hard);
         return req;
     }
-
-    public Request accountLines(AccountID account) {
-        Request req = newRequest(Command.account_lines);
-        req.json("account", account.address);
-        return req;
-
-    }    
     
+    /**
+     * Request for account information.
+     * @param account
+     * @return
+     */
     public Request accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
@@ -1071,6 +1129,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    		return request;
     }
     
+    /**
+     * 
+     * @param messageTx
+     * @return
+     */
     public Request messageTx(JSONObject messageTx){
     	 Request request = newRequest(Command.subscribe);
     	 request.json("tx_json", messageTx);
@@ -1079,6 +1142,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
          return request;
     }
     
+    /**
+     * Select data from chain.
+     * @param account
+     * @param tabarr
+     * @param raw
+     * @param cb
+     * @return
+     */
     public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
 	   	 JSONObject txjson = new JSONObject();
@@ -1100,6 +1171,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         waiting(request);
    	 	return request;	
 	}
+    
+    /**
+     * Request for ledger data.
+     * @param option
+     * @param cb
+     */
     public  void getLedger(JSONObject option,Callback<JSONObject> cb){  
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
@@ -1125,7 +1202,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 return response.result;
             }
         });
-      }
+    }
+    /**
+     * Request for newest published ledger_index.
+     * @param cb
+     */
     public  void getLedgerVersion(Callback<JSONObject> cb){   	
     	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
             @Override
@@ -1149,6 +1230,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
      }    
     
+    /**
+     * Request for transaction information.
+     * @param address
+     * @param cb
+     */
     public  void getTransactions(String address,Callback<JSONObject> cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
@@ -1193,7 +1279,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	}
    	 	}
     }
-    
+    /**
+     * Get transaction count on chain.
+     * @return
+     */
     public JSONObject getTransactionCount(){
     	Request request = newRequest(Command.tx_count);
 	    request.request();
@@ -1201,6 +1290,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	   	return request.response.result;	
     }
     
+    /**
+     * Get server_info
+     * @return
+     */
     public JSONObject getServerInfo(){
     	Request request = newRequest(Command.server_info);
         request.request();
@@ -1208,6 +1301,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    	 	return request.response.result;
     }
 
+    /**
+     * Get user_token for table,if token got not null, it is a confidential table.
+     * @param owner Table's owner/creator.
+     * @param user	Operating account.
+     * @param name	Table name.
+     * @return Request object contains response data.
+     */
     public Request getUserToken(String owner,String user,String name){
     	 Request request = newRequest(Command.g_userToken);
 	   	 JSONObject txjson = new JSONObject();
@@ -1221,6 +1321,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	   	 return request;	
     }
     
+    /**
+     * Prepare for a transaction for : filling in NameInDB field, filling in CheckHash field for StrictMode
+     * @param txjson tx_json with fields and value a transaction needed.
+     * @return
+     */
     public Request getTxJson(JSONObject txjson){
     	Request request = newRequest(Command.t_prepare);
 	   	request.json("tx_json", txjson);
@@ -1229,6 +1334,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	    return request;	
    }
     
+    /**
+     * Request for a transaction's information.
+     * @param hash
+     * @param cb
+     */
     public  void getTransaction(String hash,Callback<JSONObject> cb){   
     	
     	makeManagedRequest(Command.tx, new Manager<JSONObject>() {
@@ -1257,26 +1367,20 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
-   
     
-//    public JSONObject walletPropose(){
-//        Request request = newRequest(Command.wallet_propose);
-//        request.request();
-//        
-//        waiting(request);
-//        if(request.response == null){
-//        	return null;
-//        }else if(request.response.message.has("error")){
-//        	return request.response.message;
-//        }else{
-//        	return request.response.result;
-//        }   		
-//    }
-    
+    /**
+     * Request ping.
+     * @return
+     */
     public Request ping() {
         return newRequest(Command.ping);
     }
 
+    /**
+     * Subscribe for account.
+     * @param accounts
+     * @return
+     */
     public Request subscribeAccount(AccountID... accounts) {
         Request request = newRequest(Command.subscribe);
         JSONArray accounts_arr = new JSONArray();
@@ -1287,6 +1391,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return request;
     }
 
+    /**
+     * Request for book-offers.
+     * @param get
+     * @param pay
+     * @return
+     */
     public Request subscribeBookOffers(Issue get, Issue pay) {
         Request request = newRequest(Command.subscribe);
         JSONObject book = new JSONObject();
@@ -1298,6 +1408,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return request;
     }
 
+    /**
+     * Request for book offers.
+     * @param get
+     * @param pay
+     * @return
+     */
     public Request requestBookOffers(Issue get, Issue pay) {
         Request request = newRequest(Command.book_offers);
         request.json("taker_gets", get.toJSON());

@@ -28,20 +28,39 @@ public class Account {
     private TransactionManager tm;
     public IKeyPair keyPair;
 
+    /**
+     * Create AccountID
+     * @return
+     */
     public AccountID id() {
         return id;
     }
 
+    /**
+     * Get trackedAccountRoot
+     * @return
+     */
     public TrackedAccountRoot getAccountRoot() {
         return accountRoot;
     }
 
+    /**
+     * Set AccountRoot
+     * @param accountRoot
+     */
     public void setAccountRoot(TrackedAccountRoot accountRoot) {
         Account.this.accountRoot = accountRoot;
     }
 
     private AccountID id;
 
+    /**
+     * Set Account parameters
+     * @param id
+     * @param keyPair
+     * @param root
+     * @param tm
+     */
     public Account(AccountID id,
                    IKeyPair keyPair, TrackedAccountRoot root,
                    TransactionManager tm) {
@@ -51,6 +70,9 @@ public class Account {
         this.keyPair = keyPair;
     }
 
+    /**
+     * AccountId to String
+     */
     @Override
     public String toString() {
         return id.toString();

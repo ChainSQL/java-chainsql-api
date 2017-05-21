@@ -14,6 +14,11 @@ import com.peersafe.base.core.coretypes.STArray;
 import com.peersafe.base.core.coretypes.STObject;
 
 public class Validate {
+	/**
+	 * 
+	 * @param obj
+	 * @return
+	 */
 	public Object create(String obj) {
 		Object [] result ={} ;
 		

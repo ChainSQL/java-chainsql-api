@@ -53,6 +53,12 @@ public class Ecies {
 		byte [] dataPubB = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
 		return eciesEncrypt(plainText.getBytes(),dataPubB);
 	}
+	/**
+	 * 
+	 * @param plainBytes
+	 * @param publicKey
+	 * @return
+	 */
 	public static String eciesEncrypt(byte[] plainBytes,byte[] publicKey){
 		Security.addProvider(new BouncyCastleProvider());
 
@@ -103,6 +109,13 @@ public class Ecies {
 		}
 		return finalHex;
 	}
+	/**
+	 * 
+	 * @param cipherHex
+	 * @param privateKey
+	 * @return
+	 * @throws Exception
+	 */
 	public static byte[] eciesDecrypt (String cipherHex,String privateKey) throws Exception
 	{
 		Security.addProvider(new BouncyCastleProvider());

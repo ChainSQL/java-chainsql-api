@@ -23,6 +23,7 @@ import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
@@ -193,7 +194,7 @@ public class Chainsql extends Submit {
 		}
 		
 		JSONObject json = new JSONObject();
-		json.put("OpType", 1);
+		json.put("OpType", Constant.opType.get("t_create"));
 		json.put("Tables", getTableArray(name));
 		
 		String strRaw = listRaw.toString();
@@ -229,7 +230,7 @@ public class Chainsql extends Submit {
 	 */
 	public Chainsql recreateTable(String name){
 		JSONObject json = new JSONObject();
-		json.put("OpType", 2);
+		json.put("OpType", Constant.opType.get("t_recreate"));
 		json.put("Tables", getTableArray(name));
 		if(this.transaction){
 			this.cache.add(json);
@@ -244,7 +245,7 @@ public class Chainsql extends Submit {
 	 */
 	public Chainsql dropTable(String name) {
 		JSONObject json = new JSONObject();
-		json.put("OpType", 2);
+		json.put("OpType", Constant.opType.get("t_drop"));
 		json.put("Tables", getTableArray(name));
 		if(this.transaction){
 			this.cache.add(json);
@@ -264,7 +265,7 @@ public class Chainsql extends Submit {
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		JSONObject json = new JSONObject();
-		json.put("OpType", 3);
+		json.put("OpType", Constant.opType.get("t_rename"));
 		json.put("Tables", table);
 		if(this.transaction){
 			this.cache.add(json);
@@ -325,7 +326,7 @@ public class Chainsql extends Submit {
 		flags.add(json);
 		JSONObject txJson = new JSONObject();
 		txJson.put("Tables", getTableArray(name));
-		txJson.put("OpType", 11);
+		txJson.put("OpType", Constant.opType.get("t_grant"));
 		txJson.put("User", user);
 		txJson.put("Raw", Util.toHexString(flags.toString()));
 		if(token.length() > 0){

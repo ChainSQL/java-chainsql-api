@@ -248,7 +248,13 @@ public abstract class Submit {
 	    	return false;
 	    }
 	}
-	
+	/**
+	 * Translate to transaction type.
+	 * @param json
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
 	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
     	Transaction payment = new Transaction(type);
     	 try {  

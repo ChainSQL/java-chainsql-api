@@ -22,6 +22,8 @@ public class Constant {
 			put("r_update", 8);
 			put("r_delete", 9);
 			put("t_assert",10);
+			put("t_grant",11);
+			put("t_recreate",12);
 		}}; 
 		
 		

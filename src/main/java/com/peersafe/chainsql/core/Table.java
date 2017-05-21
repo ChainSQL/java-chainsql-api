@@ -29,15 +29,24 @@ public class Table extends Submit{
 	public boolean transaction = false;
 	public	EventManager event;
 
+	/**
+	 * Constructor for Table.
+	 * @param name
+	 */
 	public Table(String name) {
 		super();
 		this.name = name;
 	}
-
+/*
 	public Table() {
 		super();
 	}
-	
+*/
+	/**
+	 * Insert data to a table.
+	 * @param orgs Insert parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
@@ -50,6 +59,11 @@ public class Table extends Submit{
 		
 	}
 	
+	/**
+	 * Update table data.
+	 * @param orgs Update parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table update(List<String> orgs) {
 		
 		for(String s: orgs){
@@ -62,7 +76,10 @@ public class Table extends Submit{
 	    return dealWithTransaction();
 		
 	}
-	
+	/**
+	 * Delete data from a table.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table delete() {
 		this.exec = "r_delete";
 		return dealWithTransaction();
@@ -83,6 +100,11 @@ public class Table extends Submit{
 			return this;
 		}
 	}
+	/**
+	 * Select data from a table.
+	 * @param orgs Select parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table get(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
@@ -97,6 +119,11 @@ public class Table extends Submit{
 		
 	}
 
+	/**
+	 * Filter conditions when select.
+	 * @param orgs Select conditions.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table withFields(String  orgs){
 		if(!"".equals(orgs)&&orgs!=null){
 			String ss = orgs.replace("\'", "\"");
@@ -105,6 +132,10 @@ public class Table extends Submit{
 		return this;
 		
 	}
+	
+	/**
+	 * Assertion when sql-transaction begins.
+	 */
 	public void sqlAssert(){
 		if (!this.transaction)
 			try {
@@ -129,6 +160,11 @@ public class Table extends Submit{
 		}
 	}
 	
+	/**
+	 * Filter condition for select result.
+	 * @param orgs
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table limit(String orgs){
 		String ss = "";
 		if(!"".equals(orgs)&&orgs!=null){
@@ -141,6 +177,11 @@ public class Table extends Submit{
 		return this;
 	}
 
+	/**
+	 * Sort for a select result.
+	 * @param orgs Sort conditions.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table order(List<String> orgs){
 		List<JSONObject> orderarr = new ArrayList<JSONObject>();
 		for(String s: orgs){

@@ -13,6 +13,10 @@ public class EventManager {
 	private HashMap<String,Callback> mapCache;
 	public JSONObject result;
 
+	/**
+	 * Constructor
+	 * @param connection
+	 */
 	public EventManager(Connection connection) {
 		super();
 		this.connection = connection;
@@ -20,6 +24,9 @@ public class EventManager {
 		this.onMessage = false;
 	}
 	
+	/**
+	 * Resubscribe automatically after reconnected.
+	 */
 	public void reSubscribe(){
 		int ownerLen = this.connection.address.length();
 		for(String key : mapCache.keySet()){
@@ -35,7 +42,13 @@ public class EventManager {
 		}
 	}
 	
-	public void subTable(String name, String owner ,Callback cb) {
+	/**
+	 * Subscribe for a table.
+	 * @param name Table name.
+	 * @param owner Table owner address.
+	 * @param cb 
+	 */
+	public void subTable(String name, String owner ,Callback<?> cb) {
  		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("owner", owner);
@@ -49,7 +62,12 @@ public class EventManager {
 		this.mapCache.put(name + owner,cb);
 	}
 
-	public void subTx(String id,Callback cb) {
+	/**
+	 * Subscribe a transaction.
+	 * @param id Transaction hash.
+	 * @param cb
+	 */
+	public void subTx(String id,Callback<?> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("transaction", id);
@@ -59,9 +77,13 @@ public class EventManager {
 			this.onMessage = true;
 		}
 		this.mapCache.put(id, cb);
-
 	}
 
+	/**
+	 * Un-subscribe a table.
+	 * @param name Table name.
+	 * @param owner Table owner address.
+	 */
 	public void unsubTable(String name, String owner) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
@@ -70,9 +92,12 @@ public class EventManager {
 		this.connection.client.subscriptions.addMessage(messageTx);
 	
 		this.mapCache.remove(name + owner);
-
 	}
 
+	/**
+	 * Un-subscribe a transaction.
+	 * @param id Transaction hash.
+	 */
 	public void unsubTx(String id) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
@@ -84,6 +109,10 @@ public class EventManager {
 
 	}
 
+	/**
+	 * Table transaction trigger.
+	 * @param data
+	 */
 	private void onTBMessage(JSONObject data){
 		String key = data.getString("tablename") + data.getString("owner");
 		makeCallback(key,data);

@@ -13,16 +13,30 @@ import org.json.JSONObject;
 public class Util {
 	private static String hexString = "0123456789ABCDEF";
 
+	/**
+	 * @param args
+	 * @return
+	 */
 	public static String StrToJsonStr(String args) {
 		JSONObject a = new JSONObject(args);
 		return a.toString();
 	}
   
+	/**
+	 * Transfer a json-str to JSONObject.
+	 * @param args
+	 * @return
+	 */
     public static JSONObject StrToJson(String args) {
 		JSONObject a = new JSONObject(args);
         return a;
     }
     
+    /**
+     * Transfer a JSON-str List to a JSONObject List.
+     * @param list
+     * @return
+     */
     public static List<JSONObject> ListToJsonList(List<String> list){
     	List<JSONObject> listJson = new ArrayList<JSONObject>();
 		for (String s : list) {
@@ -32,12 +46,22 @@ public class Util {
 		return listJson;
     }
     
+    /**
+     * JSON-Str to JSONArray
+     * @param str
+     * @return
+     */
     public static JSONArray strToJSONArray(String str){
 		JSONArray array = new JSONArray();
 		array.put(new JSONObject(str));
 		return array;
     }
     
+    /**
+     * Get random byte array.
+     * @param length
+     * @return
+     */
     public static byte[] getRandomBytes(int length){
     	byte[] bytes = new byte[length];
     	Random r = new Random();
@@ -45,6 +69,11 @@ public class Util {
     	return bytes;
     }
     
+    /**
+     * Check fields
+     * @param strraw
+     * @throws Exception
+     */
 	public static void checkinsert(List<JSONObject> strraw) throws Exception{
 		boolean isHavePk = false;
 		for (int i = 0; i < strraw.size(); i++) {	
@@ -98,10 +127,20 @@ public class Util {
 			}
 		}
 	}
-	
+	/**
+	 * Transfer byte array to Hex String
+	 * @param bytes
+	 * @return
+	 */
 	public static String bytesToHex(byte[] bytes) {
 		return encode(bytes);
 	}
+	
+	/**
+	 * Hex String to byte array.
+	 * @param bytes
+	 * @return
+	 */
 	public static byte[] hexToBytes(String bytes){
 	    ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
 	    //将每2位16进制整数组装成一个字节
@@ -110,15 +149,26 @@ public class Util {
 	    return baos.toByteArray();
 	}
 	
+	/**
+	 * String to HexString
+	 * @param s
+	 * @return
+	 */
 	public static String toHexString(String s){
 		String str = encode(s.getBytes());
 		return str;
-	} 
+	}
+	
+	/**
+	 * Transfer from HexString to String
+	 * @param s
+	 * @return
+	 */
 	public static String fromHexString(String s){
 		return decode(s);
 	}
 	 
-	public static String encode(byte[] bytes){
+	private static String encode(byte[] bytes){
 		StringBuilder sb=new StringBuilder(bytes.length*2);
 		//将字节数组中每个字节拆解成2位16进制整数
 	    for(int i=0;i<bytes.length;i++)
@@ -131,7 +181,7 @@ public class Util {
 	/*
 	* 将16进制数字解码成字符串,适用于所有字符（包括中文）
 	*/
-	public static String decode(String bytes){
+	private static String decode(String bytes){
 	    ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
 	    //将每2位16进制整数组装成一个字节
 	    for(int i=0;i<bytes.length();i+=2)
@@ -152,6 +202,12 @@ public class Util {
 //	 	}
 //        return res;
 //	}
+	/**
+	 * String Parameters to List<String>
+	 * @param val0
+	 * @param vals
+	 * @return
+	 */
 	public static List<String> array(String val0, String... vals){
 	 	List<String> res = new ArrayList<String>();
 	 	res.add(val0);
@@ -174,7 +230,9 @@ public class Util {
 			table.put("TableName", fromHexString(table.getString("TableName")));
 		}
 	}
-	
+	/**
+	 * Wait for 50 milliseconds.
+	 */
 	public static void waiting(){
       	try {
 			Thread.sleep(50);

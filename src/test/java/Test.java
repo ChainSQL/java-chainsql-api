@@ -20,7 +20,7 @@ public class Test {
 		 //c.connect("ws://192.168.0.148:6006");
 
 		  // c.connect("ws://192.168.0.110:6007");
-		    c.connect("ws://101.201.40.124:5006");
+		    c.connect("ws://101.201.40.124:7006");
 		  
 		  sTableName = "hime2";
 		 
@@ -72,12 +72,12 @@ public class Test {
 //		  test.testdrop();
 //		  test.grant();		 
 		  
-		  	test.getTransactions();
+//		  	test.getTransactions();
 //		  	 test.getTransaction();
 //		  test.getChainInfo();
 //		  test.generateAccount();
 //		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
-//		  test.getServerInfo();
+		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
 //		  } catch (InterruptedException e) {

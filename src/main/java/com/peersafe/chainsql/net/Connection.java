@@ -13,54 +13,88 @@ public class Connection implements Closeable {
 	public String scope;
 	public Client client;
 
-/*	public void as (String address ,String secret) {
-		  this.address = address;
-		  this.secret = secret;
-		  this.scope = this.address;
-	}
-	public void use(String address){
-		  this.scope =address;
-	} 
-	*/
+	/**
+	 * Connect to a websocket address.
+	 * @param url Websocket url.
+	 * @return Connection object.
+	 */
 	public Connection connect(String url){
 		this.client = new Client(new JavaWebSocketTransportImpl()).connect(url);
 		return this;  
 	} 
 	
+	/**
+	 * Disconnect from websocket connection.
+	 */
 	public void  disconnect(){
 		this.client.disconnect();
 	
 	} 
 	
+	/**
+	 * Get Client object.
+	 * @return
+	 */
 	public Client getClient() {
 		return client;
 	}
+	
+	/**
+	 * Set Client object.
+	 * @param client
+	 */
 	public void setClient(Client client) {
 		this.client = client;
 	}
+	/**
+	 * Get account address.
+	 * @return
+	 */
 	public String getAddress() {
 		return address;
 	}
+	/**
+	 * Set account address.
+	 * @param address
+	 */
 	public void setAddress(String address) {
 		this.address = address;
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	public String getSecret() {
 		return secret;
 	}
+	/**
+	 * Set secret.
+	 * @param secret
+	 */
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
+	/**
+	 * Get scope
+	 * @return
+	 */
 	public String getScope() {
 		return scope;
 	}
+	/**
+	 * Set scope.
+	 * @param scope
+	 */
 	public void setScope(String scope) {
 		this.scope = scope;
 	}
 	
+	/**
+	 * Close a connection.
+	 */
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
-		
+		disconnect();
 	}
 
 }

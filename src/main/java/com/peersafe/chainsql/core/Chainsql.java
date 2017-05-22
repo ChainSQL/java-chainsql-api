@@ -1,9 +1,11 @@
 package com.peersafe.chainsql.core;
 
-import static com.ripple.config.Config.getB58IdentiferCodecs;
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
+import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
@@ -11,19 +13,20 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.pubsub.Publisher.Callback;
-import com.ripple.core.serialized.enums.TransactionType;
-import com.ripple.core.types.known.tx.Transaction;
-import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.crypto.ecdsa.IKeyPair;
-import com.ripple.crypto.ecdsa.Seed;
-import com.ripple.encodings.B58IdentiferCodecs;
 
 public class Chainsql extends Submit {
 	public	EventManager event;
@@ -40,6 +43,11 @@ public class Chainsql extends Submit {
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
 	
+	/**
+	 * Assigning the operating user.
+	 * @param address Account address,start with a lower case 'r'.
+	 * @param secret  Account secret,start with a lower case 's'.
+	 */
 	public void as(String address, String secret) {
 		this.connection.address = address;
 		this.connection.secret = secret;
@@ -48,12 +56,22 @@ public class Chainsql extends Submit {
 		}
 	}
 
+	/**
+	 * Assigning table owner.
+	 * @param address Address of table owner.
+	 */
 	public void use(String address) {
 		this.connection.scope = address;
 	}
 
 	public static final Chainsql c = new Chainsql();
 
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,eg:"ws://127.0.0.1:5006".
+	 * @return Connection object after connected.
+	 */
+	@SuppressWarnings("resource")
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
 		while (!connection.client.connected) {
@@ -70,10 +88,32 @@ public class Chainsql extends Submit {
 		
 		return connection;
 	}
+	
+	/**
+	 * Transfer variable number of Strings to List<String>
+	 * @param val0 Parameter
+	 * @param vals Parameter
+	 * @return List<String>
+	 */
+	public static List<String> array(String val0, String... vals){
+	 	List<String> res = new ArrayList<String>();
+	 	res.add(val0);
+	 	res.addAll(Arrays.asList(vals));
 
+        return res;
+	}
+
+	/**
+	 * Subscribe 'reconnected' event,cb.called trigger when connection lost and reconnect succeed.
+	 * @param cb Callback
+	 */
 	public void onReconnected(Callback<JSONObject> cb){
 		this.reconnectedCB = cb;
 	}
+	/**
+	 * Subscribe 'reconnecting' event,cb.called trigger when connection lost and reconnecting started.
+	 * @param cb Callback
+	 */
 	public void onReconnecting(Callback<JSONObject> cb){
 		this.reconnectCb = cb;
 	}
@@ -89,15 +129,28 @@ public class Chainsql extends Submit {
 		}
 		event.reSubscribe();
 	}
-	
+	/**
+	 * Disconnect the websocket connection.
+	 */
 	public void disconnect() {
 		this.connection.disconnect();
 	}
 
+	/**
+	 * Set restrict mode.
+	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
+	 * to a table and some other user interrupts this by making an operation to this identical table.  
+	 * @param falg True to enable restrict mode and false to disable restrict mode.
+	 */
 	public void setRestrict(boolean falg) {
 		this.strictMode = falg;
 	}
 
+	/**
+	 * Create a Table object by giving a table name.
+	 * @param name Name of a table.
+	 * @return Table object.
+	 */
 	public Table table(String name) {
 		Table tab = new Table(name);
 		 if (this.transaction) {
@@ -115,10 +168,23 @@ public class Chainsql extends Submit {
 		return doSubmit(signed);
 	}
 	
+	/**
+	 * A create table operation.
+	 * @param name Table name
+	 * @param raw  Option or conditions to create a table.
+	 * @return	You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
 	
+	/**
+	 * A create table operation.
+	 * @param name Table name.
+	 * @param rawList Option or conditions to create a table.
+	 * @param confidential Table will be confidential or not.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
@@ -128,7 +194,7 @@ public class Chainsql extends Submit {
 		}
 		
 		JSONObject json = new JSONObject();
-		json.put("OpType", 1);
+		json.put("OpType", Constant.opType.get("t_create"));
 		json.put("Tables", getTableArray(name));
 		
 		String strRaw = listRaw.toString();
@@ -150,72 +216,75 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return create(json);
-	}
-
-	private Chainsql create(JSONObject txjson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
+		return prepare(json);
 	}
 	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
 		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
 	}
-
-	public Chainsql dropTable(String name) {
+	/**
+	 * Recreate a table, for slimming the chain.
+	 * @param name Table name.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
+	public Chainsql recreateTable(String name){
 		JSONObject json = new JSONObject();
-		json.put("OpType", 2);
+		json.put("OpType", Constant.opType.get("t_recreate"));
 		json.put("Tables", getTableArray(name));
 		if(this.transaction){
 			this.cache.add(json);
 			return null;
 		}
-		return drop(json);
+		return prepare(json);
 	}
-
-	private Chainsql drop(JSONObject txjson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
+	/**
+	 * A drop table operation.
+	 * @param name Table name.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
+	public Chainsql dropTable(String name) {
+		JSONObject json = new JSONObject();
+		json.put("OpType", Constant.opType.get("t_drop"));
+		json.put("Tables", getTableArray(name));
+		if(this.transaction){
+			this.cache.add(json);
+			return null;
 		}
-		return this;
+		return prepare(json);
 	}
 
+	/**
+	 * Rename a table.
+	 * @param oldName Old table name.
+	 * @param newName New table name.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql renameTable(String oldName, String newName) {
 		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(oldName) + "\",\"TableNewName\":\"" + Util.toHexString(newName) + "\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
 		JSONObject json = new JSONObject();
-		json.put("OpType", 3);
+		json.put("OpType", Constant.opType.get("t_rename"));
 		json.put("Tables", table);
 		if(this.transaction){
 			this.cache.add(json);
 			return null;
 		}
-		return rename(json);
+		return prepare(json);
 		
 	}
-	private Chainsql rename(JSONObject txjson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
-	}
 
+	/**
+	 * Grant a user with authorities to operate a table.
+	 * @param name Table name
+	 * @param user User address,start with a lower case 'r'.
+	 * @param userPublicKey User's public key,start with a lower case 'a'.
+	 * 						Will be used if the table is confidential.
+	 * @param flag Options to notify the authorities.eg:"{insert:true,delete:false}" means 
+	 * 			   the user can insert to this table,but cannot delete from this table.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql grant(String name, String user,String userPublicKey,String flag){
 		JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
 		if(res.get("status").equals("error")){
@@ -239,7 +308,14 @@ public class Chainsql extends Submit {
 		return grant_inner(name,user,flag,newToken);
 		
 	}
-	
+	/**
+	 * Grant a user with authorities to operate a table.
+	 * @param name Table name
+	 * @param user User address,start with a lower case 'r'.
+	 * @param flag Options to notify the authorities.eg:"{insert:true,delete:false}" means 
+	 * 			   the user can insert to this table,but cannot delete from this table.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
 	public Chainsql grant(String name, String user,String flag) {
 		return grant_inner(name,user,flag,"");
 	}
@@ -250,7 +326,7 @@ public class Chainsql extends Submit {
 		flags.add(json);
 		JSONObject txJson = new JSONObject();
 		txJson.put("Tables", getTableArray(name));
-		txJson.put("OpType", 11);
+		txJson.put("OpType", Constant.opType.get("t_grant"));
 		txJson.put("User", user);
 		txJson.put("Raw", Util.toHexString(flags.toString()));
 		if(token.length() > 0){
@@ -261,24 +337,20 @@ public class Chainsql extends Submit {
 			this.cache.add(txJson);
 			return null;
 		}
-		return grant(name, txJson);
+		return prepare(txJson);
 	}
-	private Chainsql grant(String name, JSONObject txJson) {
-		Transaction payment;
-		try {
-			payment = toPayment(txJson);
-		signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
-	}
-	
-	public Chainsql activateAccount(String accountId){
+	/**
+	 * Start a payment transaction, can be used to activate account 
+	 * @param accountId The Address of an account.
+	 * @param count		Count of coins to transfer.
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
+	public Chainsql pay(String accountId,int count){
 		JSONObject obj = new JSONObject();
 		obj.put("Account", this.connection.address);
 		obj.put("Destination", accountId);
-		obj.put("Amount", "20000000");
+		BigInteger amount = BigInteger.valueOf(count * 1000000);
+		obj.put("Amount", amount.toString());
 		Transaction payment;
 		try {
 			payment = toPayment(obj,TransactionType.Payment);
@@ -289,6 +361,10 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
+	/**
+	 * Begin a sql-transaction type operation.
+	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
+	 */
 	public void beginTran(){
 		 if (this.connection!=null && this.connection.address!=null) {
 		    this.transaction = true;
@@ -296,10 +372,18 @@ public class Chainsql extends Submit {
 		  }
 		
 	}
+	/**
+	 * Commit a sql-transaction type operation.
+	 * @return Commit result.
+	 */
 	public JSONObject commit(){
 		return doCommit("");
 	}
 	
+	/**
+	 * Get server info.
+	 * @return Server's informations.
+	 */
 	public JSONObject getServerInfo(){
 		return connection.client.getServerInfo();
 	}
@@ -335,10 +419,19 @@ public class Chainsql extends Submit {
 		return connection.client.getTransactionCount();
 	}
 	
+	/**
+	 * Get the newest generated ledger.
+	 * @return Ledger data.
+	 */
 	public JSONObject getLedger(){
 		return getLedger(-1);
 	}
 	
+	/**
+	 * Get the ledger identified by ledger_index.
+	 * @param ledger_index Index of a ledger.
+	 * @return Ledger informations.
+	 */
 	public JSONObject getLedger(Integer ledger_index){
 		JSONObject option = new JSONObject();
 		if(ledger_index == -1){
@@ -366,13 +459,20 @@ public class Chainsql extends Submit {
 		}
 		
 	}
-	
+	/**
+	 * An asynchronous api to get the ledger identified by ledger_index.
+	 * @return Ledger informations.
+	 */
 	public void getLedger(Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index",  "validated");
 		this.connection.client.getLedger(option,cb);
 	}
-	
+	/**
+	 * Get the ledger identified by ledger_index.
+	 * @param ledger_index
+	 * @param cb Callback.
+	 */
 	public void getLedger(Integer ledger_index,Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
 		option.put("ledger_index", ledger_index);
@@ -380,10 +480,10 @@ public class Chainsql extends Submit {
 		
 	}
 	
-	public void getLedger(JSONObject option,Callback<JSONObject> cb){
-		this.connection.client.getLedger(option,cb);
-	}
-	
+	/**
+	 * Get newest validated ledger index
+	 * @return LedgerVersion data
+	 */
 	public JSONObject getLedgerVersion(){
 		
 		retJson = null;
@@ -405,9 +505,18 @@ public class Chainsql extends Submit {
 		}
 		
 	}
+	/**
+	 * Get newest validated ledger index,asynchronous.
+	 * @param cb Callback.
+	 */
 	public void getLedgerVersion(Callback<JSONObject> cb){
 		this.connection.client.getLedgerVersion(cb);	
 	}
+	/**
+	 * Get trasactions submitted by notified account.
+	 * @param address Account address.
+	 * @return Result.
+	 */
 	public JSONObject getTransactions(String address){
 		retJson = null;
 		this.connection.client.getTransactions(address,(data)->{
@@ -426,12 +535,21 @@ public class Chainsql extends Submit {
 		}else{
 			return null;
 		}
-		
 	}
+	/**
+	 * Get trasactions submitted by notified account,asynchronous.
+	 * @param address Account address.
+	 * @return Result.
+	 */
 	public void getTransactions(String address,Callback<JSONObject> cb){
 		this.connection.client.getTransactions(address,cb);	
 	}
 	
+	/**
+	 * Get transaction identified by hash.
+	 * @param hash Transaction hash.
+	 * @return Transaction information.
+	 */
 	public JSONObject getTransaction(String hash){
 		retJson = null;
 		this.connection.client.getTransaction(hash,(data)->{
@@ -451,11 +569,23 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
+	/**
+	 * Get transaction by hash asynrhonously.
+	 * @param hash Transaction hash.
+	 * @param cb Callback.
+	 */
 	public void getTransaction(String hash,Callback<JSONObject> cb){
 		this.connection.client.getTransaction(hash, cb);
 	}
 	
-	public JSONObject generateAccount(){
+	/**
+	 * Generate a new account.
+	 * @return Contains folling fields:
+	 * 		   secret:Account secret.
+	 * 		   account_id:Account address.
+	 * 		   public_key:Account publickey. 
+	 */
+	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.randomSeed();
 		IKeyPair keyPair = seed.keyPair();
@@ -482,18 +612,13 @@ public class Chainsql extends Submit {
 	public Connection getConnection() {
 		return connection;
 	}
-	public JSONObject commit(SyncCond cond){
-		return doCommit(cond);
-	}
-	public JSONObject commit(Callback<?> cb){
-		return doCommit(cb);
-	}
-	
+
 	/**
 	 * sqlTransaction commit
 	 * @param commitType
-	 * @return
+	 * @return Commit result.
 	 */
+	@SuppressWarnings("unchecked")
 	public JSONObject doCommit(Object  commitType){
 		List<JSONObject> cache = this.cache;	
 		
@@ -532,7 +657,33 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
+	/**
+	 * Commit sql-transactoin synchronously.
+	 * @param cond Return condition.
+	 * @return Commit result.
+	 */
+	public JSONObject commit(SyncCond cond){
+		return doCommit(cond);
+	}
+	/**
+	 * Commit sql-transactoin asynchronously.
+	 * @param cb Callback object.
+	 * @return Commit result.
+	 */
+	public JSONObject commit(Callback<?> cb){
+		return doCommit(cb);
+	}
 	
+	private Chainsql prepare(JSONObject txjson){
+		Transaction payment;
+		try {
+			payment = toPayment(txjson);
+			signed = payment.sign(this.connection.secret);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this;
+	}
 	private Transaction toPayment(JSONObject json) throws Exception{
 		json.put("Account",this.connection.address);
     	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);

@@ -11,21 +11,21 @@ import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.Account;
-import com.ripple.client.pubsub.Publisher.Callback;
-import com.ripple.client.responses.Response;
-import com.ripple.client.transactions.ManagedTxn;
-import com.ripple.client.transactions.TransactionManager;
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.Amount;
-import com.ripple.core.coretypes.Blob;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.hash.Hash256;
-import com.ripple.core.coretypes.uint.UInt16;
-import com.ripple.core.coretypes.uint.UInt32;
-import com.ripple.core.serialized.enums.TransactionType;
-import com.ripple.core.types.known.tx.Transaction;
-import com.ripple.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.base.client.Account;
+import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.base.client.responses.Response;
+import com.peersafe.base.client.transactions.ManagedTxn;
+import com.peersafe.base.client.transactions.TransactionManager;
+import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.coretypes.Amount;
+import com.peersafe.base.core.coretypes.Blob;
+import com.peersafe.base.core.coretypes.STArray;
+import com.peersafe.base.core.coretypes.hash.Hash256;
+import com.peersafe.base.core.coretypes.uint.UInt16;
+import com.peersafe.base.core.coretypes.uint.UInt32;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 
 public abstract class Submit {
 	public Connection connection;
@@ -248,7 +248,13 @@ public abstract class Submit {
 	    	return false;
 	    }
 	}
-	
+	/**
+	 * Translate to transaction type.
+	 * @param json
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
 	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
     	Transaction payment = new Transaction(type);
     	 try {  

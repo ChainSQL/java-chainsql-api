@@ -3,10 +3,47 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/peersafe/java-chainsql</url>
+	<description>ChainSQL JAVA API is an api for chainsql server</description>
+	
+	<licenses>
+    <license>
+        <name>The Apache License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+	</licenses>
+	<developers>
+	    <developer>
+	        <name>peersafe</name>
+	        <email>lujinglei@peersafe.cn</email>
+	        <roles>
+	            <role>developer</role>
+	        </roles>
+	        <timezone>+8</timezone>
+	    </developer>
+	</developers>
+	<scm>
+	    <connection>scm:git:https://github.com/peersafe/java-chainsql.git</connection>
+	    <developerConnection>scm:git:https://github.com/peersafe/java-chainsql.git</developerConnection>
+	    <url>https://github.com/peersafe/java-chainsql</url>
+	    <tag>v${project.version}</tag>
+	</scm>
+
+	<distributionManagement>
+	    <snapshotRepository>
+	        <id>ossrh</id>
+	        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	    </snapshotRepository>
+	    <repository>
+	        <id>ossrh</id>
+	        <name>Maven Central Staging Repository</name>
+	        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	    </repository>
+	</distributionManagement>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -46,7 +83,77 @@
         </dependency>
 
 	</dependencies>
-
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                      <plugin>
+				        <groupId>org.apache.maven.plugins</groupId>
+				        <artifactId>maven-compiler-plugin</artifactId>
+				        <version>3.2</version>
+				        <configuration>
+				          <source>1.8</source>
+				          <target>1.8</target>
+				        </configuration>
+				      </plugin>
+                    <!-- Source -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Javadoc -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- GPG -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>chaisql</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>chaisql</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+	<!-- 
 	<build>
 		<plugins>
 			<plugin>
@@ -79,4 +186,5 @@
 
 		</plugins>
 	</build>
+	 -->
 </project>

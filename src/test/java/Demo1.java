@@ -1,14 +1,14 @@
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.util.Util;;
+import com.peersafe.chainsql.util.Util;
+
 
 
 public class Demo1 {

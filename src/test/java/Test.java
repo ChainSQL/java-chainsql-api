@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
-import com.ripple.core.coretypes.AccountID;
 
 
 public class Test {
@@ -19,8 +19,8 @@ public class Test {
 		 // c.connect("ws://192.168.0.110:6008");
 		 //c.connect("ws://192.168.0.148:6006");
 
-		   c.connect("ws://192.168.0.110:6007");
-		  //  c.connect("ws://101.201.40.124:7006");
+		  // c.connect("ws://192.168.0.110:6007");
+		    c.connect("ws://101.201.40.124:7006");
 		  
 		  sTableName = "hime2";
 		 
@@ -72,12 +72,12 @@ public class Test {
 //		  test.testdrop();
 //		  test.grant();		 
 		  
-		  //	test.getTransactions();
+//		  	test.getTransactions();
 //		  	 test.getTransaction();
-		  test.getChainInfo();
-		  test.generateAccount();
-		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
-//		  test.getServerInfo();
+//		  test.getChainInfo();
+//		  test.generateAccount();
+//		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
+		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
 //		  } catch (InterruptedException e) {
@@ -103,9 +103,7 @@ public class Test {
 	  } 
 	  
 	public void getLedge(){
-		JSONObject option = new JSONObject();
-		option.put("ledger_index", 766);
-		c.getLedger(option,(data)->{
+		c.getLedger(766,(data)->{
 			System.out.println("creat------"+data);
 		 });
 	}
@@ -242,11 +240,11 @@ public class Test {
 		  System.out.println(ret);
 	  }
 	  public void generateAccount(){
-		  System.out.println(c.generateAccount());
+		  System.out.println(c.generateAddress());
 	  }
 	  
 	  public void activateAccount(String account){
-		  JSONObject ret = c.activateAccount(account).submit();
+		  JSONObject ret = c.pay(account,200).submit();
 		  System.out.println(ret);
 	  }
 	public void testdrop(){

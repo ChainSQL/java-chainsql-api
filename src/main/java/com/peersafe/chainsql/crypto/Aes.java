@@ -19,13 +19,31 @@ import com.peersafe.chainsql.util.Util;
 public class Aes {
 	private static final String KEY_ALGORITHM = "AES";  
 	
+	/**
+	 * AES encrypting.
+	 * @param password
+	 * @param content
+	 * @return
+	 */
 	public static String aesEncrypt(byte[] password,String content){
 		return encrypt(password,content);
 	}
+	/**
+	 * AES encrypting.
+	 * @param password
+	 * @param content
+	 * @return
+	 */
 	public static String aesEncrypt(String password,String content){
 		return encrypt(password.getBytes(),content);
 	}
 	
+	/**
+	 * AES decrypting.
+	 * @param password
+	 * @param encryptedHex
+	 * @return
+	 */
 	public static byte[] aesDecrypt(String password,String encryptedHex){
 		return decrypt(Util.hexToBytes(encryptedHex),password.getBytes());
 	}

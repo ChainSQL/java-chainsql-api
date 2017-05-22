@@ -1,14 +1,15 @@
-package com.peersafe.base.java8.example;
+package java8.example;
 
 import static com.peersafe.base.core.coretypes.AccountID.fromAddress;
-import static com.peersafe.base.java8.utils.Print.print;
-import static com.peersafe.base.java8.utils.Print.printErr;
+import static java8.utils.Print.print;
+import static java8.utils.Print.printErr;
 
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.peersafe.base.client.Account;
 import com.peersafe.base.client.Client;
+import com.peersafe.base.client.Client.OnConnected;
 import com.peersafe.base.client.payments.PaymentFlow;
 import com.peersafe.base.client.transactions.ManagedTxn;
 import com.peersafe.base.client.transactions.TransactionManager;
@@ -30,8 +31,12 @@ public class PaymentPaths {
  
      
             new Client(new JavaWebSocketTransportImpl())
-               .connect("ws://192.168.0.151:6006",(c)->example(c,"ssFw56mwiuVD43CJ81p4dsUXMAnJF")
-                );
+               .connect("ws://192.168.0.151:6006",new OnConnected(){
+					@Override
+					public void called(Client args) {
+						example(args,"ssFw56mwiuVD43CJ81p4dsUXMAnJF");
+					}
+               });
         
     }
 

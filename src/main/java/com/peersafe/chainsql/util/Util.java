@@ -100,7 +100,7 @@ public class Util {
 
             }else if("varchar".equals(type)){
             	try {
-    				int length = (int) json.get("length");
+    				int length = (int) json.getInt("length");
     			} catch (Exception e) {
     				throw new Exception(" The type varchar must have length");
     			}
@@ -114,7 +114,7 @@ public class Util {
             	throw new Exception("invalid type "+type);
             }
             try {
-            	int PK =(int) json.get("PK");
+            	int PK =(int) json.getInt("PK");
             	if(PK == 1){
             		if (isHavePk) {
             			throw new Exception("the table only have a PK");

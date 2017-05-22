@@ -36,7 +36,13 @@ public class MockPair {
 
             @Override
             public int compareTo(Callback o) {
-                return Long.compare(when, o.when);
+                if(when > o.when){
+                	return 1;
+                }else if(when == o.when){
+                	return 0;
+                }else{
+                	return -1;
+                }
             }
         }
 

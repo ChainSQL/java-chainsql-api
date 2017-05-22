@@ -924,7 +924,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	return makeManagedRequest(cmd,manager,builder,0);
     }
     
-    private <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder,int depth) {
+    private <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder,final int depth) {
     	if(depth > MAX_REQUEST_COUNT){
     		return null;
     	}
@@ -1153,7 +1153,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-    public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback<Response> cb){
+    public  Request select(AccountID account,JSONObject[] tabarr,String raw,final Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
 	   	 JSONObject txjson = new JSONObject();
 	   	 txjson.put("Owner", account);
@@ -1180,7 +1180,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param option Ledger options.
      * @param cb Callback.
      */
-    public  void getLedger(JSONObject option,Callback<JSONObject> cb){  
+    public  void getLedger(final JSONObject option,final Callback<JSONObject> cb){  
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1210,7 +1210,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * Request for newest published ledger_index.
      * @param cb Callback.
      */
-    public  void getLedgerVersion(Callback<JSONObject> cb){   	
+    public  void getLedgerVersion(final Callback<JSONObject> cb){   	
     	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1238,7 +1238,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param address Account address.
      * @param cb Callback.
      */
-    public  void getTransactions(String address,Callback<JSONObject> cb){
+    public  void getTransactions(final String address,final Callback<JSONObject> cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1342,7 +1342,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param hash Transaction hash.
      * @param cb Callback.
      */
-    public  void getTransaction(String hash,Callback<JSONObject> cb){   
+    public  void getTransaction(final String hash,final Callback<JSONObject> cb){   
     	
     	makeManagedRequest(Command.tx, new Manager<JSONObject>() {
             @Override

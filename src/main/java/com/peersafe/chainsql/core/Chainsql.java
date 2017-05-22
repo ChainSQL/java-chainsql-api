@@ -13,6 +13,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.client.Client.OnReconnected;
+import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
@@ -83,8 +85,21 @@ public class Chainsql extends Submit {
 		}
 		System.out.println("connect success");
 		this.event = new EventManager(this.connection);
-		this.connection.client.onReconnecting(this::onReconnecting);
-		this.connection.client.onReconnected(this::onReconnected);
+		//jdk1.8
+//		this.connection.client.onReconnecting(this::onReconnecting);
+//		this.connection.client.onReconnected(this::onReconnected);
+		this.connection.client.onReconnecting(new OnReconnecting(){
+			@Override
+			public void called(JSONObject args) {
+				onReconnecting(args);
+			}
+		});
+		this.connection.client.onReconnected(new OnReconnected(){
+			@Override
+			public void called(JSONObject args) {
+				onReconnected(args);
+			}			
+		});
 		
 		return connection;
 	}
@@ -441,11 +456,14 @@ public class Chainsql extends Submit {
 		}
 		
 		retJson = null;
-		this.connection.client.getLedger(option,(data)->{
-			if(data == null){
-				retJson = new JSONObject();
-			}else{
-				retJson = (JSONObject) data;
+		this.connection.client.getLedger(option,new Callback<JSONObject>(){
+			@Override
+			public void called(JSONObject data) {
+				if(data == null){
+					retJson = new JSONObject();
+				}else{
+					retJson = (JSONObject) data;
+				}
 			}
 		});
 		while(retJson == null){
@@ -487,11 +505,14 @@ public class Chainsql extends Submit {
 	public JSONObject getLedgerVersion(){
 		
 		retJson = null;
-		this.connection.client.getLedgerVersion((data)->{
-			if(data == null){
-				retJson = new JSONObject();
-			}else{
-				retJson = (JSONObject) data;
+		this.connection.client.getLedgerVersion(new Callback<JSONObject>(){
+			@Override
+			public void called(JSONObject data) {
+				if(data == null){
+					retJson = new JSONObject();
+				}else{
+					retJson = (JSONObject) data;
+				}
 			}
 		});
 		while(retJson == null){
@@ -519,11 +540,14 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject getTransactions(String address){
 		retJson = null;
-		this.connection.client.getTransactions(address,(data)->{
-			if(data == null){
-				retJson = new JSONObject();
-			}else{
-				retJson = (JSONObject) data;
+		this.connection.client.getTransactions(address,new Callback<JSONObject>(){
+			@Override
+			public void called(JSONObject data) {
+				if(data == null){
+					retJson = new JSONObject();
+				}else{
+					retJson = (JSONObject) data;
+				}
 			}
 		});
 		while(retJson == null){
@@ -552,12 +576,15 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject getTransaction(String hash){
 		retJson = null;
-		this.connection.client.getTransaction(hash,(data)->{
-			if(data == null){
-				retJson = new JSONObject();
-			}else{
-				retJson = (JSONObject) data;
-			}
+		this.connection.client.getTransaction(hash,new Callback<JSONObject>(){
+			@Override
+			public void called(JSONObject data) {
+				if(data == null){
+					retJson = new JSONObject();
+				}else{
+					retJson = (JSONObject) data;
+				}
+			}			
 		});
 		while(retJson == null){
 			Util.waiting();
@@ -633,7 +660,7 @@ public class Chainsql extends Submit {
 		json.put("Statements", statements);
 		json.put("NeedVerify",this.needVerify);
 		
-        JSONObject result = Validate.getTxJson(this.connection.client, json);
+        final JSONObject result = Validate.getTxJson(this.connection.client, json);
 		if(result.getString("status").equals("error")){
 			return  new JSONObject(){{
 				put("Error:",result.getString("error_message"));

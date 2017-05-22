@@ -1,3 +1,4 @@
+package java8.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,10 @@ public class Test {
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
 		 // c.connect("ws://192.168.0.110:6008");
-		 //c.connect("ws://192.168.0.148:6006");
+		 c.connect("ws://192.168.0.151:6006");
 
 		  // c.connect("ws://192.168.0.110:6007");
-		    c.connect("ws://101.201.40.124:7006");
+		  //  c.connect("ws://101.201.40.124:7006");
 		  
 		  sTableName = "hime2";
 		 
@@ -61,7 +62,7 @@ public class Test {
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
-		  //test.testCreateTable();
+		 test.testCreateTable();
 		 // c.connection.client.getAccountInfo(null);
 
 //		  test.testinsert();

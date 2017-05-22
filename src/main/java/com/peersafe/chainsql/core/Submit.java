@@ -7,14 +7,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.util.EventManager;
-import com.peersafe.chainsql.util.Util;
-import com.peersafe.chainsql.util.Validate;
 import com.peersafe.base.client.Account;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.client.transactions.ManagedTxn;
+import com.peersafe.base.client.transactions.ManagedTxn.OnSubmitSuccess;
 import com.peersafe.base.client.transactions.TransactionManager;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
@@ -26,6 +23,10 @@ import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.util.Validate;
 
 public abstract class Submit {
 	public Connection connection;
@@ -139,8 +140,20 @@ public abstract class Submit {
         		break;
         	}
         }
-        tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
-                   .onError(this::onSubmitError));
+//        tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
+//                   .onError(this::onSubmitError));
+        
+        tm.queue(tx.onSubmitSuccess(new OnSubmitSuccess(){
+			@Override
+			public void called(Response args) {
+				onSubmitSuccess(args);
+			}    	  
+        }).onError(new Callback<Response>(){
+			@Override
+			public void called(Response args) {
+				onSubmitError(args);
+			}
+        })); 
        
         //subscribe tx
         if(sync || cb != null){
@@ -182,33 +195,36 @@ public abstract class Submit {
 	
 	private void subscribeTx(String txId){
     	EventManager manager = new EventManager(connection);
-    	manager.subTx(txId,(data)->{
-    		//System.out.println(data);
-    		if(cb != null){
-    			cb.called((JSONObject)data);
-    		}else if(sync){
-    			JSONObject obj = (JSONObject)data;
-    			JSONObject res = new JSONObject();
-    			JSONObject tx = (JSONObject) obj.get("transaction");
-    			res.put("tx_hash", tx.get("hash").toString());
-    			
-    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
-    				res.put("status", "success");
-    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
-    				res.put("status", "success");
-    			}else if(!obj.get("status").equals("validate_success")){
-    				res.put("status", "error");
-    				if(res.has("error_message"))
-    					res.put("error_message", obj.get("error_message"));
-    				else
-    					res.put("error_message", obj.get("status"));
-    			}
-    			if(!res.isNull("status")){
-        			syncRes = res;
-        			sync_state = SyncState.sync_response;
-    			}
-    		}
-        });
+    	manager.subTx(txId,new Callback<JSONObject>(){
+			@Override
+			public void called(JSONObject data) {
+	    		//System.out.println(data);
+	    		if(cb != null){
+	    			cb.called((JSONObject)data);
+	    		}else if(sync){
+	    			JSONObject obj = (JSONObject)data;
+	    			JSONObject res = new JSONObject();
+	    			JSONObject tx = (JSONObject) obj.get("transaction");
+	    			res.put("tx_hash", tx.get("hash").toString());
+	    			
+	    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
+	    				res.put("status", "success");
+	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
+	    				res.put("status", "success");
+	    			}else if(!obj.get("status").equals("validate_success")){
+	    				res.put("status", "error");
+	    				if(res.has("error_message"))
+	    					res.put("error_message", obj.get("error_message"));
+	    				else
+	    					res.put("error_message", obj.get("status"));
+	    			}
+	    			if(!res.isNull("status")){
+	        			syncRes = res;
+	        			sync_state = SyncState.sync_response;
+	    			}
+	    		}
+			}
+    	});
 	}
 	
 	private void onSubmitSuccess(Response res){

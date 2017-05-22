@@ -1,3 +1,4 @@
+package java8.test;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Table;
 

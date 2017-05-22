@@ -4,8 +4,10 @@ import java.util.HashMap;
 
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.net.Connection;
+import com.peersafe.base.client.Client.OnTBMessage;
+import com.peersafe.base.client.Client.OnTXMessage;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.chainsql.net.Connection;
 
 public class EventManager {
 	public Connection connection;
@@ -56,7 +58,13 @@ public class EventManager {
 		this.connection.client.subscriptions.addMessage(messageTx);
 		
 		if (!this.onMessage) {
-			this.connection.client.OnTBMessage(this::onTBMessage);
+			//this.connection.client.OnTBMessage(this::onTBMessage);
+			this.connection.client.OnTBMessage(new OnTBMessage(){
+				@Override
+				public void called(JSONObject args) {
+					onTBMessage(args);
+				}
+			});
 			this.onMessage = true;
 		}
 		this.mapCache.put(name + owner,cb);
@@ -73,7 +81,13 @@ public class EventManager {
 		messageTx.put("transaction", id);
 		this.connection.client.subscriptions.addMessage(messageTx);
 		if (!this.onMessage) {
-			this.connection.client.OnTXMessage(this::onTXMessage);
+//			this.connection.client.OnTXMessage(this::onTXMessage);
+			this.connection.client.OnTXMessage(new OnTXMessage(){
+				@Override
+				public void called(JSONObject args) {
+					onTXMessage(args);
+				}
+			});
 			this.onMessage = true;
 		}
 		this.mapCache.put(id, cb);

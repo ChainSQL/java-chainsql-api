@@ -11,6 +11,7 @@ import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
+import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.core.coretypes.AccountID;
@@ -283,11 +284,15 @@ public class Table extends Submit{
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
 		JSONObject tabjson = new JSONObject(tables);
 		JSONObject[] tabarr ={tabjson};
-		Request req = connection.client.select(account,tabarr,query.toString(),(data)->{
-			if(cb != null){
-				Response response = (Response) data;
-				cb.called(getSelectRes(response));
+		Request req = connection.client.select(account,tabarr,query.toString(),new Callback<Response>(){
+
+			@Override
+			public void called(Response response) {
+				if(cb != null){
+					cb.called(getSelectRes(response));
+				}
 			}
+			
 		});
 		
 		return getSelectRes(req.response);

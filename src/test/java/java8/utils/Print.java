@@ -1,4 +1,4 @@
-package com.peersafe.base.java8.utils;
+package java8.utils;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;

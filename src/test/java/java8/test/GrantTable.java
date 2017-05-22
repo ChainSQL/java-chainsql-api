@@ -1,3 +1,4 @@
+package java8.test;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.core.Chainsql;

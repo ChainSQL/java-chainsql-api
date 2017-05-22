@@ -1,8 +1,6 @@
-package com.peersafe.base.java8.example;
+package java8.example;
 
-import static com.peersafe.base.java8.utils.Print.print;
-import static com.peersafe.base.java8.utils.Print.printErr;
-
+import static java8.utils.Print.*;
 import com.peersafe.base.client.Account;
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.responses.Response;

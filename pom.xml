@@ -32,18 +32,6 @@
 	    <tag>v${project.version}</tag>
 	</scm>
 
-	<distributionManagement>
-	    <snapshotRepository>
-	        <id>ossrh</id>
-	        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-	    </snapshotRepository>
-	    <repository>
-	        <id>ossrh</id>
-	        <name>Maven Central Staging Repository</name>
-	        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-	    </repository>
-	</distributionManagement>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -143,11 +131,11 @@
             </build>
             <distributionManagement>
                 <snapshotRepository>
-                    <id>chaisql</id>
+                    <id>snapshots</id>
                     <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
                 </snapshotRepository>
                 <repository>
-                    <id>chaisql</id>
+                    <id>releases</id>
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>

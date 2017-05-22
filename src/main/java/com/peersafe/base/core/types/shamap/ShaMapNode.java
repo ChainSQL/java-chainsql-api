@@ -34,8 +34,10 @@ abstract public class ShaMapNode {
         toBytesSink(half);
         return half.finish();
     }
+
     /**
      * Walk any leaves, possibly this node itself, if it's terminal.
+     * @param leafWalker Leafwalker.
      */
     public void walkAnyLeaves(LeafWalker leafWalker) {
         if (isLeaf()) {

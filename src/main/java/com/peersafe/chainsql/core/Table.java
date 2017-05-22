@@ -31,7 +31,7 @@ public class Table extends Submit{
 
 	/**
 	 * Constructor for Table.
-	 * @param name
+	 * @param name Tablename.
 	 */
 	public Table(String name) {
 		super();
@@ -162,7 +162,7 @@ public class Table extends Submit{
 	
 	/**
 	 * Filter condition for select result.
-	 * @param orgs
+	 * @param orgs parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table limit(String orgs){

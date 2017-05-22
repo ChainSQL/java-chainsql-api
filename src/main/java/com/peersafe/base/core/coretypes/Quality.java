@@ -6,10 +6,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class Quality  {
-    /**
+	/**
      * Finds the quality (TakerPays/TakerGets) ratio packed into the last 64
      * bits of root DirectoryNode ledger indexes.
-     */
+	 * @param bookDirectory bookDirectory.
+	 * @param payIsNative payIsNative.
+	 * @param getIsNative getIsNative.
+	 * @return return value.
+	 */
     public static BigDecimal fromBookDirectory(Hash256 bookDirectory,
                                                boolean payIsNative,
                                                boolean getIsNative) {

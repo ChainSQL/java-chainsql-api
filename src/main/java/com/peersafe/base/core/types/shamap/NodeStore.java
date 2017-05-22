@@ -47,16 +47,21 @@ public class NodeStore {
         // contribute to the hash.
         backend.put(hash, content); // metadata + content
     }
-
+    
     /**
      * The complement to `set` api, which together form a simple public interface.
+     * @param hash hash value.
+     * @return byte array.
      */
     public byte[] get(Hash256 hash) {
         return backend.get(hash);
 
     }
+
     /**
      * The complement to `get` api, which together form a simple public interface.
+     * @param content content
+     * @return Hash returned.
      */
     public Hash256 set(byte[] content) {
         return storeContent(content);

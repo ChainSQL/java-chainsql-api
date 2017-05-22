@@ -7,6 +7,10 @@ import com.peersafe.base.core.fields.Type;
 import com.peersafe.base.core.serialized.BytesSink;
 
 public class Hash160 extends Hash<Hash160> {
+	/**
+	 * Create a hash160.
+	 * @param bytes hash160 bytes.
+	 */
     public Hash160(byte[] bytes) {
         super(bytes, 20);
     }
@@ -57,6 +61,11 @@ public class Hash160 extends Hash<Hash160> {
     }
     public static Translator translate = new Translator();
 
+    /**
+     * hash160 field.
+     * @param f Field.
+     * @return Hash160 field.
+     */
     public static Hash160Field hash160Field(final Field f) {
         return new Hash160Field(){ @Override public Field getField() {return f;}};
     }

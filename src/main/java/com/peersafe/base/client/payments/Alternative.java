@@ -40,7 +40,7 @@ public class Alternative implements Comparable<Alternative> {
 
     /**
      * Is direct Xrp.
-     * @return
+     * @return return value.
      */
     public boolean directXRP() {
         return !hasPaths() && sourceAmount.isNative();

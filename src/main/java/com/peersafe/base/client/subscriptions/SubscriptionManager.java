@@ -10,10 +10,16 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class SubscriptionManager extends Publisher<SubscriptionManager.events> {
+	/**
+	 * pauseEventEmissions
+	 */
     public void pauseEventEmissions() {
         paused = true;
     }
 
+    /**
+     * unpauseEventEmissions
+     */
     public void unpauseEventEmissions() {
         paused = false;
     }
@@ -41,11 +47,19 @@ public class SubscriptionManager extends Publisher<SubscriptionManager.events> {
         return set;
     }
 
+    /**
+     * add Stream.
+     * @param s Stream.
+     */
     public void addStream(Stream s) {
         streams.add(s);
         subscribeStream(s);
     }
 
+    /**
+     * Remove Stream.
+     * @param s Stream.
+     */
     public void removeStream(Stream s) {
         streams.remove(s);
         unsubscribeStream(s);
@@ -67,15 +81,27 @@ public class SubscriptionManager extends Publisher<SubscriptionManager.events> {
         emit(OnUnSubscribed.class, basicSubscriptionObject(single(s), null));
     }
 
+    /**
+     * Add Account.
+     * @param a Account address.
+     */
     public void addAccount(AccountID a) {
         accounts.add(a);
         emit(OnSubscribed.class, basicSubscriptionObject(null, single(a)));
     }
     
+    /**
+     * Add message.
+     * @param json json.
+     */
     public void addMessage(JSONObject json) {
         emit(OnSubscribed.class, json);
     }
     
+    /**
+     * Remove Account.
+     * @param a account.
+     */
     public void removeAccount(AccountID a) {
         accounts.remove(a);
         emit(OnUnSubscribed.class, basicSubscriptionObject(null, single(a)));
@@ -99,6 +125,10 @@ public class SubscriptionManager extends Publisher<SubscriptionManager.events> {
         return jsonArray;
     }
 
+    /**
+     * allSubscribed.
+     * @return return value.
+     */
     public JSONObject allSubscribed() {
         return basicSubscriptionObject(streams, accounts);
     }

@@ -83,7 +83,7 @@ public abstract class Submit {
 	private static final int sync_maxtime = 200000;
 	/**
 	 * asynchronous,callback trigger with all possible status
-	 * @param cb
+	 * @param cb Callback.
 	 * @return submit result
 	 */
 	public JSONObject submit(Callback<JSONObject> cb){
@@ -95,7 +95,7 @@ public abstract class Submit {
 	/**
 	 * synchronous,return when condition satisfied or submit failed
 	 * @param cond,return condition
-	 * @return
+	 * @return Submit result.
 	 */
 	public JSONObject submit(SyncCond cond){
 		sync = true;
@@ -250,10 +250,10 @@ public abstract class Submit {
 	}
 	/**
 	 * Translate to transaction type.
-	 * @param json
-	 * @param type
-	 * @return
-	 * @throws Exception
+	 * @param json tx_json.
+	 * @param type Transaction type.
+	 * @return Transaction object.
+	 * @throws Exception Exception to be throws.
 	 */
 	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
     	Transaction payment = new Transaction(type);

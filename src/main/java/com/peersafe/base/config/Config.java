@@ -14,12 +14,17 @@ public class Config {
     private static double feeCushion;
     private static B58 b58;
 
+    /**
+     * Set alphabet.
+     * @param alphabet alphabet.
+     */
     public static void setAlphabet(String alphabet) {
         b58 = new B58(alphabet);
         b58IdentiferCodecs = new B58IdentiferCodecs(b58);
     }
 
     /**
+     * getB58IdentiferCodecs
      * @return the configured B58IdentiferCodecs object
      */
     public static B58IdentiferCodecs getB58IdentiferCodecs() {
@@ -27,6 +32,7 @@ public class Config {
     }
 
     /**
+     * Get Base58.
      * @return the configured B58 object
      */
     public static B58 getB58() {
@@ -52,10 +58,18 @@ public class Config {
         initBouncy();
     }
 
+    /**
+     * GetFeeCushion
+     * @return return value.
+     */
     public static double getFeeCushion() {
         return feeCushion;
     }
 
+    /**
+     * Set fee cushion.
+     * @param fee_cushion fee cushion.
+     */
     public static void setFeeCushion(double fee_cushion) {
         feeCushion = fee_cushion;
     }

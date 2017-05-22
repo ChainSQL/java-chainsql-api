@@ -56,6 +56,7 @@ public class Vector256 extends ArrayList<Hash256> implements SerializedType {
      * This method puts the last element in the removed elements slot, and
      *  pops off the back, thus preserving contiguity but losing ordering.
      * @param ledgerIndex the ledger entry index to remove
+     * @return return value.
      */
     public boolean removeUnstable(Hash256 ledgerIndex) {
         int i = indexOf(ledgerIndex);

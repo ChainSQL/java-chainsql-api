@@ -25,6 +25,11 @@ public class ManagedTxn extends SignedTransaction {
 
     public TransactionResult result;
 
+    /**
+     * On validated.
+     * @param handler Callback handler.
+     * @return This.
+     */
     public ManagedTxn onValidated(final Callback<ManagedTxn> handler) {
         on(OnTransactionValidated.class, new OnTransactionValidated() {
             @Override
@@ -36,11 +41,21 @@ public class ManagedTxn extends SignedTransaction {
         return this;
     }
     
+    /**
+     * onSubmitSuccess
+     * @param cb Callback.
+     * @return return value.
+     */
     public ManagedTxn onSubmitSuccess(OnSubmitSuccess cb){
         on(OnSubmitSuccess.class, cb);
         return this;
     }
 
+    /**
+     * On error.
+     * @param cb callback.
+     * @return ManagedTxn.
+     */
     public ManagedTxn onError(final Callback<Response> cb) {
         on(OnSubmitFailure.class, new OnSubmitFailure() {
             @Override
@@ -57,38 +72,90 @@ public class ManagedTxn extends SignedTransaction {
         return this;
     }
 
+    /**
+     * Remove Listener.
+     * @param key Key.
+     * @param <T> generic.
+     * @param cb Callback.
+     * @return Return value.
+     */
     public <T extends events> boolean removeListener(Class<T> key, Callback cb) {
         return publisher.removeListener(key, cb);
     }
 
+    /**
+     * Emit.
+     * @param key key.
+     * @param args args.
+     * @param <T> generic.
+     * @return return value.
+     */
     public <T extends events> int emit(Class<T> key, Object args) {
         return publisher.emit(key, args);
     }
 
+    /**
+     * Once
+     * @param key key.
+     * @param executor executor.
+     * @param cb callback.
+     * @param <T> generic.
+     */
     public <T extends events> void once(Class<T> key, CallbackContext executor, T cb) {
         publisher.once(key, executor, cb);
     }
 
+    /**
+     * Once.
+     * @param key key.
+     * @param cb callback.
+     * @param <T> generic.
+     */
     public <T extends events> void once(Class<T> key, T cb) {
         publisher.once(key, cb);
     }
 
+    /**
+     * On
+     * @param key key.
+     * @param executor executor.
+     * @param cb callback.
+     * @param <T> generic.
+     */
     public <T extends events> void on(Class<T> key, CallbackContext executor, T cb) {
         publisher.on(key, executor, cb);
     }
 
+    /**
+     * On 
+     * @param key key 
+     * @param cb callback.
+     * @param <T> generic.
+     */
     public <T extends events> void on(Class<T> key, T cb) {
         publisher.on(key, cb);
     }
 
+    /**
+     * Publisher constructor.
+     * @return return value.
+     */
     public Publisher<events> publisher() {
         return publisher;
     }
 
     private boolean isSequencePlug;
+    /**
+     * isSequencePlug
+     * @return return value.
+     */
     public boolean isSequencePlug() {
         return isSequencePlug;
     }
+    /**
+     * Set sequence plug.
+     * @param isNoop isNoop.
+     */
     public void setSequencePlug(boolean isNoop) {
         this.isSequencePlug = isNoop;
         setDescription("SequencePlug");
@@ -101,11 +168,19 @@ public class ManagedTxn extends SignedTransaction {
         }
         return description;
     }
+    /**
+     * Set description
+     * @param description description.
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
 
+    /**
+     * ManagedTxn Constructor.
+     * @param txn Transaction object.
+     */
     public ManagedTxn(Transaction txn) {
         this.txn = txn;
     }
@@ -113,18 +188,32 @@ public class ManagedTxn extends SignedTransaction {
 //    private final MyTransaction publisher = new MyTransaction();
     private boolean finalized = false;
 
+    /**
+     * responseWasToLastSubmission
+     * @param res response.
+     * @return return value.
+     */
     public boolean responseWasToLastSubmission(Response res) {
         Request req = lastSubmission().request;
         return res.request == req;
     }
 
 
+    /**
+     * finalizedOrResponseIsToPriorSubmission
+     * @param res response.
+     * @return return value.
+     */
     public boolean finalizedOrResponseIsToPriorSubmission(Response res) {
         return isFinalized() || !responseWasToLastSubmission(res);
     }
 
     public ArrayList<Submission> submissions = new ArrayList<Submission>();
 
+    /**
+     * lastSubmission
+     * @return return value.
+     */
     public Submission lastSubmission() {
         if (submissions.isEmpty()) {
             return null;
@@ -134,14 +223,26 @@ public class ManagedTxn extends SignedTransaction {
     }
     private TreeSet<Hash256> submittedIDs = new TreeSet<Hash256>();
 
+    /**
+     * isFinalized
+     * @return return value.
+     */
     public boolean isFinalized() {
         return finalized;
     }
 
+    /**
+     * setFinalized
+     */
     public void setFinalized() {
         finalized = true;
     }
 
+    /**
+     * trackSubmitRequest
+     * @param submitRequest request
+     * @param ledger_index ledger index.
+     */
     public void trackSubmitRequest(Request submitRequest, long ledger_index) {
         Submission submission = new Submission(submitRequest,
                                                sequence(),
@@ -153,6 +254,9 @@ public class ManagedTxn extends SignedTransaction {
         trackSubmittedID();
     }
 
+    /**
+     * trackSubmittedID
+     */
     public void trackSubmittedID() {
         submittedIDs.add(hash);
     }
@@ -161,6 +265,10 @@ public class ManagedTxn extends SignedTransaction {
         return submittedIDs.contains(hash);
     }
 
+    /**
+     * Sequence.
+     * @return return value.
+     */
     public UInt32 sequence() {
         return txn.sequence();
     }

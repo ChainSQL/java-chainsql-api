@@ -14,9 +14,17 @@ import com.peersafe.base.crypto.ecdsa.IKeyPair;
  * */
 public class Account {
     private final Publisher<events> publisher = new Publisher<events>();
+    /**
+     * Create transactionManager.
+     * @return return value.
+     */
     public TransactionManager transactionManager() {
         return tm;
     }
+    /**
+     * Create publisher.
+     * @return return value.
+     */
     public Publisher<events> publisher() {
         return publisher;
     }
@@ -30,7 +38,7 @@ public class Account {
 
     /**
      * Create AccountID
-     * @return
+     * @return AccountID.
      */
     public AccountID id() {
         return id;
@@ -38,7 +46,7 @@ public class Account {
 
     /**
      * Get trackedAccountRoot
-     * @return
+     * @return TrackedAccountRoot.
      */
     public TrackedAccountRoot getAccountRoot() {
         return accountRoot;
@@ -46,7 +54,7 @@ public class Account {
 
     /**
      * Set AccountRoot
-     * @param accountRoot
+     * @param accountRoot AccountRoot.
      */
     public void setAccountRoot(TrackedAccountRoot accountRoot) {
         Account.this.accountRoot = accountRoot;
@@ -56,10 +64,10 @@ public class Account {
 
     /**
      * Set Account parameters
-     * @param id
-     * @param keyPair
-     * @param root
-     * @param tm
+     * @param id Account address.
+     * @param keyPair KeyPair.
+     * @param root TrackedAccountRoot
+     * @param tm TransactionManager.
      */
     public Account(AccountID id,
                    IKeyPair keyPair, TrackedAccountRoot root,
@@ -72,6 +80,7 @@ public class Account {
 
     /**
      * AccountId to String
+     * @return return value.
      */
     @Override
     public String toString() {

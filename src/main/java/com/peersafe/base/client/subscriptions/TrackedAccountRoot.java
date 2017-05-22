@@ -20,10 +20,20 @@ public class TrackedAccountRoot extends Publisher<TrackedAccountRoot.events> {
     public static interface OnUpdate extends events<TrackedAccountRoot> {}
     boolean updated = false;
 
+    /**
+     * primed.
+     * @return return value.
+     */
     public boolean primed() {
         return updated;
     }
 
+    /**
+     * updateFromTransaction
+     * @param transactionHash transactionHash
+     * @param transactionLedgerIndex transactionLedgerIndex
+     * @param rootUpdates rootUpdates
+     */
     public void updateFromTransaction(Hash256 transactionHash, UInt32 transactionLedgerIndex, STObject rootUpdates) {
         // TODO, rethink this
         // If transactionLedgerIndex is higher than current also apply it
@@ -38,9 +48,17 @@ public class TrackedAccountRoot extends Publisher<TrackedAccountRoot.events> {
     }
 
     public AccountID     Account;
+    /**
+     * Get balance.
+     * @return return value.
+     */
     public Amount getBalance() {
         return Balance;
     }
+    /**
+     * Set balance.
+     * @param balance balance.
+     */
     public void setBalance(Amount balance) {
         Balance = balance;
     }
@@ -60,6 +78,10 @@ public class TrackedAccountRoot extends Publisher<TrackedAccountRoot.events> {
         setFromSTObject(STObject.translate.fromJSONObject(jsonObject));
     }
 
+    /**
+     * setUnfundedAccount
+     * @param account account
+     */
     public void setUnfundedAccount(AccountID account) {
         Account = account;
         Balance = Amount.fromString("0");
@@ -71,6 +93,10 @@ public class TrackedAccountRoot extends Publisher<TrackedAccountRoot.events> {
         notifyUpdate();
     }
 
+    /**
+     * setFromSTObject
+     * @param so STObject.
+     */
     public void setFromSTObject(STObject so) {
 
         if (so.has(AccountID.Account))         Account            = so.get(AccountID.Account);

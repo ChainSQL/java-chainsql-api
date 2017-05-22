@@ -13,6 +13,11 @@ abstract public class Hash<Subclass extends Hash> implements SerializedType, Com
     protected final byte[] hash;
     protected int hashCode = -1;
 
+    /**
+     * Constructor.
+     * @param bytes bytes.
+     * @param size size.
+     */
     public Hash(byte[] bytes, int size) {
         hash = normalizeAndCheckHash(bytes, size);
     }
@@ -46,10 +51,18 @@ abstract public class Hash<Subclass extends Hash> implements SerializedType, Com
         }
     }
 
+    /**
+     * Create a BigInteger.
+     * @return BigInteger Object.
+     */
     BigInteger bigInteger() {
         return new BigInteger(1, hash);
     }
 
+    /**
+     * Get hash bytes.
+     * @return hash bytes.
+     */
     public byte[] bytes() {
         return hash;
     }
@@ -71,6 +84,12 @@ abstract public class Hash<Subclass extends Hash> implements SerializedType, Com
         return compareBytes(thisBytes, bytes, 0, thisBytes.length);
     }
 
+    /**
+     * compareStartingAt
+     * @param another another.
+     * @param start start.
+     * @return return value.
+     */
     public int compareStartingAt(Subclass another, int start) {
         byte[] thisBytes = bytes();
         byte[] bytes = another.bytes();
@@ -78,6 +97,14 @@ abstract public class Hash<Subclass extends Hash> implements SerializedType, Com
         return compareBytes(thisBytes, bytes, start, thisBytes.length);
     }
 
+    /**
+     * compareBytes
+     * @param thisBytes thisBytes.
+     * @param bytes bytes.
+     * @param start start.
+     * @param numBytes number of bytes.
+     * @return return value.
+     */
     public int compareBytes(byte[] thisBytes, byte[] bytes, int start, int numBytes) {
         int thisLength = thisBytes.length;
         if (!(bytes.length == thisLength)) {
@@ -93,15 +120,31 @@ abstract public class Hash<Subclass extends Hash> implements SerializedType, Com
         return 0;
     }
 
+    /**
+     * Slice.
+     * @param start Start.
+     * @return return value.
+     */
     public byte[] slice(int start) {
         return slice(start, 0);
     }
 
+    /**
+     * Get i.
+     * @param i index.
+     * @return hash bytes.
+     */
     public byte get(int i) {
         if (i < 0) i += hash.length;
         return hash[i];
     }
 
+    /**
+     * Slice an array.
+     * @param start start index
+     * @param end End index.
+     * @return return value.
+     */
     public byte[] slice(int start, int end) {
         if (start < 0)  start += hash.length;
         if (end  <= 0)  end   += hash.length;

@@ -18,6 +18,12 @@ public class SLECache {
         public UInt32 prevLedger;
         public boolean deleted = false;
 
+        /**
+         * upateLedgerEntry
+         * @param le LedgerEntry
+         * @param ledgerIndex ledgerIndex
+         * @param txnIndex txnIndex
+         */
         public void upateLedgerEntry(LedgerEntry le, UInt32 ledgerIndex, UInt32 txnIndex) {
             if (doUpdate(txnIndex, ledgerIndex)) {
                 // in the first case
@@ -58,7 +64,13 @@ public class SLECache {
             return false;
         }
     }
-
+    
+    /**
+     * Cache ledger.
+     * @param le Ledger Entry.
+     * @param validatedLedgerIndex Validated ledger index.
+     * @return return value.
+     */
     public boolean cache(LedgerEntry le, UInt32 validatedLedgerIndex) {
         Hash256 index = le.ledgerIndex();
         CacheEntry ce = getOrCreate(index);
@@ -76,11 +88,20 @@ public class SLECache {
         return ce;
     }
 
+    /**
+     * Get LedgerEntry.
+     * @param index ledger index.
+     * @return LedgerEntry.
+     */
     public LedgerEntry get(Hash256 index) {
         CacheEntry entry = getEntry(index);
         return entry == null || entry.deleted ? null : entry.le;
     }
 
+    /**
+     * updateFromTransactionResult
+     * @param tr TransactionResult
+     */
     public void updateFromTransactionResult(TransactionResult tr) {
         if (!tr.validated) {
             return;

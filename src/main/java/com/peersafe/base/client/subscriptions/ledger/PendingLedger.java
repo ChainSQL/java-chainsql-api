@@ -19,6 +19,10 @@ public class PendingLedger {
                 status};
     }
 
+    /**
+     * Set status.
+     * @param status status.
+     */
     public void setStatus(Status status) {
         this.status = status;
         logStateChange();
@@ -41,6 +45,11 @@ public class PendingLedger {
     long ledger_index;
     private Client client;
 
+    /**
+     * PendingLedger
+     * @param ledger_index ledger index.
+     * @param clientInstance client instance.
+     */
     public PendingLedger(long ledger_index, Client clientInstance) {
         this.ledger_index = ledger_index;
 
@@ -49,6 +58,10 @@ public class PendingLedger {
         status = Status.pending;
     }
 
+    /**
+     * notifyTransaction
+     * @param tr tr.
+     */
     public void notifyTransaction(TransactionResult tr) {
         if (!transactions.hasLeaf(tr.hash)) {
             clearedTransactions++;
@@ -62,6 +75,10 @@ public class PendingLedger {
         log(logMessage, logParameters());
     }
 
+    /**
+     * transactionHash
+     * @return return value.
+     */
     public String transactionHash() {
         return transactions.hash().toHex();
     }

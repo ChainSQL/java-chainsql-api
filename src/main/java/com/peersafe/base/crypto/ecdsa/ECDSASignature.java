@@ -13,13 +13,17 @@ public class ECDSASignature {
     /** The two components of the signature. */
     public BigInteger r, s;
 
-    /** Constructs a signature with the given components. */
+    /**
+     * Constructs a signature with the given components.
+     * @param r r
+     * @param s s
+     */
     public ECDSASignature(BigInteger r, BigInteger s) {
         this.r = r;
         this.s = s;
     }
     /**
-     * @param sig
+     * @param sig Sig.
      * @return boolean value
      */
     public static boolean isStrictlyCanonical(byte[] sig) {
@@ -27,8 +31,8 @@ public class ECDSASignature {
     }
     /**
      * 
-     * @param sig
-     * @param strict
+     * @param sig sig.
+     * @param strict strict.
      * @return boolean value
      */
     public static boolean checkIsCanonical(byte[] sig, boolean strict) {
@@ -108,6 +112,7 @@ public class ECDSASignature {
      * DER is an international standard for serializing data structures which is widely used in cryptography.
      * It's somewhat like protocol buffers but less convenient. This method returns a standard DER encoding
      * of the signature, as recognized by OpenSSL and other libraries.
+     * @return return value.
      */
     public byte[] encodeToDER() {
         try {
@@ -117,7 +122,7 @@ public class ECDSASignature {
         }
     }
     /**
-     * @param bytes
+     * @param bytes byte array.
      * @return ECDSASignature
      */
     public static ECDSASignature decodeFromDER(byte[] bytes) {

@@ -16,6 +16,11 @@ public class Response {
     public String error;
     public String error_message;
 
+    /**
+     * Constructor.
+     * @param request request.
+     * @param message message.
+     */
     public Response(Request request, JSONObject message) {
         this.message = message;
         this.request = request;
@@ -34,10 +39,18 @@ public class Response {
         }
     }
 
+    /**
+     * Make engineResult.
+     * @return return.
+     */
     public EngineResult engineResult() {
         return EngineResult.valueOf(result.getString("engine_result"));
     }
 
+    /**
+     * getSubmitSequence
+     * @return return.
+     */
     public UInt32 getSubmitSequence() {
         return new UInt32(result.optJSONObject("tx_json").optInt("Sequence"));
     }

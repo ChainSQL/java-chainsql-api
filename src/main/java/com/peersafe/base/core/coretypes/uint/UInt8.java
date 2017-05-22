@@ -22,23 +22,39 @@ public class UInt8 extends UInt<UInt8> {
             return 1;
         }
     };
-
+    /**
+     * Constructor.
+     * @param bytes byte array.
+     */
     public UInt8(byte[] bytes) {
         super(bytes);
     }
-
+    /**
+     * Constructor.
+     * @param value BigInteger value.
+     */
     public UInt8(BigInteger value) {
         super(value);
     }
-
+    /**
+     * Constructor from Number.
+     * @param s Number value.
+     */
     public UInt8(Number s) {
         super(s);
     }
-
+    /**
+     * From string value.
+     * @param s String value.
+     */
     public UInt8(String s) {
         super(s);
     }
-
+    /**
+     * From String and radix.
+     * @param s s.
+     * @param radix radix.
+     */
     public UInt8(String s, int radix) {
         super(s, radix);
     }

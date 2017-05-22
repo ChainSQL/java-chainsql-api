@@ -14,22 +14,12 @@ import com.peersafe.base.core.coretypes.STArray;
 import com.peersafe.base.core.coretypes.STObject;
 
 public class Validate {
-	/**
-	 * 
-	 * @param obj
-	 * @return
-	 */
 	public Object create(String obj) {
 		Object [] result ={} ;
 		
 		return result;
 	}
 
-	/**
-	 * 
-	 * @param opType
-	 * @return
-	 */
 	public static Integer toOpType(String  opType) {
 		Map<String,Integer> map = Constant.opType;
 		Integer result = (Integer) map.get(opType);
@@ -37,12 +27,6 @@ public class Validate {
 		return result;
 	}
 	
-
-	/**
-	 * 
-	 * @param str
-	 * @return
-	 */
 	public static STArray fromJSONArray(String str) {
 		STObject obj1 = new STObject();
 		obj1 = STObject.fromJSON(str);
@@ -51,35 +35,17 @@ public class Validate {
         return arr;
     }
 	
-	/**
-	 * 
-	 * @param connection
-	 * @param owner
-	 * @param name
-	 * @return
-	 */
 	public static JSONObject getUserToken(Connection connection,String owner, String name) {
 		Request request = connection.client.getUserToken(owner,connection.address,name);
 		return request.response.result;
 	}
 	
-	/**
-	 * 
-	 * @param client
-	 * @param tx_json
-	 * @return
-	 */
 	public static JSONObject getTxJson(Client client, JSONObject tx_json) {
 		Request request = client.getTxJson(tx_json);
 		return request.response.result;
 		
 	}
-	/**
-	 * 
-	 * @param client
-	 * @param account
-	 * @return
-	 */
+
 	public static Map<String,Object> rippleRes(Client client,AccountID account){
 		HashMap<String,Object> map = new HashMap<String,Object>();
 		Request request = client.accountInfo(account);

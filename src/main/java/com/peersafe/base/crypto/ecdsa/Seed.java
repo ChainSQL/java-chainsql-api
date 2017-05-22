@@ -53,11 +53,7 @@ public class Seed {
     public IKeyPair rootKeyPair() {
         return keyPair(-1);
     }
-    /**
-     * 
-     * @param account
-     * @return keyPair
-     */
+
     public IKeyPair keyPair(int account) {
         if (Arrays.equals(version, VER_ED25519)) {
             if (account != 0) throw new AssertionError();
@@ -67,28 +63,16 @@ public class Seed {
         }
 
     }
-    /**
-     * 
-     * @param b58
-     * @return Seed
-     */
+
     public static Seed fromBase58(String b58) {
         B58.Decoded decoded = Config.getB58().decodeMulti(b58, 16, VER_K256, VER_ED25519);
         return new Seed(decoded.version, decoded.payload);
     }
-    /**
-     * 
-     * @param passPhrase
-     * @return Seed
-     */
+
     public static Seed fromPassPhrase(String passPhrase) {
         return new Seed(passPhraseToSeedBytes(passPhrase));
     }
-    /**
-     * 
-     * @param phrase
-     * @return byte[] value
-     */
+
     public static byte[] passPhraseToSeedBytes(String phrase) {
         try {
             return new Sha512(phrase.getBytes("utf-8")).finish128();
@@ -96,20 +80,11 @@ public class Seed {
             throw new RuntimeException(e);
         }
     }
-    /**
-     * 
-     * @param seedBytes
-     * @return IKeyPair
-     */
+
     public static IKeyPair createKeyPair(byte[] seedBytes) {
         return createKeyPair(seedBytes, 0);
     }
-    /**
-     * 
-     * @param seedBytes
-     * @param accountNumber
-     * @return IKeyPair
-     */
+
     public static IKeyPair createKeyPair(byte[] seedBytes, int accountNumber) {
         BigInteger secret, pub, privateGen;
         // The private generator (aka root private key, master private key)
@@ -126,36 +101,22 @@ public class Seed {
         }
 
     }
-    /**
-     * 
-     * @param seedBytes
-     * @return IKeyPair
-     */
+
     public static IKeyPair getKeyPair(byte[] seedBytes) {
         return createKeyPair(seedBytes, 0);
     }
-    /**
-     * 
-     * @param b58
-     * @return IKeyPair
-     */
+
     public static IKeyPair getKeyPair(String b58) {
         return getKeyPair(getB58IdentiferCodecs().decodeFamilySeed(b58));
     }
-    /**
-     * 
-     * @return Seed
-     */
+
     public static Seed randomSeed(){
     	Random r = new Random();
     	byte[] seedBytes = new byte[16];
     	r.nextBytes(seedBytes);
     	return new Seed(seedBytes);
     }
-    /**
-     * 
-     * @return IKeyPair
-     */
+
     public static IKeyPair randomKeyPair(){
     	Random r = new Random();
     	byte[] seedBytes = new byte[16];

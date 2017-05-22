@@ -48,6 +48,11 @@ public class Hash128 extends Hash<Hash128> {
     }
     public static Translator translate = new Translator();
 
+    /**
+     * Generate a hash128 field.
+     * @param f f.
+     * @return return value.
+     */
     public static Hash128Field hash128Field(final Field f) {
         return new Hash128Field(){ @Override public Field getField() {return f;}};
     }

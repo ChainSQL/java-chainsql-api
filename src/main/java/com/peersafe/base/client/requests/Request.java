@@ -55,6 +55,12 @@ public class Request extends Publisher<Request.events> {
     public int                id;
     public long         sendTime;
 
+    /**
+     * Constructor.
+     * @param command command
+     * @param assignedId assignedId
+     * @param client client
+     */
     public Request(Command command, int assignedId, Client client) {
         this.client = client;
         cmd         = command;
@@ -65,14 +71,26 @@ public class Request extends Publisher<Request.events> {
         json("id",      assignedId);
     }
 
+    /**
+     * Get json.
+     * @return json value.
+     */
     public JSONObject json() {
         return json;
     }
 
+    /**
+     * Create json value.
+     * @param key Key
+     * @param value Value.
+     */
     public void json(String key, Object value) {
         json.put(key, value);
     }
 
+    /**
+     * Request.
+     */
     public void request() {
         client.nowOrWhenConnected(new Client.OnConnected() {
             @Override
@@ -82,14 +100,25 @@ public class Request extends Publisher<Request.events> {
         });
     }
 
+    /**
+     * bumpSendTime
+     */
     public  void bumpSendTime() {
         sendTime = System.currentTimeMillis();
     }
 
+    /**
+     * toJSON
+     * @return JSONObject.
+     */
     public JSONObject toJSON() {
         return json();
     }
 
+    /**
+     * jsonRepr
+     * @return return value.
+     */
     public JSONObject jsonRepr() {
         JSONObject repr = new JSONObject();
         if (response != null) {
@@ -100,6 +129,10 @@ public class Request extends Publisher<Request.events> {
         return repr;
     }
 
+    /**
+     * handleResponse
+     * @param msg msg
+     */
     public void handleResponse(JSONObject msg) {
         response = new Response(this, msg);
 

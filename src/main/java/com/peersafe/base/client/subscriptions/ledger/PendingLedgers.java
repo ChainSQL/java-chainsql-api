@@ -18,10 +18,19 @@ public class PendingLedgers {
     TreeMap<Long, PendingLedger> ledgers = new TreeMap<Long, PendingLedger>();
     ClearedLedgersSet clearedLedgers = new ClearedLedgersSet();
 
+    /**
+     * PendingLedgers
+     * @param clientInstance clientInstance
+     */
     public PendingLedgers(Client clientInstance) {
         client = clientInstance;
     }
 
+    /**
+     * getOrAddLedger
+     * @param ledger_index ledger_index
+     * @return return value.
+     */
     public PendingLedger getOrAddLedger(long ledger_index) {
         PendingLedger ledger = ledgers.get(ledger_index);
 
@@ -39,6 +48,11 @@ public class PendingLedgers {
         return ledger;
     }
 
+    /**
+     * clearLedger
+     * @param ledger_index ledger_index
+     * @param from from
+     */
     public void clearLedger(long ledger_index, String from) {
         // We are using this to test our logic wrt, to when it's safe to
         // to clear the `clearedLedgers` set.
@@ -52,6 +66,10 @@ public class PendingLedgers {
         }
     }
 
+    /**
+     * notifyTransactionResult
+     * @param tr tr.
+     */
     public void notifyTransactionResult(TransactionResult tr) {
         long key = tr.ledgerIndex.longValue();
         if (clearedLedgers.contains(key)) {
@@ -139,6 +157,11 @@ public class PendingLedgers {
         });
     }
 
+    /**
+     * alreadyPending
+     * @param j j.
+     * @return return value.
+     */
     public boolean alreadyPending(long j) {
         return ledgers.containsKey(j);
     }
@@ -159,6 +182,9 @@ public class PendingLedgers {
         return ledgers.keySet();
     }
 
+    /**
+     * logPendingLedgers
+     */
     public void logPendingLedgers() {
         for (PendingLedger pendingLedger : ledgers.values()) {
             System.out.println(pendingLedger);

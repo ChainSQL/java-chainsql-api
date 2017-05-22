@@ -22,23 +22,39 @@ public class UInt64 extends UInt<UInt64> {
             return 8;
         }
     };
-
+    /**
+     * Constructor.
+     * @param bytes byte array.
+     */
     public UInt64(byte[] bytes) {
         super(bytes);
     }
-
+    /**
+     * Constructor.
+     * @param value BigInteger value.
+     */
     public UInt64(BigInteger value) {
         super(value);
     }
-
+    /**
+     * Constructor from Number.
+     * @param s Number value.
+     */
     public UInt64(Number s) {
         super(s);
     }
-
+    /**
+     * From string value.
+     * @param s String value.
+     */
     public UInt64(String s) {
         super(s);
     }
-
+    /**
+     * From String and radix.
+     * @param s s
+     * @param radix radix.
+     */
     public UInt64(String s, int radix) {
         super(s, radix);
     }
@@ -59,7 +75,11 @@ public class UInt64 extends UInt<UInt64> {
     }
 
     private UInt64(){}
-
+    /**
+     * Generate int64Field.
+     * @param f Field.
+     * @return return value.
+     */
     private static UInt64Field int64Field(final Field f) {
         return new UInt64Field(){ @Override public Field getField() {return f;}};
     }

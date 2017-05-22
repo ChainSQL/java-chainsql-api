@@ -917,6 +917,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cmd Command.
      * @param manager Manager.
      * @param builder Builder data.
+     * @param <T> Builder parameter type.
      * @return Request data.
      */
     public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder){
@@ -1106,7 +1107,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Submit a transaction
-     * @param tx_blo Tx_blob signed.
+     * @param tx_blob Tx_blob signed.
      * @param fail_hard Fail_hard.
      * @return Request data.
      */

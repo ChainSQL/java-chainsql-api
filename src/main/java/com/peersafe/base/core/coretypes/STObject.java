@@ -59,6 +59,7 @@ public class STObject implements SerializedType, Iterable<Field> {
     }
 
     /**
+     * @param source Source.
      * @return a subclass of STObject using the same fields
      *
      * If the object has a TransactionType or LedgerEntryType

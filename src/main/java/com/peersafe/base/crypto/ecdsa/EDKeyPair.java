@@ -21,15 +21,15 @@ public class EDKeyPair implements IKeyPair {
     public static final EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("ed25519-sha-512");
     /**
      * 
-     * @param keySpec
+     * @param keySpec keySpec
      */
     public EDKeyPair(EdDSAPrivateKeySpec keySpec) {
         this.keySpec = keySpec;
     }
     /**
      * 
-     * @param seedBytes
-     * @return EDKeyPair
+     * @param seedBytes seed bytes.
+     * @return EDKeyPair Keypair.
      */
     public static EDKeyPair from256Seed(byte[] seedBytes) {
         EdDSAPrivateKeySpec keySpec = new EdDSAPrivateKeySpec(seedBytes,
@@ -38,8 +38,8 @@ public class EDKeyPair implements IKeyPair {
     }
     /**
      * 
-     * @param seedBytes
-     * @return EDKeyPair
+     * @param seedBytes SeedBytes.
+     * @return EDKeyPair Keypair.
      */
     public static EDKeyPair from128Seed(byte[] seedBytes) {
         assert seedBytes.length == 16;

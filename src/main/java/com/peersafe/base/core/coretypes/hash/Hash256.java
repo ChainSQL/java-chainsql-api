@@ -14,9 +14,20 @@ public class Hash256 extends Hash<Hash256> {
 
     public static final BigInteger bookBaseSize = new BigInteger("10000000000000000", 16);
 
+    /**
+     * divergenceDepth
+     * @param other Other hash.
+     * @return Depth value.
+     */
     public int divergenceDepth(Hash256 other) {
         return divergenceDepth(0, other);
     }
+    /**
+     * divergenceDepth
+     * @param i index.
+     * @param other Other hash.
+     * @return Depth value.
+     */
     public int divergenceDepth(int i, Hash256 other) {
         for (; i < 64; i++) {
             if (nibblet(i) != other.nibblet(i)) {
@@ -61,32 +72,65 @@ public class Hash256 extends Hash<Hash256> {
         return Type.Hash256;
     }
 
+    /**
+     * Judge if is Zero.
+     * @return return value.
+     */
     public boolean isZero() {
         return this == Hash256.ZERO_256 || equals(Hash256.ZERO_256);
     }
 
+    /**
+     * Judge if is nonzero value.
+     * @return Judge result.
+     */
     public boolean isNonZero() {
         return !isZero();
     }
 
+    /**
+     * Transfer from HexString to hash256.
+     * @param s HexString.
+     * @return Hash256 value.
+     */
     public static Hash256 fromHex(String s) {
         return translate.fromHex(s);
     }
 
+    /**
+     * Hash256.
+     * @param bytes bytes.
+     */
     public Hash256(byte[] bytes) {
         super(bytes, 32);
     }
 
+    /**
+     * Get signing hash.
+     * @param blob hash blob.
+     * @return signing hash.
+     */
     public static Hash256 signingHash(byte[] blob) {
         return prefixedHalfSha512(HashPrefix.txSign, blob);
     }
 
+    /**
+     * prefixedHalfSha512
+     * @param prefix prefix.
+     * @param blob blob.
+     * @return return value.
+     */
     public static Hash256 prefixedHalfSha512(Prefix prefix, byte[] blob) {
         HalfSha512 messageDigest = HalfSha512.prefixed256(prefix);
         messageDigest.update(blob);
         return messageDigest.finish();
     }
 
+    /**
+     * nibblet
+     * @param depth depth.
+     * @return return value.
+     */
     public int nibblet(int depth) {
         int byte_ix = depth > 0 ? depth / 2 : 0;
         int b = super.hash[byte_ix];
@@ -111,6 +155,11 @@ public class Hash256 extends Hash<Hash256> {
     }
     public static Translator translate = new Translator();
 
+    /**
+     * hash256Field
+     * @param f field.
+     * @return Hash256Field object.
+     */
     public static Hash256Field hash256Field(final Field f) {
         return new Hash256Field(){ @Override public Field getField() {return f;}};
     }

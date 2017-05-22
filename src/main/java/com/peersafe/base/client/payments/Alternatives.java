@@ -53,7 +53,7 @@ public class Alternatives extends ArrayList<Alternative> {
 
     /**
      * hasNativeSource
-     * @return
+     * @return return value.
      */
     public boolean hasNativeSource() {
         for (Alternative alt : this) {

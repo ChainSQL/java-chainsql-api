@@ -11,6 +11,10 @@ public abstract class CallbackContext {
     public boolean shouldExecute() {
         return true;
     }
+    /**
+     * shouldRemove
+     * @return return value.
+     */
     public boolean shouldRemove() {
         return false;
     }

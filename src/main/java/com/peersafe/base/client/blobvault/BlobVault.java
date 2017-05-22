@@ -86,6 +86,7 @@ public class BlobVault {
 
     /**
      * @param user Username already lower cased
+     * @param pass password.
      * @return Return value.
      */
     public String userPassHash(String user, String pass) {

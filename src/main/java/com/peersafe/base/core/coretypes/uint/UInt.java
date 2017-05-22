@@ -17,21 +17,46 @@ abstract public class UInt<Subclass extends UInt> extends Number implements Seri
                              Max32 = new BigInteger("4294967296"),
                              Max64 = new BigInteger("18446744073709551616");
 
+    /**
+     * getMinimumValue
+     * @return BigInteger
+     */
     public BigInteger getMinimumValue() {
         return BigInteger.ZERO;
     }
+    /**
+     * 
+     * @param bytes bytes.
+     */
     public UInt(byte[] bytes) {
         setValue(new BigInteger(1, bytes));
     }
+    /**
+     * Uint.
+     * @param bi bi.
+     */
     public UInt(BigInteger bi) {
         setValue(bi);
     }
+    /**
+     * Set uint from number.
+     * @param s s.
+     */
     public UInt(Number s) {
         setValue(BigInteger.valueOf(s.longValue()));
     }
+    /**
+     * Set Uint from String.
+     * @param s s.
+     */
     public UInt(String s) {
         setValue(new BigInteger(s));
     }
+    /**
+     * Set Uint from String and int.
+     * @param s String value.
+     * @param radix radix.
+     */
     public UInt(String s, int radix) {
         setValue(new BigInteger(s, radix));
     }
@@ -47,42 +72,90 @@ abstract public class UInt<Subclass extends UInt> extends Number implements Seri
     public abstract int getByteWidth();
     public abstract Subclass instanceFrom(BigInteger n);
 
+    /**
+     * isValid.
+     * @param n BigInteger.
+     * @return return value.
+     */
     public boolean isValid(BigInteger n) {
         return !((bitLength() / 8) > getByteWidth());
     }
 
+    /**
+     * Add value.
+     * @param val Uint.
+     * @return return value.
+     */
     public Subclass add(UInt val) {
         return instanceFrom(value.add(val.value));
     }
 
+    /**
+     * Substract.
+     * @param val Uint value.
+     * @return Subclass value.
+     */
     public Subclass subtract(UInt val) {
         return instanceFrom(value.subtract(val.value));
     }
 
+    /**
+     * Multiply.
+     * @param val value.
+     * @return return value.
+     */
     public Subclass multiply(UInt val) {
         return instanceFrom(value.multiply(val.value));
     }
 
+    /**
+     * Divide.
+     * @param val value.
+     * @return return value.
+     */
     public Subclass divide(UInt val) {
         return instanceFrom(value.divide(val.value));
     }
 
+    /**
+     * Or operation.
+     * @param val value.
+     * @return return value.
+     */
     public Subclass or(UInt val) {
         return instanceFrom(value.or(val.value));
     }
 
+    /**
+     * shiftLeft operation.
+     * @param n value.
+     * @return return value.
+     */
     public Subclass shiftLeft(int n) {
         return instanceFrom(value.shiftLeft(n));
     }
 
+    /**
+     * Shift Right operation.
+     * @param n n.
+     * @return return value.
+     */
     public Subclass shiftRight(int n) {
         return instanceFrom(value.shiftRight(n));
     }
 
+    /**
+     * bitLength.
+     * @return return value.
+     */
     public int bitLength() {
         return value.bitLength();
     }
 
+    /**
+     * Compare to.
+     * @param val value.
+     */
     public int compareTo(UInt val) {
         return value.compareTo(val.value);
     }
@@ -95,21 +168,45 @@ abstract public class UInt<Subclass extends UInt> extends Number implements Seri
         else return super.equals(obj);
     }
 
+    /**
+     * Equeals.
+     * @param x x.
+     * @return return value.
+     */
     public boolean equals(UInt x) {
         return value.equals(x.value);
     }
 
+    /**
+     * Min.
+     * @param val value.
+     * @return return value.
+     */
     public BigInteger min(BigInteger val) {
         return value.min(val);
     }
 
+    /**
+     * Max.
+     * @param val BigInteger value.
+     * @return return value.
+     */
     public BigInteger max(BigInteger val) {
         return value.max(val);
     }
 
+    /**
+     * toString.
+     * @param radix radix.
+     * @return return value.
+     */
     public String toString(int radix) {
         return value.toString(radix);
     }
+    /**
+     * To byte array.
+     * @return return value.
+     */
     public byte[] toByteArray() {
         int length = getByteWidth();
 
@@ -146,6 +243,10 @@ abstract public class UInt<Subclass extends UInt> extends Number implements Seri
 
     abstract public Object value();
 
+    /**
+     * return BigInter value.
+     * @return BigInter value.
+     */
     public BigInteger bigInteger(){
         return value;
     }
@@ -181,19 +282,38 @@ abstract public class UInt<Subclass extends UInt> extends Number implements Seri
         return value.shortValue();
     }
 
+    /**
+     * Set BigInteger value.
+     * @param value value.
+     */
     public void setValue(BigInteger value) {
         this.value = value;
     }
 
+    /**
+     * lte
+     * @param sequence Sequence.
+     * @param <T> int type.
+     * @return return value.
+     */
     public <T extends UInt> boolean  lte(T sequence) {
         return compareTo(sequence) < 1;
     }
 
+    /**
+     * Test Bit.
+     * @param f int value.
+     * @return return value.
+     */
     public boolean testBit(int f) {
         // TODO, optimized ;) // move to Uint32
         return value.testBit(f);
     }
 
+    /**
+     * isZero.
+     * @return return value.
+     */
     public boolean isZero() {
         return value.signum() == 0;
     }

@@ -42,6 +42,13 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 	private ArrayList<ManagedTxn> pending = new ArrayList<ManagedTxn>();
 	private ArrayList<ManagedTxn> failedTransactions = new ArrayList<ManagedTxn>();
 
+	/**
+	 * TransactionManager constructor.
+	 * @param client client
+	 * @param accountRoot accountRoot
+	 * @param accountID accountID
+	 * @param keyPair keyPair
+	 */
 	public TransactionManager(Client client, final TrackedAccountRoot accountRoot, AccountID accountID,
 			IKeyPair keyPair) {
 		this.client = client;
@@ -121,6 +128,10 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		return !txn.isFinalized() && seenValidatedSequences.contains(txn.sequence().longValue());
 	}
 
+	/**
+	 * queue
+	 * @param tx ManagedTxn
+	 */
 	public void queue(final ManagedTxn tx) {
 		 if (accountRoot.primed()) {
 			queue(tx, locallyPreemptedSubmissionSequence());
@@ -135,11 +146,18 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		}
 	}
 
-	// TODO: data structure that keeps txns in sequence sorted order
+	/**
+	 * Get pending.
+	 * @return pending.
+	 */
 	public ArrayList<ManagedTxn> getPending() {
 		return pending;
 	}
 
+	/**
+	 * pendingSequenceSorted
+	 * @return return value.
+	 */
 	public ArrayList<ManagedTxn> pendingSequenceSorted() {
 		ArrayList<ManagedTxn> queued = new ArrayList<ManagedTxn>(getPending());
 		Collections.sort(queued, new Comparator<ManagedTxn>() {
@@ -151,6 +169,10 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		return queued;
 	}
 
+	/**
+	 * txnsPending
+	 * @return return value.
+	 */
 	public int txnsPending() {
 		return getPending().size();
 	}
@@ -227,6 +249,10 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		makeSubmitRequest(txn, sequence);
 	}
 
+	/**
+	 * Can submit.
+	 * @return return value.
+	 */
 	public boolean canSubmit() {
 		return client.connected && client.serverInfo.primed() &&
 				// ledger close could have given us
@@ -306,6 +332,11 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		return req;
 	}
 
+	/**
+	 * handleSubmitError 
+	 * @param txn ManagedTxn
+	 * @param res Response.
+	 */
 	public void handleSubmitError(final ManagedTxn txn, Response res) {
 		if (txn.finalizedOrResponseIsToPriorSubmission(res)) {
 			return;
@@ -331,6 +362,8 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 	/**
 	 * We handle various transaction engine results specifically and then by
 	 * class of result.
+	 * @param txn Managed Tx.
+	 * @param res Response.
 	 */
 	public void handleSubmitSuccess(final ManagedTxn txn, final Response res) {
 		if (txn.finalizedOrResponseIsToPriorSubmission(res)) {
@@ -499,12 +532,21 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		resubmit(txn, previouslySubmitted);
 	}
 
+	/**
+	 * manage
+	 * @param tt Transaction.
+	 * @return return value.
+	 */
 	public ManagedTxn manage(Transaction tt) {
 		ManagedTxn txn = new ManagedTxn(tt);
 		tt.account(accountID);
 		return txn;
 	}
 
+	/**
+	 * notifyTransactionResult
+	 * @param tr Transaction result.
+	 */
 	public void notifyTransactionResult(TransactionResult tr) {
 		if (!tr.validated || !(tr.initiatingAccount().equals(accountID))) {
 			return;

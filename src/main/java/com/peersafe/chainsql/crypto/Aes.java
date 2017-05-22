@@ -21,18 +21,18 @@ public class Aes {
 	
 	/**
 	 * AES encrypting.
-	 * @param password
-	 * @param content
-	 * @return
+	 * @param password password bytes.
+	 * @param content content.
+	 * @return return value.
 	 */
 	public static String aesEncrypt(byte[] password,String content){
 		return encrypt(password,content);
 	}
 	/**
 	 * AES encrypting.
-	 * @param password
-	 * @param content
-	 * @return
+	 * @param password Password.
+	 * @param content Content.
+	 * @return Return value.
 	 */
 	public static String aesEncrypt(String password,String content){
 		return encrypt(password.getBytes(),content);
@@ -40,9 +40,9 @@ public class Aes {
 	
 	/**
 	 * AES decrypting.
-	 * @param password
-	 * @param encryptedHex
-	 * @return
+	 * @param password Password.
+	 * @param encryptedHex encryped hex string.
+	 * @return return value.
 	 */
 	public static byte[] aesDecrypt(String password,String encryptedHex){
 		return decrypt(Util.hexToBytes(encryptedHex),password.getBytes());

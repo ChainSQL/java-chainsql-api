@@ -30,6 +30,11 @@ public class ServerInfo {
     public String server_status;
     public String validated_ledgers;
 
+    /**
+     * computeFee
+     * @param units units.
+     * @return return amount.
+     */
     public Amount computeFee(int units) {
         if (!updated) {
             throw new IllegalStateException("No information from the server yet");
@@ -42,10 +47,19 @@ public class ServerInfo {
         return Amount.fromString(s);
     }
 
+    /**
+     * transactionFee
+     * @param transaction transaction.
+     * @return return.
+     */
     public Amount transactionFee(Transaction transaction) {
         return computeFee(fee_base);
     }
 
+    /**
+     * update. 
+     * @param json json.
+     */
     public void update(JSONObject json) {
         // TODO, this might asking for trouble, just assuming certain fields, it should BLOW UP
 
@@ -67,10 +81,18 @@ public class ServerInfo {
         updated = true;
     }
 
+    /**
+     * Date.
+     * @return return value.
+     */
     public Date date() {
         return fromSecondsSinceRippleEpoch(ledger_time);
     }
 
+    /**
+     * primed.
+     * @return return value.
+     */
     public boolean primed() {
         return updated;
     }

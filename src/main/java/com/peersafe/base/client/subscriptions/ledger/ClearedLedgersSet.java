@@ -6,10 +6,18 @@ public class ClearedLedgersSet {
     public static boolean DEBUG = true;
     long lastCleared =-1, firstCleared =-1;
 
+    /**
+     * cleared
+     * @return return value.
+     */
     public TreeSet<Long> cleared() {
         return clearedLedgers;
     }
 
+    /**
+     * Size.
+     * @return size value.
+     */
     public int size() {
         return clearedLedgers.size();
     }
@@ -17,11 +25,18 @@ public class ClearedLedgersSet {
     TreeSet<Long> clearedLedgers = new TreeSet<Long>();
     TreeSet<Long> clearedLedgersNeverCleared = new TreeSet<Long>();
 
+    /**
+     * Clear.
+     * @param ledger_index ledger index.
+     */
     public void clear(long ledger_index) {
         if (DEBUG) clearedLedgersNeverCleared.add(ledger_index);
         clearedLedgers.add(ledger_index);
     }
 
+    /**
+     * Clear If No Gaps.
+     */
     public void clearIfNoGaps() {
         if (okToClear()) {
             if (DEBUG) {
@@ -41,6 +56,10 @@ public class ClearedLedgersSet {
         }
     }
 
+    /**
+     * gaps.
+     * @return return value.
+     */
     public TreeSet<Long> gaps() {
         TreeSet<Long> gaps = new TreeSet<Long>();
         int i = 0;
@@ -58,10 +77,19 @@ public class ClearedLedgersSet {
         return gaps;
     }
 
+    /**
+     * okToClear.
+     * @return return value.
+     */
     public boolean okToClear() {
         return gaps().size() == 0;
     }
 
+    /**
+     * Contains.
+     * @param ledger_index ledger_index.
+     * @return return value.
+     */
     public boolean contains(long ledger_index) {
         if (DEBUG) {
             boolean authoritativeHas = clearedLedgersNeverCleared.contains(ledger_index);

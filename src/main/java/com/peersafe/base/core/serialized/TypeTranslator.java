@@ -87,7 +87,10 @@ public abstract class TypeTranslator<T extends SerializedType> {
     }
 
     /**
+     * 
+     * @param parser Parser.
      * @param hint Using a boxed integer, allowing null for no hint
+     * @return return value.
      */
     public abstract T fromParser(BinaryParser parser, Integer hint);
 

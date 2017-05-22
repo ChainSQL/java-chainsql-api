@@ -1,11 +1,7 @@
 package com.peersafe.base.crypto.sjcljson;
 
 public class JSEscape {
-	/**
-	 * 
-	 * @param escaped
-	 * @return String vlaue
-	 */
+
     public static String unescape(String escaped) {
         int length = escaped.length();
         int i = 0;
@@ -33,11 +29,7 @@ public class JSEscape {
 
         return sb.toString();
     }
-    /**
-     * 
-     * @param raw
-     * @return String value
-     */
+
     public static String escape(String raw) {
         int length = raw.length();
         int i = 0;

@@ -17,6 +17,15 @@ public class Submission {
     // time of submit response
     public long ledgerSequence;
 
+    /**
+     * Constructor.
+     * @param request request
+     * @param sequence sequence
+     * @param hash hash
+     * @param ledgerSequence ledgerSequence
+     * @param fee fee
+     * @param lastLedgerIndex lastLedgerIndex
+     */
     public Submission(Request request, UInt32 sequence, Hash256 hash, long ledgerSequence, Amount fee, UInt32 lastLedgerIndex) {
         this.request = request;
         this.sequence = sequence;

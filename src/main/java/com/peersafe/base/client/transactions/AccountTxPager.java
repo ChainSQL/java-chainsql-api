@@ -40,13 +40,34 @@ public class AccountTxPager {
         void onPage(Page page);
     }
 
+    /**
+     * Constructor.
+     * @param client Client.
+     * @param account Account.
+     * @param onPage OnPage.
+     */
     public AccountTxPager(Client client, AccountID account, OnPage onPage) {
         this(client, account, onPage, -1, -1);
     }
+    /**
+     * Constructor.
+     * @param client Client.
+     * @param account Account.
+     * @param onPage OnPage.
+     * @param ledgerMin LedgerMin.
+     */
     public AccountTxPager(Client client, AccountID account, OnPage onPage, long ledgerMin) {
         this(client, account, onPage, ledgerMin, -1);
     }
 
+    /**
+     * AccountTxPager Constructor.
+     * @param client  client  
+     * @param account account
+     * @param onPage onPage
+     * @param ledgerMin ledgerMin
+     * @param ledgerMax ledgerMax 
+     */
     public AccountTxPager(Client client, AccountID account, OnPage onPage, long ledgerMin, long ledgerMax) {
         this.ledgerMax = ledgerMax;
         this.ledgerMin = ledgerMin;
@@ -66,6 +87,9 @@ public class AccountTxPager {
         maxRetries = 10;
     }
 
+    /**
+     * Request
+     */
     public void request() {
         if (onPage == null) {
             throw new IllegalStateException("Forgot to set OnPage!");
@@ -73,40 +97,79 @@ public class AccountTxPager {
         walkAccountTx(null);
     }
 
+    /**
+     * maxRetriesPerPage
+     * @param retries retries.
+     * @return return value.
+     */
     public AccountTxPager maxRetriesPerPage(int retries) {
         maxRetries = retries;
         return this;
     }
 
+    /**
+     * OnPage
+     * @param page onpage callback.
+     * @return return value.
+     */
     public AccountTxPager onPage(OnPage page) {
         onPage = page;
         return this;
     }
+    
+    /**
+     * onError
+     * @param onError callback.
+     * @return return value.
+     */
     public AccountTxPager onError(Request.OnError onError) {
         this.onError = onError;
         return this;
     }
 
+    /**
+     * Abort.
+     */
     public void abort() {
         aborted = true;
     }
 
+    /**
+     * Page size.
+     * @param i parameter.
+     * @return return value.
+     */
     public AccountTxPager pageSize(int i)
     {
         limit = i;
         return this;
     }
 
+    /**
+     * Min Ledger
+     * @param i i
+     * @return return value.
+     */
     public AccountTxPager minLedger(long i) {
         ledgerMin = i;
         return this;
     }
 
+    /**
+     * MaxLedger
+     * @param i i.
+     * @return return value.
+     */
     public AccountTxPager maxLedger(long i) {
         ledgerMax = i;
         return this;
     }
 
+    /**
+     * forward.
+     * @param fwd forward.
+     * @return return value.
+     */
     public AccountTxPager forward(boolean fwd)
     {
         forward = fwd;

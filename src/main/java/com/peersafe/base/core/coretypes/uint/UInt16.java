@@ -23,22 +23,43 @@ public class UInt16 extends UInt<UInt16> {
         }
     };
 
+    /**
+     * Constructor.
+     * @param bytes byte array.
+     */
     public UInt16(byte[] bytes) {
         super(bytes);
     }
 
+    /**
+     * Constructor.
+     * @param value BigInteger value.
+     */
     public UInt16(BigInteger value) {
         super(value);
     }
 
+    /**
+     * Constructor from Number.
+     * @param s Number value.
+     */
     public UInt16(Number s) {
         super(s);
     }
 
+    /**
+     * From string value.
+     * @param s String value.
+     */
     public UInt16(String s) {
         super(s);
     }
 
+    /**
+     * From String and radix.
+     * @param s s
+     * @param radix radix.
+     */
     public UInt16(String s, int radix) {
         super(s, radix);
     }
@@ -58,6 +79,11 @@ public class UInt16 extends UInt<UInt16> {
         return intValue();
     }
 
+    /**
+     * Generate int16Field.
+     * @param f Field.
+     * @return return value.
+     */
     public static UInt16Field int16Field(final Field f) {
         return new UInt16Field(){ @Override public Field getField() {return f;}};
     }

@@ -16,28 +16,14 @@ public class Sha512 {
             throw new RuntimeException(e);
         }
     }
-    /**
-     * 
-     * @param start
-     */
     public Sha512(byte[] start) {
         this();
         add(start);
     }
-    /**
-     * 
-     * @param bytes
-     * @return Sha512
-     */
     public Sha512 add(byte[] bytes) {
         messageDigest.update(bytes);
         return this;
     }
-    /**
-     * 
-     * @param i
-     * @return Sha512
-     */
     public Sha512 addU32(int i) {
         messageDigest.update((byte) ((i >>> 24) & 0xFF));
         messageDigest.update((byte) ((i >>> 16) & 0xFF));

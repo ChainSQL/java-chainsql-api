@@ -12,6 +12,11 @@ public class FileSTWriter extends STWriter implements Closeable {
         this.out = out;
     }
 
+    /**
+     * Create from file.
+     * @param path File path.
+     * @return FileSTWriter.
+     */
     public static FileSTWriter fromFile(String path) {
         FileOutputStream fos = null;
         try {

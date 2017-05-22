@@ -38,16 +38,29 @@ public class AccountID extends Hash160 {
     public static AccountID NEUTRAL = fromInteger(1), XRP_ISSUER = fromInteger(0);
     final public String address;
 
+    /**
+     * Constructor.
+     * @param bytes byte array.
+     */
     public AccountID(byte[] bytes) {
         this(bytes, encodeAddress(bytes));
     }
 
+    /**
+     * Constructor.
+     * @param bytes byte array.
+     * @param address Address.
+     */
     public AccountID(byte[] bytes, String address) {
         super(bytes);
         this.address = address;
     }
 
-    // Static from* constructors
+    /**
+     *  Static from* constructors
+     * @param value Address.
+     * @return AccountID.
+     */
     public static AccountID fromString(String value) {
         if (value.length() == 160 / 4) {
             return fromAddressBytes(B16.decode(value));
@@ -63,37 +76,77 @@ public class AccountID extends Hash160 {
         }
     }
 
+    /**
+     * fromAddress
+     * @param address Account address.
+     * @return AccountID.
+     */
     static public AccountID fromAddress(String address) {
         byte[] bytes = getB58IdentiferCodecs().decodeAddress(address);
         return new AccountID(bytes, address);
     }
 
+    /**
+     * From keypair.
+     * @param kp keypair.
+     * @return AccountID.
+     */
     public static AccountID fromKeyPair(IKeyPair kp) {
         byte[] bytes = kp.pub160Hash();
         return new AccountID(bytes, encodeAddress(bytes));
     }
 
+    /**
+     * From passphrase.
+     * @param phrase Passphrase.
+     * @return AccountID.
+     */
     public static AccountID fromPassPhrase(String phrase) {
         return fromKeyPair(Seed.fromPassPhrase(phrase).keyPair());
     }
 
+    /**
+     * fromSeedString
+     * @param seed Seed.
+     * @return return value.
+     */
     static public AccountID fromSeedString(String seed) {
         return fromKeyPair(Seed.getKeyPair(seed));
     }
 
+    /**
+     * From Seed byte array.
+     * @param seed Seed byte array.
+     * @return AccountID.
+     */
     static public AccountID fromSeedBytes(byte[] seed) {
         return fromKeyPair(Seed.getKeyPair(seed));
     }
 
+    /**
+     * Get AccountID from integer.
+     * @param n Integer value.
+     * @return AccountID.
+     */
     static public AccountID fromInteger(Integer n) {
         // The hash160 constructor will extend the 4bytes address
         return fromBytes(new Hash160(new UInt32(n).toByteArray()).bytes());
     }
 
+    /**
+     * From bytes.
+     * @param bytes byte array.
+     * @return AccountID.
+     */
     public static AccountID fromBytes(byte[] bytes) {
         return new AccountID(bytes, encodeAddress(bytes));
     }
 
+    /**
+     * Create from Address bytes.
+     * @param bytes address bytes.
+     * @return AccountID.
+     */
     static public AccountID fromAddressBytes(byte[] bytes) {
         return fromBytes(bytes);
     }
@@ -108,14 +161,28 @@ public class AccountID extends Hash160 {
         return address;
     }
 
+    /**
+     * Isue.
+     * @param code code.
+     * @return return value.
+     */
     public Issue issue(String code) {
         return new Issue(Currency.fromString(code), this);
     }
 
+    /**
+     * Issue.
+     * @param c Currency.
+     * @return Issue.
+     */
     public Issue issue(Currency c) {
         return new Issue(c, this);
     }
 
+    /**
+     * isNativeIssuer.
+     * @return return value.
+     */
     public boolean isNativeIssuer() {
         return equals(XRP_ISSUER);
     }
@@ -146,6 +213,11 @@ public class AccountID extends Hash160 {
         return Type.AccountID;
     }
 
+    /**
+     * line-index.
+     * @param issue Issue.
+     * @return return value.
+     */
     public Hash256 lineIndex(Issue issue) {
         if (issue.isNative()) throw new AssertionError();
         return Index.rippleState(this, issue.issuer(), issue.currency());
@@ -181,15 +253,30 @@ public class AccountID extends Hash160 {
         return getB58IdentiferCodecs().encodeAddress(a);
     }
 
+    /**
+     * addAliasFromPassPhrase
+     * @param n  n
+     * @param n2 Phrase.
+     * @return AccountID.
+     */
     public static AccountID addAliasFromPassPhrase(String n, String n2) {
         return aliases.put(n, fromPassPhrase(n2));
     }
 
+    /**
+     * accountForAlias
+     * @param value value.
+     * @return return value.
+     */
     public static AccountID accountForAlias(String value) {
         return aliases.get(value);
     }
 
-    // Typed field definitions
+    /**
+     * accountField
+     * @param f f.
+     * @return return value.
+     */
     public static AccountIDField accountField(final Field f) {
         return new AccountIDField() {
             @Override

@@ -33,7 +33,7 @@ public class Connection implements Closeable {
 	
 	/**
 	 * Get Client object.
-	 * @return
+	 * @return return value.
 	 */
 	public Client getClient() {
 		return client;
@@ -41,49 +41,49 @@ public class Connection implements Closeable {
 	
 	/**
 	 * Set Client object.
-	 * @param client
+	 * @param client client.
 	 */
 	public void setClient(Client client) {
 		this.client = client;
 	}
 	/**
 	 * Get account address.
-	 * @return
+	 * @return Current account address.
 	 */
 	public String getAddress() {
 		return address;
 	}
 	/**
 	 * Set account address.
-	 * @param address
+	 * @param address Account address.
 	 */
 	public void setAddress(String address) {
 		this.address = address;
 	}
 	/**
 	 * 
-	 * @return
+	 * @return Secret value.
 	 */
 	public String getSecret() {
 		return secret;
 	}
 	/**
 	 * Set secret.
-	 * @param secret
+	 * @param secret Account secret.
 	 */
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
 	/**
 	 * Get scope
-	 * @return
+	 * @return Scope value.
 	 */
 	public String getScope() {
 		return scope;
 	}
 	/**
 	 * Set scope.
-	 * @param scope
+	 * @param scope Scope value.
 	 */
 	public void setScope(String scope) {
 		this.scope = scope;

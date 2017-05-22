@@ -22,22 +22,60 @@ public class Publisher<CompatHack extends Publisher.Callback> {
         public void erred(RuntimeException args);
     }
 
+    /**
+     * Register callback.
+     * @param key Key.
+     * @param cb Callback.
+     * @param <T> Callback type.
+     * @param <A> callback parameter.
+     */
     public <A, T extends Callback<A>> void on(Class<T> key, T cb) {
         add(key, cb);
     }
 
+    /**
+     * Register callback.
+     * @param key Key.
+     * @param executor executor.
+     * @param cb Callback.
+     * @param <T> Callback type.
+     * @param <A> callback parameter.
+     */
     public <A, T extends Callback<A>> void on(Class<T> key, CallbackContext executor, T cb) {
         add(key, executor, cb);
     }
 
+    /**
+     * Trigger callback once.
+     * @param key key.
+     * @param cb callback.
+     * @param <T> Callback type.
+     * @param <A> callback parameter.
+     */
     public <A, T extends Callback<A>> void once(final Class<T> key, final T cb) {
         once(key, null, cb);
     }
 
+    /**
+     * Once
+     * @param key key
+     * @param executor executor
+     * @param cb cb
+     * @param <T> Callback type.
+     * @param <A> callback parameter.
+     */
     public <A, T extends Callback<A>> void once(final Class<T> key, CallbackContext executor, final T cb) {
         add(key, executor, cb, true);
     }
 
+    /**
+     * emit callbacks.
+     * @param key key.
+     * @param args args.
+     * @param <T> Callback type.
+     * @param <A> callback parameter.
+     * @return return.
+     */
     public <A, T extends Callback<A>> int emit(Class<T> key, A args) {
         if (logger.isLoggable(Level.FINE)) {
             log(Level.FINE, "Emitting {0} from thread: {1}", key.getSimpleName(), Thread.currentThread());
@@ -74,6 +112,11 @@ public class Publisher<CompatHack extends Publisher.Callback> {
         return executed;
     }
 
+    /**
+     * execute.
+     * @param args args
+     * @param pair pair
+     */
     @SuppressWarnings("unchecked")
     public static void execute(Object args, ContextedCallback pair) {
         pair.callback.called(args);
@@ -159,10 +202,21 @@ public class Publisher<CompatHack extends Publisher.Callback> {
         listFor(key).add(executor, cb, b);
     }
 
+    /**
+     * Remove a listener.
+     * @param key Key.
+     * @param cb Callback.
+     * @param <T> Callback type.
+     * @param <A> callback parameter.
+     * @return Return value.
+     */
     public <A, T extends Callback<A>> boolean removeListener(Class<T> key, Callback<A> cb) {
         return listFor(key).remove(cb);
     }
 
+    /**
+     * Clear all listeners.
+     */
     public void clearAllListeners() {
         cbs.clear();
     }

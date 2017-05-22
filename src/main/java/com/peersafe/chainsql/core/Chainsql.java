@@ -90,10 +90,10 @@ public class Chainsql extends Submit {
 	}
 	
 	/**
-	 * Transfer variable number of Strings to List<String>
+	 * Transfer variable number of Strings to List of String
 	 * @param val0 Parameter
 	 * @param vals Parameter
-	 * @return List<String>
+	 * @return List of String
 	 */
 	public static List<String> array(String val0, String... vals){
 	 	List<String> res = new ArrayList<String>();
@@ -461,7 +461,7 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * An asynchronous api to get the ledger identified by ledger_index.
-	 * @return Ledger informations.
+	 * @param cb Callback.
 	 */
 	public void getLedger(Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
@@ -470,7 +470,7 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * Get the ledger identified by ledger_index.
-	 * @param ledger_index
+	 * @param ledger_index Ledger index.
 	 * @param cb Callback.
 	 */
 	public void getLedger(Integer ledger_index,Callback<JSONObject> cb){
@@ -539,7 +539,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Get trasactions submitted by notified account,asynchronous.
 	 * @param address Account address.
-	 * @return Result.
+	 * @param cb Callback.
 	 */
 	public void getTransactions(String address,Callback<JSONObject> cb){
 		this.connection.client.getTransactions(address,cb);	
@@ -615,7 +615,7 @@ public class Chainsql extends Submit {
 
 	/**
 	 * sqlTransaction commit
-	 * @param commitType
+	 * @param commitType Commit type.
 	 * @return Commit result.
 	 */
 	@SuppressWarnings("unchecked")

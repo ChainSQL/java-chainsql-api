@@ -26,6 +26,9 @@ public class JSONEncrypt {
      *  https://github.com/AurionFinancial/AndroidWallet/blob/master/src/com/ripple/Blobvault.java
      *
      *  This supports ccm mode encrypted data.
+     * @param ks ks.
+     * @param iter iter.
+     * @param ts ts.
      *
      */
     public JSONEncrypt(int ks, int iter, int ts) {
@@ -36,13 +39,7 @@ public class JSONEncrypt {
 
     public JSONEncrypt() {
     }
-    /**
-     * 
-     * @param key
-     * @param blob
-     * @param adata
-     * @return JSONObject value
-     */
+
     public JSONObject encrypt(String key, JSONObject blob, String adata) {
         JSONObject result = new JSONObject();
         SecureRandom random = new SecureRandom();
@@ -98,23 +95,11 @@ public class JSONEncrypt {
     private int macSize(int ms) {
         return ts;
     }
-    /**
-     * 
-     * @param key
-     * @param json
-     * @return JSONObject value
-     * @throws InvalidCipherTextException
-     */
+
     public JSONObject decrypt(String key, String json) throws InvalidCipherTextException {
         return decrypt(key, new JSONObject(json));
     }
-    /**
-     * 
-     * @param key
-     * @param json
-     * @return JSONObject value
-     * @throws InvalidCipherTextException
-     */
+
     public JSONObject decrypt(String key, JSONObject json) throws InvalidCipherTextException {
         try {
 

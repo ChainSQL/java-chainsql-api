@@ -84,16 +84,34 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     // The exponent is always calculated.
     private int exponent;
 
+    /**
+     * Amount constructor.
+     * @param value value.
+     * @param currency currency.
+     * @param issuer issuer.
+     */
     public Amount(BigDecimal value, Currency currency, AccountID issuer) {
         this(value, currency, issuer, false);
     }
 
+    /**
+     * Amount constructor.
+     * @param value BigDecimal value.
+     */
     public Amount(BigDecimal value) {
         isNative = true;
         currency = Currency.XRP;
         this.setAndCheckValue(value);
     }
 
+    /**
+     * Constructor.
+     * @param value value.
+     * @param currency currency.
+     * @param issuer issuer.
+     * @param isNative isNative.
+     * @param unbounded unBounded.
+     */
     public Amount(BigDecimal value, Currency currency, AccountID issuer, boolean isNative, boolean unbounded) {
         this.isNative = isNative;
         this.currency = currency;
@@ -301,7 +319,8 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     
     Divide and multiply are equivalent to the javascript ripple-lib
     ratio_human and product_human.
-
+    * @param augend augmend.
+    * @return return value.
     */
     public Amount add(BigDecimal augend) {
         return newValue(value.add(augend), true);

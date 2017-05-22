@@ -8,6 +8,11 @@ public class Operation<T> extends Request.Manager<T> {
     public int nth;
     public ComposedOperation composed;
 
+    /**
+     * Operation
+     * @param nth nth
+     * @param composed composed
+     */
     public Operation(int nth, ComposedOperation composed) {
         this.nth = nth;
         this.composed = composed;

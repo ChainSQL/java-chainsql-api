@@ -9,6 +9,9 @@ import java.security.MessageDigest;
 public class HalfSha512 implements BytesSink {
     MessageDigest messageDigest;
 
+    /**
+     * HalfSha512
+     */
     public HalfSha512() {
         try {
             messageDigest = MessageDigest.getInstance("SHA-512", "BC");
@@ -17,29 +20,54 @@ public class HalfSha512 implements BytesSink {
         }
     }
 
+    /**
+     * prefixed256
+     * @param bytes Prefix
+     * @return return value.
+     */
     public static HalfSha512 prefixed256(Prefix bytes) {
         HalfSha512 halfSha512 = new HalfSha512();
         halfSha512.update(bytes);
         return halfSha512;
     }
 
+    /**
+     * update
+     * @param bytes bytes.
+     */
     public void update(byte[] bytes) {
         messageDigest.update(bytes);
     }
 
+    /**
+     * Update
+     * @param hash hash.
+     */
     public void update(Hash256 hash) {
         messageDigest.update(hash.bytes());
     }
 
+    /**
+     * Digest
+     * @return MessageDigest.
+     */
     public MessageDigest digest() {
         return messageDigest;
     }
 
+    /**
+     * Finish.
+     * @return Final hash.
+     */
     public Hash256 finish() {
         byte[] half = digestBytes();
         return new Hash256(half);
     }
 
+    /**
+     * DigestAllBytes
+     * @return DigestAllBytes .
+     */
     public byte[] digestAllBytes(){
     	return messageDigest.digest();
     }
@@ -64,10 +92,19 @@ public class HalfSha512 implements BytesSink {
         messageDigest.update(bytes);
     }
 
+    /**
+     * Update a prefix.
+     * @param prefix prefix.
+     */
     public void update(Prefix prefix) {
         messageDigest.update(prefix.bytes());
     }
 
+    /**
+     * Add serialized object.
+     * @param st serialized object.
+     * @return return value.
+     */
     public HalfSha512 add(SerializedType st) {
         st.toBytesSink(this);
         return this;

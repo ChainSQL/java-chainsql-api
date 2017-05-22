@@ -132,9 +132,9 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
     }
 
     /**
-     * 
-     * @param id
-     * @return
+     * Payment destination.
+     * @param id id.
+     * @return return.
      */
     public PaymentFlow destination(final AccountID id) {
         if (dest == null || !dest.equals(id)) {
@@ -145,6 +145,11 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         return this;
     }
 
+    /**
+     * destinationAmountValue
+     * @param amt amt.
+     * @return return value.
+     */
     public PaymentFlow destinationAmountValue(final BigDecimal amt) {
         if (destAmountValue == null || amt == null || amt.compareTo(destAmountValue) != 0) {
             destAmountValue = amt;
@@ -152,12 +157,18 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         }
         return this;
     }
+    /**
+     * makePathFindRequestIfNoneAlready
+     */
     public void makePathFindRequestIfNoneAlready() {
         if (pathFind == null) {
             makePathFindRequestIfCan();
         }
     }
 
+    /**
+     * makePathFindRequestIfCan
+     */
     public void makePathFindRequestIfCan() {
         // TODO: ...
         ignoreCurrentRequestAndPublishStaleState();
@@ -253,6 +264,11 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         // TODO invalidate existing alternatives
     }
 
+    /**
+     * destinationAmountCurrency
+     * @param currency currency
+     * @return return.
+     */
     public PaymentFlow destinationAmountCurrency(final Currency currency) {
         if (destAmountCurrency == null || !currency.equals(destAmountCurrency)) {
             destAmountCurrency = currency;
@@ -261,11 +277,20 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         return this;
     }
 
+    /**
+     * Abort.
+     */
     public void abort() {
         requestPathFindClose();
         ignoreCurrentRequestAndPublishStaleState();
     }
 
+    /**
+     * createPayment
+     * @param alternative alternative
+     * @param sendMaxMultiplier sendMaxMultiplier
+     * @return return value.
+     */
     public ManagedTxn createPayment(Alternative alternative, BigDecimal sendMaxMultiplier) {
         Amount sourceAmount = alternative.sourceAmount;
         boolean hasPaths = alternative.hasPaths();
@@ -298,6 +323,11 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         request.request();
     }
 
+    /**
+     * onAlternatives
+     * @param handler handler
+     * @return return value.
+     */
     public PaymentFlow onAlternatives(OnAlternatives handler) {
         on(OnAlternatives.class, handler);
         return this;

@@ -18,6 +18,9 @@ public class MockPair {
         private PriorityQueue<Callback> queue;
         private int ms = 0;
 
+        /**
+         * Scheduler creator.
+         */
         public Scheduler() {
             queue = new PriorityQueue<Callback>();
         }
@@ -37,10 +40,19 @@ public class MockPair {
             }
         }
 
+        /**
+         * Add a scheduled task.
+         * @param delay Delay time in milliseconds.
+         * @param runnable Task runnable.
+         */
         public void schedule(long delay, Runnable runnable) {
             queue.add(new Callback(runnable, delay));
         }
 
+        /**
+         * Tick
+         * @param pass passed time.
+         */
         public void tick(int pass) {
             ms += pass;
             Iterator<Callback> iterator = queue.iterator();
@@ -96,6 +108,11 @@ public class MockPair {
 
     public MockClient client = new MockClient(server.ws);
 
+    /**
+     * Connect to websocket.
+     * @param url websocket url.
+     * @return return value.
+     */
     public MockPair connect(String url) {
         client.connect(url);
         client.scheduler.tick(50);

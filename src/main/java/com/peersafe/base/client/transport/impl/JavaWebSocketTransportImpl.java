@@ -15,15 +15,26 @@ class WS extends WebSocketClient {
 
     WeakReference<TransportEventHandler> h;
 
+    /**
+     * WS constructor.
+     * @param serverURI
+     */
     public WS(URI serverURI) {
         super(serverURI, new Draft_17());
  //       super(serverURI);
     }
 
+    /**
+     * muteEventHandler
+     */
     public void muteEventHandler() {
         h.clear();
     }
 
+    /**
+     * setEventHandler
+     * @param eventHandler eventHandler
+     */
     public void setEventHandler(TransportEventHandler eventHandler) {
         h = new WeakReference<TransportEventHandler>(eventHandler);
     }

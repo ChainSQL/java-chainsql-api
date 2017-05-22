@@ -46,7 +46,7 @@ public class Ecies {
 	 * 非对称加密
 	 * @param plainText 要加密的内容
 	 * @param publicKey base58格式的publicKey
-	 * @return
+	 * @return return value.
 	 */
 	public static String eciesEncrypt (String plainText,String publicKey)
 	{
@@ -55,9 +55,9 @@ public class Ecies {
 	}
 	/**
 	 * 
-	 * @param plainBytes
-	 * @param publicKey
-	 * @return
+	 * @param plainBytes bytes to be encrypted.
+	 * @param publicKey publickey bytes.
+	 * @return return value.
 	 */
 	public static String eciesEncrypt(byte[] plainBytes,byte[] publicKey){
 		Security.addProvider(new BouncyCastleProvider());
@@ -111,10 +111,10 @@ public class Ecies {
 	}
 	/**
 	 * 
-	 * @param cipherHex
-	 * @param privateKey
-	 * @return
-	 * @throws Exception
+	 * @param cipherHex cipherHex.
+	 * @param privateKey privateKey
+	 * @return return value.
+	 * @throws Exception Exception throws.
 	 */
 	public static byte[] eciesDecrypt (String cipherHex,String privateKey) throws Exception
 	{

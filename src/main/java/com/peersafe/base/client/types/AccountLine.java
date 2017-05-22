@@ -26,6 +26,12 @@ public class AccountLine {
     public int quality_in = 0;
     public int quality_out = 0;
 
+    /**
+     * Create account line from a JSONObject
+     * @param orientedTo Account address.
+     * @param line line.
+     * @return Accountline object.
+     */
     public static AccountLine fromJSON(AccountID orientedTo, JSONObject line) {
         AccountLine l = new AccountLine();
         AccountID peer = AccountID.fromAddress(line.getString("account"));

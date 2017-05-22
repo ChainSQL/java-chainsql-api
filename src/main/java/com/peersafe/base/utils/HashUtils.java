@@ -15,16 +15,24 @@ public class HashUtils {
         }
     }
 
+
     /**
      * See {@link HashUtils#doubleDigest(byte[], int, int)}.
+     * @param input input
+     * @return return value.
      */
     public static byte[] doubleDigest(byte[] input) {
         return doubleDigest(input, 0, input.length);
     }
 
+
     /**
      * Calculates the SHA-256 hash of the given byte range, and then hashes the resulting hash again. This is
      * standard procedure in Bitcoin. The resulting hash is in big endian form.
+     * @param input input value.
+     * @param offset Offset.
+     * @param length Length.
+     * @return return value.
      */
     public static byte[] doubleDigest(byte[] input, int offset, int length) {
         synchronized (digest) {
@@ -34,35 +42,15 @@ public class HashUtils {
             return digest.digest(first);
         }
     }
-    /**
-     * 
-     * @param bytes
-     * @return byte[] value
-     */
     public static byte[] halfSha512(byte[] bytes) {
         return new Sha512(bytes).finish256();
     }
-    /**
-     * 
-     * @param bytes
-     * @return byte[] value
-     */
     public static byte[] quarterSha512(byte[] bytes) {
         return new Sha512(bytes).finish128();
     }
-    /**
-     * 
-     * @param bytes
-     * @return byte[] value
-     */
     public static byte[] sha512(byte[] bytes) {
         return new Sha512(bytes).finish();
     }
-    /**
-     * 
-     * @param input
-     * @return byte[] value
-     */
     public static byte[] SHA256_RIPEMD160(byte[] input) {
         try {
             byte[] sha256 = MessageDigest.getInstance("SHA-256").digest(input);

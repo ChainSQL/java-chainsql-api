@@ -36,17 +36,12 @@ public class K256KeyPair implements IKeyPair {
     public static byte[] computePublicGenerator(BigInteger privateGen) {
         return getPublic(privateGen);
     }
-    /**
-     * 
-     * @param BigInteger secret
-     * @return return value
-     */
     public static BigInteger computePublicKey(BigInteger secret) {
         return Utils.uBigInt(getPublic(secret));
     }
     /**
      * 
-     * @param byte[] seedBytes
+     * @param seedBytes seedBytes
      * @return return value
      */
     public static BigInteger computePrivateGen(byte[] seedBytes) {
@@ -54,8 +49,8 @@ public class K256KeyPair implements IKeyPair {
     }
     /**
      * 
-     * @param publicGenBytes
-     * @param accountNumber
+     * @param publicGenBytes publicGenBytes
+     * @param accountNumber accountNumber
      * @return byte[] value
      */
     public static byte[] computePublicKey(byte[] publicGenBytes,
@@ -68,10 +63,10 @@ public class K256KeyPair implements IKeyPair {
     }
     /**
      * 
-     * @param privateGen
-     * @param publicGenBytes
-     * @param accountNumber
-     * @return
+     * @param privateGen privateGen
+     * @param publicGenBytes publicGenBytes
+     * @param accountNumber accountNumber
+     * @return return value.
      */
     public static BigInteger computeSecretKey(BigInteger privateGen,
                                               byte[] publicGenBytes,
@@ -115,8 +110,8 @@ public class K256KeyPair implements IKeyPair {
     }
     /**
      * 
-     * @param priv
-     * @param pub
+     * @param priv priv. 
+     * @param pub pub.
      */
     public K256KeyPair(BigInteger priv, BigInteger pub) {
         this.priv = priv;
@@ -163,13 +158,7 @@ public class K256KeyPair implements IKeyPair {
     public String privHex() {
         return Utils.bigHex(priv);
     }
-    /**
-     * 
-     * @param data
-     * @param sigBytes
-     * @param pub
-     * @return return boolean
-     */
+
     public static boolean verify(byte[] data, byte[] sigBytes, BigInteger pub) {
         ECDSASignature signature = ECDSASignature.decodeFromDER(sigBytes);
         if (signature == null) {
@@ -181,12 +170,7 @@ public class K256KeyPair implements IKeyPair {
         signer.init(false, params);
         return signer.verifySignature(data, signature.r, signature.s);
     }
-    /**
-     * 
-     * @param bytes
-     * @param secret
-     * @return byte []
-     */
+
     public static byte[] signHash(byte[] bytes, BigInteger secret) {
         ECDSASignature sig = createECDSASignature(bytes, secret);
         byte[] der = sig.encodeToDER();

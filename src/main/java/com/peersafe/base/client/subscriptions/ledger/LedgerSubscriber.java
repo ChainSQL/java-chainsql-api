@@ -21,10 +21,17 @@ public class LedgerSubscriber implements TransactionSubscriptionManager {
     Client client;
     PendingLedgers ledgers;
 
+    /**
+     * notifyTransactionResult
+     */
     public void notifyTransactionResult(TransactionResult tr) {
         ledgers.notifyTransactionResult(tr);
     }
 
+    /**
+     * LedgerSubscriber
+     * @param client client.
+     */
     public LedgerSubscriber(final Client client) {
         this.client = client;
         ledgers = new PendingLedgers(client);

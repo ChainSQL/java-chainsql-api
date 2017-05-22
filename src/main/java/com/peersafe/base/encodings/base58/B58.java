@@ -25,12 +25,7 @@ public class B58 {
         setAlphabet(alphabet);
         buildIndexes();
     }
-    /**
-     * 
-     * @param payLoadLength
-     * @param desiredPrefix
-     * @return byte[] value
-     */
+
     public byte[] findPrefix(int payLoadLength, String desiredPrefix) {
         int totalLength = payLoadLength + 4; // for the checksum
         double chars = Math.log(Math.pow(256, totalLength)) / Math.log(58);
@@ -63,21 +58,11 @@ public class B58 {
             mIndexes[mAlphabet[i]] = i;
         }
     }
-    /**
-     * 
-     * @param input
-     * @param version
-     * @return String value
-     */
+
     public String encodeToStringChecked(byte[] input, int version) {
         return encodeToStringChecked(input, new byte[]{(byte) version});
     }
-    /**
-     * 
-     * @param input
-     * @param version
-     * @return String value
-     */
+
     public String encodeToStringChecked(byte[] input, byte[] version) {
         try {
             return new String(encodeToBytesChecked(input, version), "US-ASCII");
@@ -85,21 +70,11 @@ public class B58 {
             throw new RuntimeException(e);  // Cannot happen.
         }
     }
-    /**
-     * 
-     * @param input
-     * @param version
-     * @return byte[] value
-     */
+
     public byte[] encodeToBytesChecked(byte[] input, int version) {
         return encodeToBytesChecked(input, new byte[]{(byte) version});
     }
-    /**
-     * 
-     * @param input
-     * @param version
-     * @return byte[] value
-     */
+
     public byte[] encodeToBytesChecked(byte[] input, byte[] version) {
         byte[] buffer = new byte[input.length + version.length];
         System.arraycopy(version, 0, buffer, 0, version.length);
@@ -110,11 +85,7 @@ public class B58 {
         System.arraycopy(checkSum, 0, output, buffer.length, checkSum.length);
         return encodeToBytes(output);
     }
-    /**
-     * 
-     * @param input
-     * @return String value
-     */
+
     public String encodeToString(byte[] input) {
         byte[] output = encodeToBytes(input);
         try {
@@ -126,6 +97,8 @@ public class B58 {
 
     /**
      * Encodes the given bytes in base58. No checksum is appended.
+     * @param input bytes to be encoded.
+     * @return return value.
      */
     public byte[] encodeToBytes(byte[] input) {
         if (input.length == 0) {
@@ -163,12 +136,7 @@ public class B58 {
         output = copyOfRange(temp, j, temp.length);
         return output;
     }
-    /**
-     * 
-     * @param input
-     * @return byte[] value
-     * @throws EncodingFormatException
-     */
+
     public byte[] decode(String input) throws EncodingFormatException {
         if (input.length() == 0) {
             return new byte[0];
@@ -213,12 +181,7 @@ public class B58 {
 
         return copyOfRange(temp, j - zeroCount, temp.length);
     }
-    /**
-     * 
-     * @param input
-     * @return BigInteger
-     * @throws EncodingFormatException
-     */
+    
     public BigInteger decodeToBigInteger(String input) throws EncodingFormatException {
         return new BigInteger(1, decode(input));
 
@@ -227,7 +190,9 @@ public class B58 {
     /**
      * Uses the checksum in the last 4 bytes of the decoded data to verify the rest are correct. The checksum is
      * removed from the returned data.
-     *
+     * @param input input value.
+     * @param version version.
+     * @return return value.
      * @throws EncodingFormatException if the input is not baseFields 58 or the checksum does not validate.
      */
     public byte[] decodeChecked(String input, int version) throws EncodingFormatException {
@@ -240,14 +205,7 @@ public class B58 {
 
         return copyOfRange(buffer, 1, buffer.length - 4);
     }
-    /**
-     * 
-     * @param input
-     * @param expectedLength
-     * @param possibleVersions
-     * @return Decoded
-     * @throws EncodingFormatException
-     */
+
     public Decoded decodeMulti(String input,
                                int expectedLength,
                                byte[]... possibleVersions) throws EncodingFormatException {

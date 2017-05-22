@@ -22,22 +22,39 @@ public class UInt32 extends UInt<UInt32> {
             return 4;
         }
     };
-
+    /**
+     * Constructor.
+     * @param bytes byte array.
+     */
     public UInt32(byte[] bytes) {
         super(bytes);
     }
-
+    /**
+     * Constructor.
+     * @param value BigInteger value.
+     */
     public UInt32(BigInteger value) {
         super(value);
     }
-
+    /**
+     * Constructor from Number.
+     * @param s Number value.
+     */
     public UInt32(Number s) {
         super(s);
     }
+    /**
+     * From string value.
+     * @param s String value.
+     */
     public UInt32(String s) {
         super(s);
     }
-
+    /**
+     * From String and radix.
+     * @param s s
+     * @param radix radix.
+     */
     public UInt32(String s, int radix) {
         super(s, radix);
     }
@@ -58,7 +75,11 @@ public class UInt32 extends UInt<UInt32> {
     }
 
     private UInt32(){}
-
+    /**
+     * Generate int32Field.
+     * @param f Field.
+     * @return return value.
+     */
     private static UInt32Field int32Field(final Field f) {
         return new UInt32Field(){ @Override public Field getField() {return f;}};
     }

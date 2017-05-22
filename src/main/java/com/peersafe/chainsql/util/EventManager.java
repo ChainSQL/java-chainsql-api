@@ -15,7 +15,7 @@ public class EventManager {
 
 	/**
 	 * Constructor
-	 * @param connection
+	 * @param connection connection object.
 	 */
 	public EventManager(Connection connection) {
 		super();
@@ -46,7 +46,7 @@ public class EventManager {
 	 * Subscribe for a table.
 	 * @param name Table name.
 	 * @param owner Table owner address.
-	 * @param cb 
+	 * @param cb Callback.
 	 */
 	public void subTable(String name, String owner ,Callback<?> cb) {
  		JSONObject messageTx = new JSONObject();
@@ -65,7 +65,7 @@ public class EventManager {
 	/**
 	 * Subscribe a transaction.
 	 * @param id Transaction hash.
-	 * @param cb
+	 * @param cb Callback.
 	 */
 	public void subTx(String id,Callback<?> cb) {
 		JSONObject messageTx = new JSONObject();
@@ -111,7 +111,7 @@ public class EventManager {
 
 	/**
 	 * Table transaction trigger.
-	 * @param data
+	 * @param data Table message data.
 	 */
 	private void onTBMessage(JSONObject data){
 		String key = data.getString("tablename") + data.getString("owner");

@@ -41,6 +41,9 @@ public class Issue implements Comparable<Issue> {
      * TODO: better handling of Taker(Gets|Pays)(Issuer|Curency)
      *       maybe special subclasses of AccountID / Currency
      *       respectively?
+     * @param currency currency.
+     * @param issuer Issuer.
+     * @return return value.
      */
     public static Issue from160s(Hash160 currency, Hash160 issuer) {
         return new Issue(new Currency(currency.bytes()),

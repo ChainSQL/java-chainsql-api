@@ -34,8 +34,8 @@ public class Util {
     
     /**
      * Transfer a JSON-str List to a JSONObject List.
-     * @param list 
-     * @return 
+     * @param list JSON String list.
+     * @return JSONObject list.
      */
     public static List<JSONObject> ListToJsonList(List<String> list){
     	List<JSONObject> listJson = new ArrayList<JSONObject>();
@@ -203,10 +203,10 @@ public class Util {
 //        return res;
 //	}
 	/**
-	 * String Parameters to List<String>
+	 * String Parameters to List of String
 	 * @param val0 String 
 	 * @param vals String
-	 * @return List<String>
+	 * @return List of String
 	 */
 	public static List<String> array(String val0, String... vals){
 	 	List<String> res = new ArrayList<String>();
@@ -218,7 +218,7 @@ public class Util {
 	
 	/**
 	 * unhex some fields
-	 * @param data JSONObject to be unhexed.
+	 * @param tx JSONObject to be unhexed.
 	 */
 	public static void unHexData(JSONObject tx){
 		if(tx.has("Raw")){

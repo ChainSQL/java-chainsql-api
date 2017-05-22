@@ -91,9 +91,9 @@ public class Chainsql extends Submit {
 	
 	/**
 	 * Transfer variable number of Strings to List<String>
-	 * @param val0
-	 * @param vals
-	 * @return
+	 * @param val0 Parameter
+	 * @param vals Parameter
+	 * @return List<String>
 	 */
 	public static List<String> array(String val0, String... vals){
 	 	List<String> res = new ArrayList<String>();
@@ -105,14 +105,14 @@ public class Chainsql extends Submit {
 
 	/**
 	 * Subscribe 'reconnected' event,cb.called trigger when connection lost and reconnect succeed.
-	 * @param cb
+	 * @param cb Callback
 	 */
 	public void onReconnected(Callback<JSONObject> cb){
 		this.reconnectedCB = cb;
 	}
 	/**
 	 * Subscribe 'reconnecting' event,cb.called trigger when connection lost and reconnecting started.
-	 * @param cb
+	 * @param cb Callback
 	 */
 	public void onReconnecting(Callback<JSONObject> cb){
 		this.reconnectCb = cb;
@@ -256,8 +256,8 @@ public class Chainsql extends Submit {
 
 	/**
 	 * Rename a table.
-	 * @param oldName
-	 * @param newName
+	 * @param oldName Old table name.
+	 * @param newName New table name.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql renameTable(String oldName, String newName) {
@@ -374,7 +374,7 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * Commit a sql-transaction type operation.
-	 * @return
+	 * @return Commit result.
 	 */
 	public JSONObject commit(){
 		return doCommit("");
@@ -421,7 +421,7 @@ public class Chainsql extends Submit {
 	
 	/**
 	 * Get the newest generated ledger.
-	 * @return
+	 * @return Ledger data.
 	 */
 	public JSONObject getLedger(){
 		return getLedger(-1);
@@ -471,7 +471,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Get the ledger identified by ledger_index.
 	 * @param ledger_index
-	 * @param cb
+	 * @param cb Callback.
 	 */
 	public void getLedger(Integer ledger_index,Callback<JSONObject> cb){
 		JSONObject option = new JSONObject();
@@ -482,7 +482,7 @@ public class Chainsql extends Submit {
 	
 	/**
 	 * Get newest validated ledger index
-	 * @return
+	 * @return LedgerVersion data
 	 */
 	public JSONObject getLedgerVersion(){
 		
@@ -507,7 +507,7 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * Get newest validated ledger index,asynchronous.
-	 * @return
+	 * @param cb Callback.
 	 */
 	public void getLedgerVersion(Callback<JSONObject> cb){
 		this.connection.client.getLedgerVersion(cb);	
@@ -572,7 +572,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Get transaction by hash asynrhonously.
 	 * @param hash Transaction hash.
-	 * @param cb
+	 * @param cb Callback.
 	 */
 	public void getTransaction(String hash,Callback<JSONObject> cb){
 		this.connection.client.getTransaction(hash, cb);
@@ -616,7 +616,7 @@ public class Chainsql extends Submit {
 	/**
 	 * sqlTransaction commit
 	 * @param commitType
-	 * @return
+	 * @return Commit result.
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject doCommit(Object  commitType){

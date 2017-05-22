@@ -72,8 +72,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Trigger when a transaction validated.
-     * @param cb
-     * @return
+     * @param cb Callback
+     * @return This.
      */
     public Client onValidatedTransaction(OnValidatedTransaction cb) {
         on(OnValidatedTransaction.class, cb);
@@ -82,8 +82,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Trigger when ledger closed
-     * @param cb
-     * @return
+     * @param cb  Callback
+     * @return  This.
      */
 	public Client onLedgerClosed(OnLedgerClosed cb) {
         on(OnLedgerClosed.class, cb);
@@ -92,8 +92,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	
 	/**
 	 * Trigger when transaction related to a subscribed table validate_success or db_success.
-	 * @param cb
-	 * @return
+	 * @param cb   Callback
+	 * @return    This.
 	 */
 	public Client OnTBMessage(OnTBMessage cb) {
         on(OnTBMessage.class, cb);
@@ -101,8 +101,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 	/**
 	 * Trigger when a subscribed  transaction validate_success or db_success.
-	 * @param cb
-	 * @return
+	 * @param cb  Callback
+	 * @return  This.
 	 */
 	public Client OnTXMessage(OnTXMessage cb) {
         on(OnTXMessage.class, cb);
@@ -111,8 +111,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
 	/**
 	 * Trigger when websocket message received.
-	 * @param cb
-	 * @return
+	 * @param cb  Callback
+	 * @return  This.
 	 */
 	public Client OnMessage(OnMessage cb) {
         on(OnMessage.class, cb);
@@ -121,8 +121,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	
 	/**
 	 * Trigger when reconnecting to a server begins.
-	 * @param cb
-	 * @return
+	 * @param cb  Callback
+	 * @return  This.
 	 */
 	public Client onReconnecting(OnReconnecting cb){
         on(OnReconnecting.class, cb);
@@ -131,8 +131,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	
 	/**
 	 * Trigger when reconnect to a server succeed.
-	 * @param cb
-	 * @return
+	 * @param cb  Callback
+	 * @return  This.
 	 */
 	public Client onReconnected(OnReconnected cb){
         on(OnReconnected.class, cb);
@@ -141,8 +141,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	
 	/**
 	 * Trigger when websocket connection succeed.
-	 * @param onConnected
-	 * @return
+	 * @param onConnected  Callback
+	 * @return  This.
 	 */
     public Client onConnected(OnConnected onConnected) {
         this.on(OnConnected.class, onConnected);
@@ -151,8 +151,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Trigger when websocket connection disconnected.
-     * @param cb
-     * @return
+     * @param cb  Callback.
+     * @return  This.
      */
     public Client onDisconnected(OnDisconnected cb) {
         on(OnDisconnected.class, cb);
@@ -215,7 +215,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private ScheduledFuture reconnect_future = null;
     /**
      *  Constructor
-     * @param ws
+     * @param ws Websocket implementation.
      */
     public Client(WebSocketTransport ws) {
         this.ws = ws;
@@ -243,8 +243,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * 
-     * @param transactionSubscriptionManager
-     * @return
+     * @param transactionSubscriptionManager Subscribe manager.
+     * @return Self.
      */
     public Client transactionSubscriptionManager(TransactionSubscriptionManager transactionSubscriptionManager) {
         this.transactionSubscriptionManager = transactionSubscriptionManager;
@@ -253,9 +253,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Log tools.
-     * @param level
-     * @param fmt
-     * @param args
+     * @param level Log level.
+     * @param fmt Format.
+     * @param args Args.
      */
     public static void log(Level level, String fmt, Object... args) {
         if (logger.isLoggable(level)) {
@@ -264,17 +264,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
-     * @param object
-     * @return
+     * JSON object to String.
+     * @param object JSONObject.
+     * @return JSON String.
      */
     public static String prettyJSON(JSONObject object) {
         return object.toString(4);
     }
     /**
-     * 
-     * @param s
-     * @return
+     * JSON String to JSONObject.
+     * @param s JSON String.
+     * @return JSONObject.
      */
     public static JSONObject parseJSON(String s) {
         return new JSONObject(s);
@@ -291,6 +291,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * should happen on the one thread.
      *
      * @see #onMessage(org.json.JSONObject)
+     * 
+     * @param uri Websocket uri.
+     * @return Self.
      */
     public Client connect(final String uri) {
         manuallyDisconnected = false;
@@ -305,8 +308,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
-     * @param uri
+     * Connect.
+     * @param uri Connect uri.
      */
     public void doConnect(String uri) {
         log(Level.INFO, "Connecting to " + uri);
@@ -367,7 +370,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
+     * Reconnect when disconnected.
      */
     public void reconnect() {
     	emit(OnReconnecting.class,null);
@@ -410,8 +413,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      *  Handler binders binder
-     * @param s
-     * @param onConnected
+     * @param s Url.
+     * @param onConnected Callback.
      */
     public void connect(final String s, final OnConnected onConnected) {
         run(new Runnable() {
@@ -423,8 +426,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
-     * @param onDisconnected
+     * Disconnect from current connection.
+     * @param onDisconnected Callback.
      */
     public void disconnect(final OnDisconnected onDisconnected) {
         run(new Runnable() {
@@ -436,9 +439,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
-     * @param nextTick
-     * @param onConnected
+     * Trigger when connected.
+     * @param nextTick Next tick trigger callback.
+     * @param onConnected Callback.
      */
     public void whenConnected(boolean nextTick, final OnConnected onConnected) {
         if (connected) {
@@ -458,23 +461,23 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
-     * @param onConnected
+     * Now or when connected trigger.
+     * @param onConnected Callback.
      */
     public void nowOrWhenConnected(OnConnected onConnected) {
         whenConnected(false, onConnected);
     }
 
     /**
-     * 
-     * @param onConnected
+     * Trigger next tick or when connected.
+     * @param onConnected Callback.
      */
     public void nextTickOrWhenConnected(OnConnected onConnected) {
         whenConnected(true, onConnected);
     }
 
     /**
-     * 
+     * Release websocket connection.
      */
     public void dispose() {
         ws = null;
@@ -483,8 +486,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /* -------------------------------- EXECUTOR -------------------------------- */
 
     /**
-     * 
-     * @param runnable
+     * Run a task.
+     * @param runnable Thread object.
      */
     public void run(Runnable runnable) {
         // What if we are already in the client thread?? What happens then ?
@@ -497,8 +500,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Start a scheduled task.
-     * @param ms
-     * @param runnable
+     * @param ms Milliseconds.
+     * @param runnable Runnable object.
      */
     public void schedule(long ms, Runnable runnable) {
         service.schedule(errorHandling(runnable), ms, TimeUnit.MILLISECONDS);
@@ -577,14 +580,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
     /**
-     * 
+     * Override method,default.
      */
     @Override
     public void onConnecting(int attempt) {
     }
 
     /**
-     * 
+     * Override method,default.
      */
     @Override
     public void onError(Exception error) {
@@ -592,7 +595,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
+     * Run when disconnected.
      */
     @Override
     public void onDisconnected(boolean willReconnect) {
@@ -605,7 +608,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
+     * Run when connected.
      */
     @Override
     public void onConnected() {
@@ -619,8 +622,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /* ----------------------- CLIENT THREAD EVENT HANDLER ---------------------- */
 
     /**
-     * 
-     * @param msg
+     * Client message thread.
+     * @param msg JSONObject msg.
      */
     public void onMessageInClientThread(JSONObject msg) {
     	String str = msg.optString("type",null);
@@ -727,8 +730,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * 
-     * @param tr
+     * Transaction returned.
+     * @param tr Result data.
      */
     public void onTransactionResult(TransactionResult tr) {
         log(Level.INFO, "Transaction {0} is validated", tr.hash);
@@ -783,8 +786,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Request account information.
-     * @param masterSeed
-     * @return
+     * @param masterSeed Master seed for account.
+     * @return Account information.
      */
     public Account accountFromSeed(String masterSeed) {
         IKeyPair kp = Seed.fromBase58(masterSeed).keyPair();
@@ -877,7 +880,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /**
      * Create a new request.
      * @param cmd Command name.
-     * @return
+     * @return Request data.
      */
     public Request newRequest(Command cmd) {
         return new Request(cmd, cmdIDs++, this);
@@ -885,7 +888,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Send a request message.
-     * @param request
+     * @param request Request data.
      */
     public void sendRequest(final Request request) {
     	//System.out.println("request:"+request.json());
@@ -911,10 +914,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      *  Managed Requests API
-     * @param cmd
-     * @param manager
-     * @param builder
-     * @return
+     * @param cmd Command.
+     * @param manager Manager.
+     * @param builder Builder data.
+     * @return Request data.
      */
     public <T> Request makeManagedRequest(final Command cmd, final Manager<T> manager, final Request.Builder<T> builder){
     	return makeManagedRequest(cmd,manager,builder,0);
@@ -998,9 +1001,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     // ### Managed Requests
 
     /**
-     * 
-     * @param accountID
-     * @return
+     * Request account transaction page.
+     * @param accountID Account address.
+     * @return AccountTxPager data.
      */
     public AccountTxPager accountTxPager(AccountID accountID) {
         return new AccountTxPager(this, accountID, null);
@@ -1008,9 +1011,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Request for a ledger_entry.
-     * @param index
-     * @param ledger_index
-     * @param cb
+     * @param index Hash.
+     * @param ledger_index Ledger index.
+     * @param cb Callback.
      */
     public void requestLedgerEntry(final Hash256 index, final Number ledger_index, final Manager<LedgerEntry> cb) {
         makeManagedRequest(Command.ledger_entry, cb, new Request.Builder<LedgerEntry>() {
@@ -1041,8 +1044,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Request for account_lines.
-     * @param addy
-     * @param manager
+     * @param addy account id.
+     * @param manager Callback.
      */
     public void requestAccountLines(final AccountID addy, final Manager<ArrayList<AccountLine>> manager) {
         makeManagedRequest(Command.account_lines, manager, new Request.Builder<ArrayList<AccountLine>>() {
@@ -1066,10 +1069,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Request for book_offers.
-     * @param ledger_index
-     * @param get
-     * @param pay
-     * @param cb
+     * @param ledger_index Ledger's index.
+     * @param get Get.
+     * @param pay Pay.
+     * @param cb Callback.
      */
     public void requestBookOffers(final Number ledger_index,
                                   final Issue get,
@@ -1100,13 +1103,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
  
-    // ### Request builders
-    // These all return Request
+
     /**
      * Submit a transaction
-     * @param tx_blob
-     * @param fail_hard
-     * @return
+     * @param tx_blo Tx_blob signed.
+     * @param fail_hard Fail_hard.
+     * @return Request data.
      */
     public Request submit(String tx_blob, boolean fail_hard) {
         Request req = newRequest(Command.submit);
@@ -1117,8 +1119,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Request for account information.
-     * @param account
-     * @return
+     * @param account Account address.
+     * @return Request data.
      */
     public Request accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
@@ -1131,8 +1133,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * 
-     * @param messageTx
-     * @return
+     * @param messageTx Message Transaction.
+     * @return Request data.
      */
     public Request messageTx(JSONObject messageTx){
     	 Request request = newRequest(Command.subscribe);
@@ -1144,11 +1146,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Select data from chain.
-     * @param account
-     * @param tabarr
-     * @param raw
-     * @param cb
-     * @return
+     * @param account Account address.
+     * @param tabarr Table array.
+     * @param raw Raw data.
+     * @param cb Callback.
+     * @return Request data.
      */
     public  Request select(AccountID account,JSONObject[] tabarr,String raw,Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
@@ -1174,8 +1176,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Request for ledger data.
-     * @param option
-     * @param cb
+     * @param option Ledger options.
+     * @param cb Callback.
      */
     public  void getLedger(JSONObject option,Callback<JSONObject> cb){  
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
@@ -1205,7 +1207,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     /**
      * Request for newest published ledger_index.
-     * @param cb
+     * @param cb Callback.
      */
     public  void getLedgerVersion(Callback<JSONObject> cb){   	
     	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
@@ -1232,8 +1234,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Request for transaction information.
-     * @param address
-     * @param cb
+     * @param address Account address.
+     * @param cb Callback.
      */
     public  void getTransactions(String address,Callback<JSONObject> cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
@@ -1281,7 +1283,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     /**
      * Get transaction count on chain.
-     * @return
+     * @return Transaction account data.
      */
     public JSONObject getTransactionCount(){
     	Request request = newRequest(Command.tx_count);
@@ -1292,7 +1294,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Get server_info
-     * @return
+     * @return Server_info data.
      */
     public JSONObject getServerInfo(){
     	Request request = newRequest(Command.server_info);
@@ -1324,7 +1326,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /**
      * Prepare for a transaction for : filling in NameInDB field, filling in CheckHash field for StrictMode
      * @param txjson tx_json with fields and value a transaction needed.
-     * @return
+     * @return Prepared tx_json.
      */
     public Request getTxJson(JSONObject txjson){
     	Request request = newRequest(Command.t_prepare);
@@ -1336,8 +1338,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Request for a transaction's information.
-     * @param hash
-     * @param cb
+     * @param hash Transaction hash.
+     * @param cb Callback.
      */
     public  void getTransaction(String hash,Callback<JSONObject> cb){   
     	
@@ -1370,7 +1372,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Request ping.
-     * @return
+     * @return ping Result.
      */
     public Request ping() {
         return newRequest(Command.ping);
@@ -1378,8 +1380,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Subscribe for account.
-     * @param accounts
-     * @return
+     * @param accounts Account addresses.
+     * @return Request data.
      */
     public Request subscribeAccount(AccountID... accounts) {
         Request request = newRequest(Command.subscribe);
@@ -1393,9 +1395,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Request for book-offers.
-     * @param get
-     * @param pay
-     * @return
+     * @param get Get.
+     * @param pay Pay.
+     * @return Request data.
      */
     public Request subscribeBookOffers(Issue get, Issue pay) {
         Request request = newRequest(Command.subscribe);
@@ -1410,9 +1412,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * Request for book offers.
-     * @param get
-     * @param pay
-     * @return
+     * @param get Get.
+     * @param pay Pay.
+     * @return Request data.
      */
     public Request requestBookOffers(Issue get, Issue pay) {
         Request request = newRequest(Command.book_offers);

@@ -14,8 +14,8 @@ public class Util {
 	private static String hexString = "0123456789ABCDEF";
 
 	/**
-	 * @param args
-	 * @return
+	 * @param args String.
+	 * @return JSON String.
 	 */
 	public static String StrToJsonStr(String args) {
 		JSONObject a = new JSONObject(args);
@@ -24,8 +24,8 @@ public class Util {
   
 	/**
 	 * Transfer a json-str to JSONObject.
-	 * @param args
-	 * @return
+	 * @param args String of JSON.
+	 * @return JSONObject.
 	 */
     public static JSONObject StrToJson(String args) {
 		JSONObject a = new JSONObject(args);
@@ -34,8 +34,8 @@ public class Util {
     
     /**
      * Transfer a JSON-str List to a JSONObject List.
-     * @param list
-     * @return
+     * @param list 
+     * @return 
      */
     public static List<JSONObject> ListToJsonList(List<String> list){
     	List<JSONObject> listJson = new ArrayList<JSONObject>();
@@ -48,8 +48,8 @@ public class Util {
     
     /**
      * JSON-Str to JSONArray
-     * @param str
-     * @return
+     * @param str JSON String
+     * @return JSON array.
      */
     public static JSONArray strToJSONArray(String str){
 		JSONArray array = new JSONArray();
@@ -59,8 +59,8 @@ public class Util {
     
     /**
      * Get random byte array.
-     * @param length
-     * @return
+     * @param length Random array length.
+     * @return Byte array.
      */
     public static byte[] getRandomBytes(int length){
     	byte[] bytes = new byte[length];
@@ -71,8 +71,8 @@ public class Util {
     
     /**
      * Check fields
-     * @param strraw
-     * @throws Exception
+     * @param strraw Raw data list.
+     * @throws Exception Throws when exception occur.
      */
 	public static void checkinsert(List<JSONObject> strraw) throws Exception{
 		boolean isHavePk = false;
@@ -129,8 +129,8 @@ public class Util {
 	}
 	/**
 	 * Transfer byte array to Hex String
-	 * @param bytes
-	 * @return
+	 * @param bytes Byte array to be hexed.
+	 * @return Hexed String.
 	 */
 	public static String bytesToHex(byte[] bytes) {
 		return encode(bytes);
@@ -138,8 +138,8 @@ public class Util {
 	
 	/**
 	 * Hex String to byte array.
-	 * @param bytes
-	 * @return
+	 * @param bytes hexString
+	 * @return Hexed byte array.
 	 */
 	public static byte[] hexToBytes(String bytes){
 	    ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
@@ -151,8 +151,8 @@ public class Util {
 	
 	/**
 	 * String to HexString
-	 * @param s
-	 * @return
+	 * @param s String to be hexed.
+	 * @return String hexed.
 	 */
 	public static String toHexString(String s){
 		String str = encode(s.getBytes());
@@ -161,8 +161,8 @@ public class Util {
 	
 	/**
 	 * Transfer from HexString to String
-	 * @param s
-	 * @return
+	 * @param s Hex String.
+	 * @return Unhexed String.
 	 */
 	public static String fromHexString(String s){
 		return decode(s);
@@ -204,9 +204,9 @@ public class Util {
 //	}
 	/**
 	 * String Parameters to List<String>
-	 * @param val0
-	 * @param vals
-	 * @return
+	 * @param val0 String 
+	 * @param vals String
+	 * @return List<String>
 	 */
 	public static List<String> array(String val0, String... vals){
 	 	List<String> res = new ArrayList<String>();
@@ -218,7 +218,7 @@ public class Util {
 	
 	/**
 	 * unhex some fields
-	 * @param data
+	 * @param data JSONObject to be unhexed.
 	 */
 	public static void unHexData(JSONObject tx){
 		if(tx.has("Raw")){

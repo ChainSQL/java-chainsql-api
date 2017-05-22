@@ -43,6 +43,10 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         }
     };
 
+    /**
+     * Payment flow.
+     * @param client Client object.
+     */
     public PaymentFlow(final Client client) {
         this.client = client;
 
@@ -57,6 +61,9 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         });
     }
 
+    /**
+     * unsubscribeFromClientEvents
+     */
     public void unsubscribeFromClientEvents() {
         client.removeListener(Client.OnConnected.class, onConnected);
         client.removeListener(Client.OnPathFind.class, onPathFind);
@@ -75,7 +82,11 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
     // We store these guys here so we can know if they have become stale
     Request pathFind;
     public JSONObject json = null;
-    // TODO, do from cache ;)
+    /**
+     * do from cache ;)
+     * @param id Account address.
+     * @return Request data.
+     */
     public Request requestAccountInfo(final AccountID id) {
         // TODO try from cache
 
@@ -104,6 +115,11 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         return request;
     }
 
+    /**
+     * source
+     * @param account account
+     * @return return.
+     */
     public PaymentFlow source(final Account account) {
         AccountID id = account.id();
         if (src == null|| !src.equals(id)) {
@@ -115,6 +131,11 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         return this;
     }
 
+    /**
+     * 
+     * @param id
+     * @return
+     */
     public PaymentFlow destination(final AccountID id) {
         if (dest == null || !dest.equals(id)) {
             requestAccountInfo(id);

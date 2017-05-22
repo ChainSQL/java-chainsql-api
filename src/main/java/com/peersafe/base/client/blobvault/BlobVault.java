@@ -32,6 +32,14 @@ public class BlobVault {
         }
     }
 
+    /**
+     * Get blob.
+     * @param user User.
+     * @param pass Pass.
+     * @return Return value.
+     * @throws IOException IOException.
+     * @throws InvalidCipherTextException InvalidCipherTextException.
+     */
     public JSONObject getBlob(String user, String pass) throws IOException,
             InvalidCipherTextException {
         // Everywhere, this is expected to be lower cased.
@@ -62,6 +70,7 @@ public class BlobVault {
 
     /**
      * @param user Username already lower cased
+     * @return Retun value.
      */
     private String userPassDerivedDecryptionKey(String user, String pass) {
         return user.length() + "|" + user + pass;
@@ -69,6 +78,7 @@ public class BlobVault {
 
     /**
      * @param user Username already lower cased
+     * @return Return value.
      */
     private String userPassDerivedDecryptionKeyOLD(String user, String pass) {
         return user + pass;
@@ -76,6 +86,7 @@ public class BlobVault {
 
     /**
      * @param user Username already lower cased
+     * @return Return value.
      */
     public String userPassHash(String user, String pass) {
         String toHash = user + pass;

@@ -16,21 +16,37 @@ abstract public class ComposedOperation<T1, T2, T3, T4> {
             finished();
         }
     }
+    /**
+     * First.
+     * @param pfirst Put first.
+     */
     public void first(T1 pfirst) {
         first = pfirst;
         doneOne();
     }
 
+    /**
+     * Put second parameter.
+     * @param psecond Second parameter.
+     */
     public void second(T2 psecond) {
         second = psecond;
         doneOne();
     }
 
+    /**
+     * Put third parameter.
+     * @param pthird Third parameter.
+     */
     public void third(T3 pthird) {
         third = pthird;
         doneOne();
     }
 
+    /**
+     * Put fourth.
+     * @param pfourth Fourth parameter.
+     */
     public void fourth(T4 pfourth) {
         fourth = pfourth;
         doneOne();

@@ -12,6 +12,11 @@ public class Alternative implements Comparable<Alternative> {
     public PathSet paths;
     public Hash256 hash;
 
+    /**
+     * Construtor.
+     * @param paths Paths.
+     * @param sourceAmount Source Amount.
+     */
     public Alternative(PathSet paths, Amount sourceAmount) {
         this.paths = paths;
         this.sourceAmount = sourceAmount;
@@ -25,11 +30,18 @@ public class Alternative implements Comparable<Alternative> {
         return half.finish();
     }
 
+    /**
+     * Override.
+     */
     @Override
     public int compareTo(Alternative another) {
         return hash.compareTo(another.hash);
     }
 
+    /**
+     * Is direct Xrp.
+     * @return
+     */
     public boolean directXRP() {
         return !hasPaths() && sourceAmount.isNative();
     }
@@ -38,12 +50,19 @@ public class Alternative implements Comparable<Alternative> {
         return paths.size() > 0;
     }
 
+    /**
+     * to String.
+     */
     @Override
     public String toString() {
         JSONObject o = toJSON();
         return o.toString(2);
     }
 
+    /**
+     * To JSON.
+     * @return JSONObject value.
+     */
     public JSONObject toJSON() {
         JSONObject o = new JSONObject();
         o.put("source_amount", sourceAmount.toJSON());

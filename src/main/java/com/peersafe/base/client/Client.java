@@ -673,7 +673,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
     private void doOnDisconnected() {
-        logger.entering(getClass().getName(), "doOnDisconnected");
+    	log(Level.INFO, getClass().getName() + "doOnDisconnected");
         connected = false;
         emitOnDisconnected();
 
@@ -685,10 +685,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 }
             });
         } else {
-            logger.fine("Currently disconnecting, so will not reconnect");
+        	log(Level.INFO, "Currently disconnecting, so will not reconnect");
         }
-
-        logger.entering(getClass().getName(), "doOnDisconnected");
     }
 
     private void doOnConnected() {
@@ -1304,6 +1302,16 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    	 	return request.response.result;
     }
 
+    /**
+     * Get unl_list
+     * @return unl_list data
+     */
+    public JSONObject getUnlList(){
+    	Request request = newRequest(Command.unl_list);
+        request.request();
+        waiting(request);
+   	 	return request.response.result;
+    }
     /**
      * Get user_token for table,if token got not null, it is a confidential table.
      * @param owner Table's owner/creator.

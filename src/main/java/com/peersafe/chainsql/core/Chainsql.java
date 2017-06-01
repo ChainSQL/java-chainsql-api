@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,6 +17,8 @@ import org.json.JSONObject;
 import com.peersafe.base.client.Client.OnReconnected;
 import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
@@ -357,23 +360,26 @@ public class Chainsql extends Submit {
 	/**
 	 * Start a payment transaction, can be used to activate account 
 	 * @param accountId The Address of an account.
-	 * @param count		Count of coins to transfer.
+	 * @param count		Count of coins to transfer,max value:1e11.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql pay(String accountId,int count){
+	public JSONObject pay(String accountId,String count){
 		JSONObject obj = new JSONObject();
 		obj.put("Account", this.connection.address);
 		obj.put("Destination", accountId);
-		BigInteger amount = BigInteger.valueOf(count * 1000000);
+		BigInteger bigCount = new BigInteger(count);
+		BigInteger amount = bigCount.multiply(BigInteger.valueOf(1000000));
 		obj.put("Amount", amount.toString());
+		
 		Transaction payment;
 		try {
 			payment = toPayment(obj,TransactionType.Payment);
 			signed = payment.sign(this.connection.secret);
+			return submit();
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
-		return this;
 	}
 
 	/**
@@ -615,12 +621,18 @@ public class Chainsql extends Submit {
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.randomSeed();
+		
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;
 		{
+			SHA256Digest sha = new SHA256Digest();
+			sha.update(pubBytes, 0, pubBytes.length);
+		    byte[] result = new byte[sha.getDigestSize()];
+		    sha.doFinal(result, 0);
+		    
 			RIPEMD160Digest d = new RIPEMD160Digest();
-		    d.update (pubBytes, 0, pubBytes.length);
+		    d.update (result, 0, result.length);
 		    o = new byte[d.getDigestSize()];
 		    d.doFinal (o, 0);
 		}
@@ -635,11 +647,70 @@ public class Chainsql extends Submit {
 		obj.put("public_key", publicKey);
 		return obj;
 	}
+	/**
+	 * Create validation key
+	 * @param count 
+	 * @return JSONArray contains validation keys, each with a structue of {"seed":xxx,"publickey":xxx}
+	 */
+	public JSONArray validationCreate(int count){
+		JSONArray ret = new JSONArray();
+		for(int i=0; i<count; i++){
+			JSONObject obj = validationCreate();
+			ret.put(obj);
+		}
+		return ret;
+	}
+	/**
+	 * Create validation keys.
+	 * @return JSONObject with field "seed" and "publickey".
+	 */
+	public JSONObject validationCreate(){
+		Security.addProvider(new BouncyCastleProvider());
+		JSONObject ret = new JSONObject();
+		Seed seed = Seed.randomSeed();
+		
+//		byte[] bytes = getB58IdentiferCodecs().decodeFamilySeed("snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
+//		Seed seed = new Seed(bytes);
+		
+		IKeyPair keyPair = seed.keyPair(-1);
+		byte[] pubBytes = keyPair.canonicalPubBytes();
+		
+		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
+		String validation_publickey = getB58IdentiferCodecs().encodeNodePublic(pubBytes);
+		
+		ret.put("seed", secretKey);
+		ret.put("publickey", validation_publickey);
+		
+		return ret;
+	}
+	/**
+	 * Get validation publickey list
+	 * @return validation publickey list
+	 */
+	public JSONObject getUnlList(){
+		return connection.client.getUnlList();
+	}
 	
 	public Connection getConnection() {
 		return connection;
 	}
 
+	public String getAccountBalance(String address){
+		try{
+			AccountID account = AccountID.fromAddress(address);
+			Request request = connection.client.accountInfo(account);
+			if(request.response.result!=null){
+				String balance = request.response.result.optJSONObject("account_data").getString("Balance");
+				BigInteger bal = new BigInteger(balance);
+				BigInteger xrp = bal.divide(BigInteger.valueOf(1000000));
+				return xrp.toString();
+			}else {
+				return null;
+			}
+		}catch(Exception e){
+			return null;
+		}
+	}
 	/**
 	 * sqlTransaction commit
 	 * @param commitType Commit type.

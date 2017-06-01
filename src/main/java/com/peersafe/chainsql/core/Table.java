@@ -199,7 +199,7 @@ public class Table extends Submit{
 	
 	private JSONObject txJson() throws Exception{
 
-		System.out.println(this.query.toString());
+		//System.out.println(this.query.toString());
 		JSONObject json = new JSONObject();
 		json.put("Tables", getTableArray(name));
 		json.put("Owner",  connection.scope);

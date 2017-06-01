@@ -28,7 +28,6 @@ public class Connection implements Closeable {
 	 */
 	public void  disconnect(){
 		this.client.disconnect();
-	
 	} 
 	
 	/**

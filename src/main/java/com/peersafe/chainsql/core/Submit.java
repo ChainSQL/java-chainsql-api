@@ -110,6 +110,8 @@ public abstract class Submit {
 	 * @return submit result
 	 */
 	public JSONObject submit(){
+		sync = false;
+		cb = null;
 		return doSubmit();
 	}
 	

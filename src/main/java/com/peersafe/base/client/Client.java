@@ -1253,7 +1253,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("account", address);
 	           	 request.json("ledger_index_min", -1);
 	           	 request.json("ledger_index_max", -1);
-	           	 request.json("limit", 10);
+	           	 request.json("limit", 20);
             }
 
             @Override

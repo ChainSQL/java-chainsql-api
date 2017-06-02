@@ -108,7 +108,7 @@ public class Util {
 
             }else if("text".equals(type)){
 
-            }else if("datatime".equals(type)){
+            }else if("datetime".equals(type)){
 
             }else{
             	throw new Exception("invalid type "+type);

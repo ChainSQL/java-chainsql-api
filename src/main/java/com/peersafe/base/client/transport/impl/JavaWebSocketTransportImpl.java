@@ -49,7 +49,7 @@ class WS extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-//    	System.out.println(message);
+    	//System.out.println(message);
         TransportEventHandler handler = h.get();
         if (handler != null) {
             handler.onMessage(new JSONObject(message));

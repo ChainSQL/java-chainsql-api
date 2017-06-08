@@ -793,9 +793,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     private Account account(final AccountID id, IKeyPair keyPair) {
-        if (accounts.containsKey(id)) {
-            return accounts.get(id);
-        } else {
+//        if (accounts.containsKey(id)) {
+//            return accounts.get(id);
+//        } else {
             TrackedAccountRoot accountRoot = accountRoot(id);
             Account account = new Account(
                     id,
@@ -807,7 +807,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             subscriptions.addAccount(id);
 
             return account;
-        }
+//        }
     }
 
     private TrackedAccountRoot accountRoot(AccountID id) {

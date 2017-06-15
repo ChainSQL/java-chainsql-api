@@ -166,14 +166,9 @@ public class Table extends Submit{
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table limit(String orgs){
-		String ss = "";
-		if(!"".equals(orgs)&&orgs!=null){
-			 ss= orgs.replace("\'", "\"");
-			
-		}	
 		JSONObject json = new JSONObject();
-		json.put("$limit", ss);
-		this.query.add(json.toString());
+	    json.put("$limit", Util.StrToJson(orgs));
+	    this.query.add(json.toString());
 		return this;
 	}
 

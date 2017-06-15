@@ -26,7 +26,7 @@ public class Table extends Submit{
 	public String message;
 	
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
-	public boolean strictMode = true;
+	public boolean strictMode = false;
 	public boolean transaction = false;
 	public	EventManager event;
 
@@ -96,10 +96,8 @@ public class Table extends Submit{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return null;
-		}else{
-			return this;
 		}
+		return this;
 	}
 	/**
 	 * Select data from a table.
@@ -137,7 +135,15 @@ public class Table extends Submit{
 	/**
 	 * Assertion when sql-transaction begins.
 	 */
-	public void sqlAssert(){
+	public Table sqlAssert(List<String> orgs){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
+			
+		}
+		this.exec = "t_assert";
 		if (!this.transaction)
 			try {
 				throw new Exception("you must begin the transaction first");
@@ -150,15 +156,8 @@ public class Table extends Submit{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		if(this.transaction){
-			JSONObject json;
-			try {
-				json = txJson();
-			this.cache.add(json);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+
+			return dealWithTransaction();
 	}
 	
 	/**

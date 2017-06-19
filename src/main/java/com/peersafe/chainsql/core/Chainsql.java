@@ -41,6 +41,7 @@ public class Chainsql extends Submit {
 	private Integer needVerify = 1;
 	
 	private static final int PASSWORD_LENGTH = 16;  
+	private static final int DEFAULT_TX_LIMIT = 20;
 	
 	private SignedTransaction signed;
 	private JSONObject retJson;
@@ -162,6 +163,10 @@ public class Chainsql extends Submit {
 	 */
 	public void setRestrict(boolean falg) {
 		this.strictMode = falg;
+	}
+	
+	public void setNeedVerify(boolean flag){
+		this.needVerify = flag ? 1 : 0;
 	}
 
 	/**
@@ -539,14 +544,16 @@ public class Chainsql extends Submit {
 	public void getLedgerVersion(Callback<JSONObject> cb){
 		this.connection.client.getLedgerVersion(cb);	
 	}
+
 	/**
-	 * Get trasactions submitted by notified account.
+	 * Get trasactions submitted by notified account,asynchronous.
 	 * @param address Account address.
+	 * @param limit Max transaction count to get.
 	 * @return Result.
 	 */
-	public JSONObject getTransactions(String address){
+	public JSONObject getTransactions(String address,int limit){
 		retJson = null;
-		this.connection.client.getTransactions(address,new Callback<JSONObject>(){
+		this.connection.client.getTransactions(address,limit,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
@@ -567,14 +574,30 @@ public class Chainsql extends Submit {
 		}
 	}
 	/**
+	 * Get trasactions submitted by notified account.
+	 * @param address Account address.
+	 * @return Result.
+	 */
+	public JSONObject getTransactions(String address){
+		return getTransactions(address,DEFAULT_TX_LIMIT);
+	}
+	/**
 	 * Get trasactions submitted by notified account,asynchronous.
 	 * @param address Account address.
 	 * @param cb Callback.
 	 */
 	public void getTransactions(String address,Callback<JSONObject> cb){
-		this.connection.client.getTransactions(address,cb);	
+		this.connection.client.getTransactions(address,DEFAULT_TX_LIMIT,cb);	
 	}
-	
+	/**
+	 * Get trasactions submitted by notified account,asynchronous.
+	 * @param address Account address.
+	 * @param limit Max transaction count to get.
+	 * @param cb Callback.
+	 */
+	public void getTransactions(String address,int limit,Callback<JSONObject> cb){
+		getTransactions(address,limit,cb);	
+	}
 	/**
 	 * Get transaction identified by hash.
 	 * @param hash Transaction hash.

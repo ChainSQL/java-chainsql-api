@@ -5,6 +5,7 @@ import java.net.URI;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
@@ -14,14 +15,13 @@ import com.peersafe.base.client.transport.WebSocketTransport;
 class WS extends WebSocketClient {
 
     WeakReference<TransportEventHandler> h;
-
+    String frameData = "";
     /**
      * WS constructor.
      * @param serverURI
      */
     public WS(URI serverURI) {
-        super(serverURI, new Draft_17());
- //       super(serverURI);
+        super(serverURI);
     }
 
     /**
@@ -46,7 +46,15 @@ class WS extends WebSocketClient {
             handler.onConnected();
         }
     }
-
+    //数据量大时按段返回
+    public void onFragment( Framedata frame ) {
+        frameData += new String( frame.getPayloadData().array() );
+        if(frame.isFin()){
+          onMessage(frameData);
+          frameData = "";
+        }
+      }
+    
     @Override
     public void onMessage(String message) {
     	//System.out.println(message);

@@ -1236,7 +1236,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param address Account address.
      * @param cb Callback.
      */
-    public  void getTransactions(final String address,final Callback<JSONObject> cb){
+    public  void getTransactions(final String address,final int limit,final Callback<JSONObject> cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1253,7 +1253,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("account", address);
 	           	 request.json("ledger_index_min", -1);
 	           	 request.json("ledger_index_max", -1);
-	           	 request.json("limit", 20);
+	           	 request.json("limit", limit);
             }
 
             @Override

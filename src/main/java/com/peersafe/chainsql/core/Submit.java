@@ -33,12 +33,12 @@ public abstract class Submit {
 	protected Callback<JSONObject> cb;
 	private SubmitState submit_state;
 	private SyncState sync_state;
-	
 	private JSONObject submitRes;
 	private JSONObject syncRes;
 	
 	private boolean sync = false;
 	protected SyncCond condition;
+	protected SignedTransaction signed;
 	
 	public enum SyncCond {
         validate_success,	
@@ -115,7 +115,7 @@ public abstract class Submit {
 		return doSubmit();
 	}
 	
-	abstract JSONObject doSubmit();
+	abstract JSONObject prepareSigned();
 
 	private JSONObject getError(String err){
 		JSONObject obj = new JSONObject();
@@ -124,7 +124,11 @@ public abstract class Submit {
 		return obj;
 	}
 
-	protected JSONObject doSubmit(SignedTransaction signed){
+	protected JSONObject doSubmit(){
+		JSONObject obj = prepareSigned();
+		if(obj.getString("status").equals("error") || obj.has("final_result")){
+			return obj;
+		}
 		if(signed == null){
 			return getError("Signing failed,maybe ripple node error");
 		}
@@ -245,6 +249,9 @@ public abstract class Submit {
         obj.put("status", "error");
         if(res.result.has("engine_result_message"))
         	obj.put("error_message", res.result.getString("engine_result_message"));
+        if(res.result.has("engine_result_code")){
+        	obj.put("err_code", res.result.getInt("engine_result_code"));
+        }
         if(res.result.has("")){
         	JSONObject tx_json = (JSONObject) res.result.get("tx_json");
         	obj.put("tx_hash", tx_json.getString("hash"));

@@ -240,4 +240,17 @@ public class Util {
 			e.printStackTrace();
 		}
 	}
+	
+	public static JSONObject successObject(){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "success");
+		return obj;
+	}
+	
+	public static JSONObject errorObject(String errMsg){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "error");
+		obj.put("error_message", errMsg);
+		return obj;
+	}
 }

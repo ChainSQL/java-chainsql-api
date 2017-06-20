@@ -192,7 +192,6 @@ public class Table extends Submit{
 	}
 	
 	private JSONObject txJson() throws Exception{
-
 		//System.out.println(this.query.toString());
 		JSONObject json = new JSONObject();
 		json.put("Tables", getTableArray(name));
@@ -227,42 +226,41 @@ public class Table extends Submit{
 		return strRaw;
 	}
 	
-	private SignedTransaction prepareSQLStatement() {
+	private JSONObject prepareSQLStatement() {
 		JSONObject txjson;
 		try {
 			txjson = txJson();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return Util.errorObject(e.getMessage());
 		}
 		
 		txjson.put("Account", this.connection.address);
 		
 		JSONObject result = Validate.getTxJson(this.connection.client, txjson);
 		if(result.has("error")){
-			System.out.println("Error:" + result.getString("error_message"));
-			return null;
+			return result;
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
 		Transaction payment;
 		
 		try {
 			payment = toPayment(tx_json,TransactionType.SQLStatement);
-	        SignedTransaction signed = payment.sign(connection.secret);
-	        return signed;
+	        signed = payment.sign(connection.secret);
+	        return Util.successObject();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return Util.errorObject(e.getMessage());
 		}   
 	}
 
 	@Override
-	JSONObject doSubmit() {
+	JSONObject prepareSigned() {
 		if(this.exec == "r_get"){
 			return select();
 		}else{
 			try {
-				return doSubmit(prepareSQLStatement());
+				return prepareSQLStatement();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return new JSONObject(e.getLocalizedMessage());
@@ -297,6 +295,7 @@ public class Table extends Submit{
 		obj.put("status", response.status);
 		if( !"error".equals(response.status)){
 			//this.data = response.result.get("lines");
+			obj.put("final_result", true);
 			obj.put("lines", response.result.get("lines"));
 		}else{
 			obj.put("error_message", response.error);

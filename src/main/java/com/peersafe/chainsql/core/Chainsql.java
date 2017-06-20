@@ -21,7 +21,6 @@ import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
-import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
@@ -39,11 +38,11 @@ public class Chainsql extends Submit {
 	private boolean strictMode = false;
 	private boolean transaction = false;
 	private Integer needVerify = 1;
+	private JSONObject txJson;
 	
 	private static final int PASSWORD_LENGTH = 16;  
 	private static final int DEFAULT_TX_LIMIT = 20;
 	
-	private SignedTransaction signed;
 	private JSONObject retJson;
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
@@ -187,10 +186,27 @@ public class Chainsql extends Submit {
 	}
 	
 	@Override
-	JSONObject doSubmit() {
-		return doSubmit(signed);
+	JSONObject prepareSigned() {
+		Transaction payment;
+		try {
+			txJson.put("Account",this.connection.address);
+	    	JSONObject tx_json = Validate.getTxJson(this.connection.client, txJson);
+	    	if(tx_json.getString("status").equals("error")){
+	    		//throw new Exception(tx_json.getString("error_message"));
+	    		return tx_json;
+	    	}else{
+	    		tx_json = tx_json.getJSONObject("tx_json");
+	    	}
+			payment = toPayment(tx_json,TransactionType.TableListSet);
+			signed = payment.sign(this.connection.secret);
+			
+			return Util.successObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
-	
+
 	/**
 	 * A create table operation.
 	 * @param name Table name
@@ -235,11 +251,13 @@ public class Chainsql extends Submit {
 		}
 		json.put("Raw", strRaw);
 		
+		txJson = json;
 		if(this.transaction){
 			this.cache.add(json);
 			return null;
 		}
-		return prepare(json);
+		txJson = json;
+		return this;
 	}
 	
 	private String generateUserToken(String seed,byte[] password){
@@ -259,7 +277,8 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return prepare(json);
+		txJson = json;
+		return this;
 	}
 	/**
 	 * A drop table operation.
@@ -274,7 +293,8 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return prepare(json);
+		txJson = json;
+		return this;
 	}
 
 	/**
@@ -294,7 +314,8 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		return prepare(json);
+		txJson = json;
+		return this;
 		
 	}
 
@@ -360,7 +381,8 @@ public class Chainsql extends Submit {
 			this.cache.add(txJson);
 			return null;
 		}
-		return prepare(txJson);
+		txJson = json;
+		return this;
 	}
 	/**
 	 * Start a payment transaction, can be used to activate account 
@@ -793,26 +815,5 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject commit(Callback<?> cb){
 		return doCommit(cb);
-	}
-	
-	private Chainsql prepare(JSONObject txjson){
-		Transaction payment;
-		try {
-			payment = toPayment(txjson);
-			signed = payment.sign(this.connection.secret);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return this;
-	}
-	private Transaction toPayment(JSONObject json) throws Exception{
-		json.put("Account",this.connection.address);
-    	JSONObject tx_json = Validate.getTxJson(this.connection.client, json);
-    	if(tx_json.getString("status").equals("error")){
-    		throw new Exception(tx_json.getString("error_message"));
-    	}else{
-    		tx_json = tx_json.getJSONObject("tx_json");
-    	}
-		return toPayment(tx_json,TransactionType.TableListSet);
 	}
 }

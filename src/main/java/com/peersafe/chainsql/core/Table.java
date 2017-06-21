@@ -68,6 +68,7 @@ public class Table extends Submit{
 	public Table update(String orgs) {
 		String json = Util.StrToJsonStr(orgs);
 		this.query.add(0, json);
+
 	    this.exec = "r_update";
 	    return dealWithTransaction();
 		

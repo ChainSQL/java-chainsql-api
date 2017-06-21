@@ -67,12 +67,21 @@ public class Table extends Submit{
 	 */
 	public Table update(List<String> orgs) {
 		
+//		for(String s: orgs){
+//			if(!"".equals(s)&&s!=null){
+//				String json = Util.StrToJsonStr(s);
+//				this.query.add(0, json);
+//			}			
+//		}
+		List<String> list = new ArrayList<String>();
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
 				String json = Util.StrToJsonStr(s);
-				this.query.add(0, json);
+				list.add(json);
+				//this.query.add(0, json);
 			}			
 		}
+		this.query.addAll(0, list);
 	    this.exec = "r_update";
 	    return dealWithTransaction();
 		

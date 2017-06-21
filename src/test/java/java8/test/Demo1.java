@@ -497,7 +497,7 @@ public class Demo1 {
 	public JSONObject update(String tableName,String col,String whereCond){
 		ArrayList<String> whereList=new ArrayList<String>();
 		whereList.add(whereCond);
-		return r.table(tableName).get(whereList).update(Util.array(col)).submit(SyncCond.db_success);
+		return r.table(tableName).get(whereList).update(col).submit(SyncCond.db_success);
 	}
 	/**
 	 * ɾ������������where������ɾ��ָ������

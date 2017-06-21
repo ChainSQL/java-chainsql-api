@@ -65,14 +65,9 @@ public class Table extends Submit{
 	 * @param orgs Update parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
-	public Table update(List<String> orgs) {
-		
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = Util.StrToJsonStr(s);
-				this.query.add(0, json);
-			}			
-		}
+	public Table update(String orgs) {
+		String json = Util.StrToJsonStr(orgs);
+		this.query.add(0, json);
 	    this.exec = "r_update";
 	    return dealWithTransaction();
 		
@@ -110,7 +105,6 @@ public class Table extends Submit{
 				String json = Util.StrToJsonStr(s);
 				this.query.add(json);
 			}
-			
 		}
 		
 	    this.exec = "r_get";

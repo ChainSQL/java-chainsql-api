@@ -3,10 +3,11 @@ package java8.test;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.chainsql.core.Chainsql;
+import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.core.Table;
 import com.peersafe.chainsql.util.Util;
 
@@ -18,18 +19,23 @@ public class Test {
 	  public static void main(String[] args) {
 		  //c.connect("ws://192.168.0.193:6006");
 		 // c.connect("ws://192.168.0.110:6008");
-		 c.connect("ws://192.168.0.151:6006");
+		 //c.connect("ws://139.198.11.189:6006");
 
-		  // c.connect("ws://192.168.0.110:6007");
-		  //  c.connect("ws://101.201.40.124:7006");
+		   c.connect("ws://192.168.0.148:5008");
+//		    c.connect("ws://192.168.0.195:6006");
+//		    c.connect("ws://192.168.0.151:6006");
+//		   c.connect("ws://101.201.40.124:5006");
 		  
-		  sTableName = "hime2";
+		  sTableName = "helloworld7";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
 		  c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 //		  c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
-		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+//		  c.use("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		  
+//		  c.as("rQDG465k2ER9S7YoUYhW1gatt4hAuX7kG1", "snG5YZ3gZgt4aue9JzaVHHKMyBP9B");
+//		  System.out.println(c.getUnlList());
 		  
 		  //c.disconnect();
 //		  
@@ -56,8 +62,10 @@ public class Test {
 //			  System.out.println("Reconnected");
 //		  });
 		  
-		  AccountID.fromAddress("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		  //AccountID.fromAddress("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		  Test test =new Test();
+//		  test.testCreateTable1();
+//		  test.testValidationCreate();
 //		  test.testts();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
@@ -65,6 +73,7 @@ public class Test {
 		 test.testCreateTable();
 		 // c.connection.client.getAccountInfo(null);
 
+//		  test.testRecreateTable();
 //		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
@@ -77,8 +86,8 @@ public class Test {
 //		  	 test.getTransaction();
 //		  test.getChainInfo();
 //		  test.generateAccount();
-//		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
-		  test.getServerInfo();
+//		  test.activateAccount("r35d4GNRrMexdC3fzkKh1GawLEQxTSGATx");
+//		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
 //		  } catch (InterruptedException e) {
@@ -86,17 +95,77 @@ public class Test {
 //		  }
 //		  
 //		  c.disconnect();
+		 
+//		 JSONObject obj = c.generateAddress();
+//		 activateAccount(obj);
+//		  c.recreateTable("");
 		
 	    }
+		private static boolean activateAccount(JSONObject account){
+			c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+			JSONObject ret = c.pay(account.getString("account_id"), "20");
+			if(!ret.getString("status").equals("success")){
+				System.out.println(ret.toString());
+				return false;
+			}
+			return true;
+		}
+		
+		//创建表
+		public void testCreateTable1() {
+		  //创建表字段
+		    List<String> args = Util.array("{'field':'LQD_UUID','type':'int','length':16,'PK':1,'NN':1,'UQ':1,'AI':0}",
+		            "{'field':'CIFSEQ_CHARGE','type':'varchar','length':32,'default':null}",
+		            "{'field':'CIFSEQ_OPPONENT','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'PAY_MONEY','type':'decimal','length':16,accuracy:4}",
+		            "{'field':'BUSI_JNL_SEQ','type':'varchar','length':20,'default':NULL}",
+		            "{'field':'BILL_APPLI_USERSEQ','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'AGENT_SERIAL_NO','type':'varchar','length':20,'default':NULL}",
+		            "{'field':'CREATE_TIME','type':'datetime','default':NULL}",
+		            "{'field':'CREATE_USER','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'UPDATE_TIME','type':'datetime','default':NULL}",
+		            "{'field':'UPDATE_USER','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'PRD_CODE','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'NAME_CODE','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'START_RATE_DATE','type':'datetime','default':NULL}",
+		            "{'field':'DEADLINE_DAY','type':'varchar','length':32,'default':NULL}",
+		            "{'field':'MONEY_RATE','type':'decimal','length':16,accuracy:4}",
+		            "{'field':'ORIGIN_MONEY1','type':'decimal','length':16,accuracy:4}",
+		            "{'field':'END_RATE_DATE','type':'datetime','default':NULL}",
+		            "{'field':'FEE','type':'decimal','length':16,accuracy:4}",
+		            "{'field':'ORIGIN_MONEY2','type':'decimal','length':16,accuracy:4}",
+		            "{'field':'EARN_MONEY','type':'decimal','length':16,accuracy:4}",
+		            "{'field':'FEE_MONEY','type':'decimal','length':16,accuracy:4}"
+		          );
+		    JSONObject obj;
+		    System.out.println("创建表中...");
+//		    obj = c.createTable("mytable333", args).submit(SyncCond.db_success);
+		    obj = c.createTable("mytable4", args).submit((data)->{
+		    	System.out.println(data);
+		    });
+		    if(obj.getString("status").equals("success")){
+		      System.out.println("创建表成功");
+		    }else{
+		      System.out.println("创建表失败");
+		    }
+		    System.out.println(obj);
+		  }
+	  public void testValidationCreate(){
+		  JSONArray ret = c.validationCreate(1);
+		  System.out.println(ret);
+	  }
 	  public void testts(){
+//		  c.setNeedVerify(false);
 		  c.beginTran();
 //		  List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 //	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
 //	    		 );
 //		  c.createTable(sTableName,args,true);
 //		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
-		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-		  c.table(sTableName).get(Util.array("{'id': 2}")).update(Util.array("{'balance':400}"));
+//		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
+		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf'}","{'age': 33,'name':'小sr'}"));
+		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':500}");
+		  c.table(sTableName).get(Util.array("{'id': 2}")).sqlAssert(c.array("{'age':200}"));
 		  JSONObject obj = c.commit((data)->{
 				 System.out.println("creat------"+data);
 			 });
@@ -123,7 +192,7 @@ public class Test {
 		 System.out.println("getTransactions------"+obj);
 	}	
 	public void getTransaction(){
-		String hash = "2B28FE849128D35F54C2872456610E2423CB6880490DED0EAD8C184551710502";
+		String hash = "B0CA5E5046C5C8D72B2601A35A124B1DD874C4AFD8F40FD496883C7BBEF342A2";
 		JSONObject obj = c.getTransaction(hash);
 		System.out.println("getTransaction------"+obj);
 //		c.getTransaction(hash, (data)->{
@@ -132,46 +201,64 @@ public class Test {
 		
 	}
 	
+	public void testRecreateTable(){
+		c.recreateTable("abcde").submit((data)->{
+			System.out.println(data);
+		});
+	}
+	
     public void testCreateTable() {
     	List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
-	    		  "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
+    			"{'field':'name','type':'varchar','length':50,'default':null}",
+	    		  "{'field':'age','type':'int'}"
 	    		 );
     	JSONObject obj;
     	
-    	obj = c.createTable(sTableName,args).submit();
-    	System.out.println(obj);
+    	//obj = c.createTable(sTableName,args).submit();
+    	//System.out.println(obj);
     	
-//    	obj = c.createTable(sTableName,args,true).submit((data)->{
-//    		System.out.println("creat------"+data);
-//    	});
+    	obj = c.createTable(sTableName,args,false).submit((data)->{
+    		System.out.println("creat------"+data);
+    	});
+    	System.out.println(obj);
+//    	
+//    	obj = c.createTable(sTableName, args).submit(SyncCond.db_success);
 //    	System.out.println(obj);
     	
-//    	obj = c.createTable(sTableName, args).submit(SyncCond.db_success);
+//    	List<String> raw = new ArrayList<String>();
+//		raw =(Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+//				"{'field':'cid','type':'varchar','length':20,'NN':1,'UQ':1}",
+//				"{'field':'account_id','type':'varchar','length':100}",
+//				"{'field':'secret','type':'varchar','length':50}"));
+//    	obj = c.createTable("t_account1",args).submit((data)->{
+//    		System.out.println("creat------"+data);
+//    	});
 //    	System.out.println(obj);
     }
 	 
 	 public void testinsert(){
-		 List<String> orgs = Util.array("{'id':1,'age': 333}");
+//		 List<String> orgs = Util.array("{'age': 333}");
+		 List<String> orgs = Util.array("{'account':'rUhiKPaoqgLFqj1mjTuxVANanMZFyKPSqy','name':'lu','gender':0,'phone':18911163291,'birthDate':'2017/06/03','idNo':37142519870921464,'mailAddr':'luleigreat@163.com','status':'本科','profession':'IT'}");
 //		 List<String> orgs = Util.array("{'PAYERNAME':'张三1_111','ORISENDBANKNO':'', 'PAYERBANKNO':'100000000001', 'SESSIONID':'1', 'LIQUIDSTATUS':'0', 'DEBITCREDITFLAG':'0', 'PAYBACKREASON':'', 'PAYERACCT':'1000000000000111', 'RECVBANKNO':'100000000002', 'CURRTYPE':'156', 'AMOUNT':'12000', 'SENDBANKNO':'100000000001', 'AGENTSERIALNO':'201704050000000000000314', 'ORIAGENTSERIALNO':'', 'ORIWORKDATE':'', 'LIQUIDDATE':'20170405', 'PAYEEACCT':'2000000000000123', 'PAYEEBANKNO':'100000000002', 'PAYBACKFLAG':'00', 'PAYEENAME':'李四2_123', 'WORKDATE':'20170405'}");
 //		 List<String> orgs = Util.array("{'age': 23,'name':'你好','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}");
 		 JSONObject obj;
-//		 obj = c.table(sTableName).insert(orgs).submit();
-//		 System.out.println(obj);
-		 orgs = Util.array("{'BANKNO':'100000000006'}");
+		 obj = c.table(sTableName).insert(orgs).submit(SyncCond.validate_success);
+		 System.out.println(obj);
+//		 orgs = Util.array("{'BANKNO':'100000000006'}");
 //		 obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 //		 System.out.println(obj);
 		 
-		 obj = c.table(sTableName).insert(orgs).submit((data)->{
- 			 System.out.println("insert------"+data);
- 		 });
-		 System.out.println(obj);
+//		 obj = c.table(sTableName).insert(orgs).submit((data)->{
+// 			 System.out.println("insert------"+data);
+// 		 });
+//		 System.out.println(obj);
 	 }
 
 	  public void testUpdateTable(){
 		  List<String> arr1 = Util.array("{'id': 6}");
 		  
 		  JSONObject obj;
-		  obj = c.table(sTableName).get(arr1).update(Util.array("{'BALANCE':200}")).submit((data)->{
+		  obj = c.table(sTableName).get(arr1).update("{'BALANCE':200}").submit((data)->{
 	 			 System.out.println("update------"+data);
 	 		 });
 		  System.out.println(obj);
@@ -212,7 +299,7 @@ public class Test {
 	  }
 	  
 	  public void testget(){
-		 // table = c.table("testcas").get(Util.array("{'name':'peerb1'}")).limit("{index:0,total:10}").filterWith("[]").submit();
+		//  JSONObject obj = c.table("testcas").get(Util.array("{'name':'peerb1'}")).limit("{index:0,total:10}").withFields("[]").submit();
 		  
 		/*  table = c.table("testcas").get(Util.array("{'name':'peerb1'}")).order(Util.array("{age:-1}")).filterWith("[]").submit();*/
 		  JSONObject obj = c.table(sTableName).get(Util.array("{age:{$ne:232}}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
@@ -245,7 +332,7 @@ public class Test {
 	  }
 	  
 	  public void activateAccount(String account){
-		  JSONObject ret = c.pay(account,200).submit();
+		  JSONObject ret = c.pay(account,"20");
 		  System.out.println(ret);
 	  }
 	public void testdrop(){

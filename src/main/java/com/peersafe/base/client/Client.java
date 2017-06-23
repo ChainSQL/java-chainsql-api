@@ -1151,10 +1151,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-    public  Request select(AccountID account,JSONObject[] tabarr,String raw,final Callback<Response> cb){
+    public  Request select(AccountID account,AccountID owner,JSONObject[] tabarr,String raw,final Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
 	   	 JSONObject txjson = new JSONObject();
-	   	 txjson.put("Owner", account);
+	   	 txjson.put("Account", account);
+	   	 txjson.put("Owner", owner);
 	   	 txjson.put("Tables", tabarr);
 	   	 txjson.put("Raw", raw);
 	   	 txjson.put("OpType", 7);
@@ -1254,6 +1255,45 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("ledger_index_min", -1);
 	           	 request.json("ledger_index_max", -1);
 	           	 request.json("limit", limit);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+            	JSONArray txs = (JSONArray)response.result.get("transactions");
+            	for(int i=0; i<txs.length(); i++){
+            		JSONObject tx = (JSONObject)txs.get(i);
+            		Util.unHexData(tx.getJSONObject("tx"));
+            		if(tx.has("meta")){
+            			tx.remove("meta");
+            		}
+            	}
+            	
+                return response.result;
+            }
+        });
+    }
+    /**
+     * Request for transaction information.
+     * @param address Account address.
+     * @param cb Callback.
+     */
+    public  void getCrossChainTxs(final String hash,final int limit,final boolean include,final Callback<JSONObject> cb){
+    	makeManagedRequest(Command.tx_crossget, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+	           	 request.json("transaction_hash", hash);
+	           	 request.json("limit", limit);
+	           	 request.json("inclusive",include);
             }
 
             @Override

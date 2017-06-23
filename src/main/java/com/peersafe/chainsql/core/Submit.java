@@ -40,6 +40,8 @@ public abstract class Submit {
 	protected SyncCond condition;
 	protected SignedTransaction signed;
 	
+	private CrossChainArgs crossChainArgs = null;
+	
 	public enum SyncCond {
         validate_success,	
         db_success,
@@ -75,9 +77,19 @@ public abstract class Submit {
 	    StrictMode,
 	    NeedVerify,
 	    Statements,
-	    TxCheckHash
+	    TxCheckHash,
+	    CurTxHash,
+	    FutureTxHash,
+	    TxnLgrSeq,
+	    OriginalAddress,
 	}
 
+	private class CrossChainArgs{
+		public String originalAddress;
+		public int 	  txnLedgerSeq;
+		public String curTxHash;
+		public String futureHash;
+	}
 	private static final int wait_milli = 50; 
 	private static final int account_wait = 5000;
 	private static final int submit_wait = 5000;
@@ -105,6 +117,7 @@ public abstract class Submit {
 		return doSubmit();
 	}
 
+
 	/**
 	 * submit a transaction,return immediately
 	 * @return submit result
@@ -113,6 +126,14 @@ public abstract class Submit {
 		sync = false;
 		cb = null;
 		return doSubmit();
+	}
+	
+	public void setCrossChainArgs(String originalAddress,int txnLedgerSeq,String curTxHash,String futureHash){
+		crossChainArgs = new CrossChainArgs();
+		crossChainArgs.originalAddress = originalAddress;
+		crossChainArgs.txnLedgerSeq = txnLedgerSeq;
+		crossChainArgs.curTxHash = curTxHash;
+		crossChainArgs.futureHash = futureHash;
 	}
 	
 	abstract JSONObject prepareSigned();
@@ -250,7 +271,7 @@ public abstract class Submit {
         if(res.result.has("engine_result_message"))
         	obj.put("error_message", res.result.getString("engine_result_message"));
         if(res.result.has("engine_result_code")){
-        	obj.put("err_code", res.result.getInt("engine_result_code"));
+        	obj.put("error_code", res.result.getInt("engine_result_code"));
         }
         if(res.result.has("")){
         	JSONObject tx_json = (JSONObject) res.result.get("tx_json");
@@ -273,6 +294,7 @@ public abstract class Submit {
 	    	return false;
 	    }
 	}
+	
 	/**
 	 * Translate to transaction type.
 	 * @param json tx_json.
@@ -280,7 +302,15 @@ public abstract class Submit {
 	 * @return Transaction object.
 	 * @throws Exception Exception to be throws.
 	 */
-	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
+	protected Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
+		//for cross chain
+		if(crossChainArgs != null){
+			json.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+			json.put("OriginalAddress", crossChainArgs.originalAddress);
+			json.put("CurTxHash", crossChainArgs.curTxHash);
+			json.put("FutureTxHash", crossChainArgs.futureHash);
+			crossChainArgs = null;
+		}
     	Transaction payment = new Transaction(type);
     	 try {  
              Iterator<String> it = json.keys();  
@@ -310,6 +340,18 @@ public abstract class Submit {
             case Account:
             	payment.as(AccountID.Account, value);
                 break;
+            case TxnLgrSeq:
+            	payment.as(UInt32.TxnLgrSeq, value);
+            	break;
+            case OriginalAddress:
+            	payment.as(AccountID.OriginalAddress, value);
+            	break;
+            case CurTxHash:
+            	payment.as(Hash256.CurTxHash, value);
+            	break;
+            case FutureTxHash:
+            	payment.as(Hash256.FutureTxHash, value);
+            	break;
             case Destination:
             	payment.as(AccountID.Destination, value);
             	break;

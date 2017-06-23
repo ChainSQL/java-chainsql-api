@@ -264,14 +264,15 @@ public class Table extends Submit{
 	}
 
 	private JSONObject select(){
-		if(query.size()==0||!query.get(0).substring(0, 1).contains("[")){
+		if(query.size()==0 || !query.get(0).substring(0, 1).contains("[")){
 			query.add(0, "[]");
 		}
-		AccountID account = AccountID.fromAddress(connection.scope);
+		AccountID account = AccountID.fromAddress(connection.address);
+		AccountID owner = AccountID.fromAddress(connection.scope);
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
 		JSONObject tabjson = new JSONObject(tables);
 		JSONObject[] tabarr ={tabjson};
-		Request req = connection.client.select(account,tabarr,query.toString(),new Callback<Response>(){
+		Request req = connection.client.select(account,owner,tabarr,query.toString(),new Callback<Response>(){
 
 			@Override
 			public void called(Response response) {

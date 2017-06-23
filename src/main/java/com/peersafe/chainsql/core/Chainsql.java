@@ -595,6 +595,29 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
+	
+	public JSONObject getCrossChainTxs(String hash,int limit,boolean include){
+		retJson = null;
+		this.connection.client.getCrossChainTxs(hash, limit,include,new Callback<JSONObject>(){
+			@Override
+			public void called(JSONObject data) {
+				if(data == null){
+					retJson = new JSONObject();
+				}else{
+					retJson = (JSONObject) data;
+				}
+			}
+		});
+		while(retJson == null){
+			Util.waiting();
+		}
+		
+		if(retJson.has("transactions")){
+			return retJson;
+		}else{
+			return null;
+		}
+	}
 	/**
 	 * Get trasactions submitted by notified account.
 	 * @param address Account address.

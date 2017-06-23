@@ -123,7 +123,11 @@ public class TxFormat extends Format {
             Field.User,          Requirement.OPTIONAL,
             Field.Raw,           Requirement.OPTIONAL,
             Field.Token,		 Requirement.OPTIONAL,
-            Field.OpType,  		 Requirement.REQUIRED);
+            Field.OpType,  		 Requirement.REQUIRED,
+            Field.TxnLgrSeq,	 Requirement.OPTIONAL,
+            Field.OriginalAddress,Requirement.OPTIONAL,
+            Field.CurTxHash,	 Requirement.OPTIONAL,
+            Field.FutureTxHash,	 Requirement.OPTIONAL);
     
     static public TxFormat SQLStatement = new TxFormat(
             TransactionType.SQLStatement,
@@ -132,12 +136,20 @@ public class TxFormat extends Format {
             Field.Raw,       	 Requirement.REQUIRED,
             Field.AutoFillField, Requirement.OPTIONAL,
             Field.TxCheckHash,	 Requirement.OPTIONAL,
-            Field.OpType, 		 Requirement.REQUIRED);
+            Field.OpType, 		 Requirement.REQUIRED,
+            Field.TxnLgrSeq,	 Requirement.OPTIONAL,
+            Field.OriginalAddress,Requirement.OPTIONAL,
+            Field.CurTxHash,	 Requirement.OPTIONAL,
+            Field.FutureTxHash,	 Requirement.OPTIONAL);
     
     static public TxFormat SQLTransaction = new TxFormat(
             TransactionType.SQLTransaction,
             Field.Statements,    		Requirement.REQUIRED,
-            Field.NeedVerify, 		 	Requirement.REQUIRED);
+            Field.NeedVerify, 		 	Requirement.REQUIRED,
+            Field.TxnLgrSeq,	 		Requirement.OPTIONAL,
+            Field.OriginalAddress,		Requirement.OPTIONAL,
+            Field.CurTxHash,	 		Requirement.OPTIONAL,
+            Field.FutureTxHash,	 		Requirement.OPTIONAL);
 
 
 //    static public TxFormat SuspendedPaymentCreate = new TxFormat(

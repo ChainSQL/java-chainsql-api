@@ -182,14 +182,24 @@ public class Chainsql extends Submit {
 		tab.strictMode = this.strictMode;
 		tab.event = this.event;
 		tab.connection = this.connection;
+		tab.setCrossChainArgs(this.crossChainArgs);
 		return tab;
 	}
 	
 	@Override
 	JSONObject prepareSigned() {
-		Transaction payment;
 		try {
 			txJson.put("Account",this.connection.address);
+
+			//for cross chain
+			if(crossChainArgs != null){
+				txJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+				txJson.put("OriginalAddress", crossChainArgs.originalAddress);
+				txJson.put("CurTxHash", crossChainArgs.curTxHash);
+				txJson.put("FutureTxHash", crossChainArgs.futureHash);
+				crossChainArgs = null;
+			}
+			
 	    	JSONObject tx_json = Validate.getTxJson(this.connection.client, txJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
@@ -197,13 +207,20 @@ public class Chainsql extends Submit {
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");
 	    	}
-			payment = toPayment(tx_json,TransactionType.TableListSet);
+	    	
+	    	Transaction payment;
+	    	if(this.transaction){
+	    		payment = toPayment(tx_json,TransactionType.SQLTransaction);
+	    	}else{
+	    		payment = toPayment(tx_json,TransactionType.TableListSet);
+	    	}
+			
 			signed = payment.sign(this.connection.secret);
 			
 			return Util.successObject();
 		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+//			e.printStackTrace();
+			return Util.errorObject(e.getMessage());
 		}
 	}
 
@@ -249,14 +266,13 @@ public class Chainsql extends Submit {
 		}else{
 			strRaw = Util.toHexString(strRaw);
 		}
-		json.put("Raw", strRaw);
 		
-		txJson = json;
+		json.put("Raw", strRaw);
 		if(this.transaction){
 			this.cache.add(json);
 			return null;
 		}
-		txJson = json;
+		this.txJson = json;
 		return this;
 	}
 	
@@ -277,7 +293,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		txJson = json;
+		this.txJson = json;
 		return this;
 	}
 	/**
@@ -293,7 +309,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		txJson = json;
+		this.txJson = json;
 		return this;
 	}
 
@@ -314,7 +330,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		txJson = json;
+		this.txJson = json;
 		return this;
 		
 	}
@@ -366,22 +382,22 @@ public class Chainsql extends Submit {
 
 	private Chainsql grant_inner(String name, String user,String flag,String token) {
 		List<JSONObject> flags = new ArrayList<JSONObject>();
-		JSONObject json = Util.StrToJson(flag);
-		flags.add(json);
-		JSONObject txJson = new JSONObject();
-		txJson.put("Tables", getTableArray(name));
-		txJson.put("OpType", Constant.opType.get("t_grant"));
-		txJson.put("User", user);
-		txJson.put("Raw", Util.toHexString(flags.toString()));
+		flags.add(Util.StrToJson(flag));
+		
+		JSONObject json = new JSONObject();
+		json.put("Tables", getTableArray(name));
+		json.put("OpType", Constant.opType.get("t_grant"));
+		json.put("User", user);
+		json.put("Raw", Util.toHexString(flags.toString()));
 		if(token.length() > 0){
-			txJson.put("Token", token);
+			json.put("Token", token);
 		}
 		
 		if(this.transaction){
-			this.cache.add(txJson);
+			this.cache.add(json);
 			return null;
 		}
-		txJson = json;
+		this.txJson = json;
 		return this;
 	}
 	/**
@@ -428,6 +444,13 @@ public class Chainsql extends Submit {
 		return doCommit("");
 	}
 	
+	public Chainsql report(){
+		this.txJson = new JSONObject();
+		this.txJson.put("OpType", Constant.opType.get("t_report"));
+//		this.txJson.put("Tables", new JSONArray());
+		this.txJson.put("Tables", getTableArray("t_report_tablename_xxx_xxx"));
+		return this;
+	}
 	/**
 	 * Get server info.
 	 * @return Server's informations.
@@ -595,8 +618,17 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
-	
+	/**
+	 * Get transactions from chain
+	 * @param hash Start tx hash(can be tx_hash,ledger_seq,or "",if "",get from start tx).
+	 * @param limit Count to get.
+	 * @param include If the return should include the tx corresponding to hash we identified.
+	 * @return A JSONObject including transactions.
+	 */
 	public JSONObject getCrossChainTxs(String hash,int limit,boolean include){
+		if(hash == null){
+			return Util.errorObject("hash cannot be null");
+		}
 		retJson = null;
 		this.connection.client.getCrossChainTxs(hash, limit,include,new Callback<JSONObject>(){
 			@Override
@@ -794,22 +826,14 @@ public class Chainsql extends Submit {
         }
         
 		JSONObject json = new JSONObject();
+		//this line must add here
 		json.put("TransactionType",TransactionType.SQLTransaction);
 		json.put( "Account", this.connection.address);
 		json.put("Statements", statements);
 		json.put("NeedVerify",this.needVerify);
+		this.txJson = json;
 		
-        final JSONObject result = Validate.getTxJson(this.connection.client, json);
-		if(result.getString("status").equals("error")){
-			return  new JSONObject(){{
-				put("Error:",result.getString("error_message"));
-			}};
-		}
-		JSONObject tx_json = result.getJSONObject("tx_json");
-		Transaction paymentTS;
 		try {
-			paymentTS = toPayment(tx_json,TransactionType.SQLTransaction);
-			signed = paymentTS.sign(this.connection.secret);
 			if(commitType instanceof SyncCond ){
 				return submit((SyncCond)commitType);
 			}else if(commitType instanceof Callback){

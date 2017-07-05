@@ -228,6 +228,12 @@ public class Util {
 			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
 			table = table.getJSONObject("Table");
 			table.put("TableName", fromHexString(table.getString("TableName")));
+			if(table.has("TableNewName")){
+				table.put("TableNewName", fromHexString(table.getString("TableNewName")));
+			}
+		}
+		if(tx.has("Statements")){
+			tx.put("Statements", fromHexString(tx.getString("Statements")));
 		}
 	}
 	/**

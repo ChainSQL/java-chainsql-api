@@ -666,7 +666,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             //logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             // This seems to be swallowed higher up, (at least by the
             // Java-WebSocket transport implementation)
-            System.out.println("error_message: "+e.getLocalizedMessage());
+            //System.out.println("error_message: "+msg);
            // throw new RuntimeException(e);
         } finally {
             emit(OnStateChange.class, this);

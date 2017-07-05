@@ -24,6 +24,7 @@ public class Constant {
 			put("t_assert",10);
 			put("t_grant",11);
 			put("t_recreate",12);
+			put("t_report",13);
 		}}; 
 		
 		

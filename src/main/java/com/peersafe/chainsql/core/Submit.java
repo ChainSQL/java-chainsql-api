@@ -40,7 +40,7 @@ public abstract class Submit {
 	protected SyncCond condition;
 	protected SignedTransaction signed;
 	
-	private CrossChainArgs crossChainArgs = null;
+	protected CrossChainArgs crossChainArgs = null;
 	
 	public enum SyncCond {
         validate_success,	
@@ -84,7 +84,7 @@ public abstract class Submit {
 	    OriginalAddress,
 	}
 
-	private class CrossChainArgs{
+	public class CrossChainArgs{
 		public String originalAddress;
 		public int 	  txnLedgerSeq;
 		public String curTxHash;
@@ -134,6 +134,13 @@ public abstract class Submit {
 		crossChainArgs.txnLedgerSeq = txnLedgerSeq;
 		crossChainArgs.curTxHash = curTxHash;
 		crossChainArgs.futureHash = futureHash;
+	}
+	
+	public void setCrossChainArgs(CrossChainArgs args){
+		this.crossChainArgs = args;
+	}
+	public boolean isCrossChainArgsSet(){
+		return this.crossChainArgs != null;
 	}
 	
 	abstract JSONObject prepareSigned();
@@ -238,7 +245,7 @@ public abstract class Submit {
 	    				res.put("status", "success");
 	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
 	    				res.put("status", "success");
-	    			}else if(!obj.get("status").equals("validate_success")){
+	    			}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
 	    				res.put("status", "error");
 	    				if(res.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
@@ -303,14 +310,6 @@ public abstract class Submit {
 	 * @throws Exception Exception to be throws.
 	 */
 	protected Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
-		//for cross chain
-		if(crossChainArgs != null){
-			json.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
-			json.put("OriginalAddress", crossChainArgs.originalAddress);
-			json.put("CurTxHash", crossChainArgs.curTxHash);
-			json.put("FutureTxHash", crossChainArgs.futureHash);
-			crossChainArgs = null;
-		}
     	Transaction payment = new Transaction(type);
     	 try {  
              Iterator<String> it = json.keys();  
@@ -350,7 +349,7 @@ public abstract class Submit {
             	payment.as(Hash256.CurTxHash, value);
             	break;
             case FutureTxHash:
-            	payment.as(Hash256.FutureTxHash, value);
+                payment.as(Hash256.FutureTxHash, value);
             	break;
             case Destination:
             	payment.as(AccountID.Destination, value);
@@ -359,7 +358,8 @@ public abstract class Submit {
             	payment.as(Amount.Amount, value);
             	break;
             case Tables:
-            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
+//            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
+            	payment.as(STArray.Tables, Validate.fromJSONArray((JSONArray)value));
                 break;
             case OpType:
             	payment.as(UInt16.OpType, value);

@@ -232,8 +232,17 @@ public class Table extends Submit{
 		
 		txjson.put("Account", this.connection.address);
 		
+		//for cross chain
+		if(crossChainArgs != null){
+			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+			txjson.put("OriginalAddress", crossChainArgs.originalAddress);
+			txjson.put("CurTxHash", crossChainArgs.curTxHash);
+			txjson.put("FutureTxHash", crossChainArgs.futureHash);
+			crossChainArgs = null;
+		}
+		
 		JSONObject result = Validate.getTxJson(this.connection.client, txjson);
-		if(result.has("error")){
+		if(result.getString("status").equals("error")){
 			return result;
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");

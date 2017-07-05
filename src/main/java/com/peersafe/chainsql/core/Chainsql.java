@@ -418,7 +418,7 @@ public class Chainsql extends Submit {
 		try {
 			payment = toPayment(obj,TransactionType.Payment);
 			signed = payment.sign(this.connection.secret);
-			return submit();
+			return doSubmitNoPrepare();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

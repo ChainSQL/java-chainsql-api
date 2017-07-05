@@ -151,12 +151,15 @@ public abstract class Submit {
 		obj.put("error_message", err);
 		return obj;
 	}
-
 	protected JSONObject doSubmit(){
 		JSONObject obj = prepareSigned();
 		if(obj.getString("status").equals("error") || obj.has("final_result")){
 			return obj;
-		}
+		}		
+		return doSubmitNoPrepare();
+	}
+	
+	protected JSONObject doSubmitNoPrepare(){
 		if(signed == null){
 			return getError("Signing failed,maybe ripple node error");
 		}

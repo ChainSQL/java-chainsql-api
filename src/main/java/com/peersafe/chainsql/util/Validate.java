@@ -32,8 +32,10 @@ public class Validate {
 		STArray stArr = new STArray();
 		if(arr.length() > 0){
 			STObject obj1 = new STObject();
-			obj1 = STObject.fromJSON(arr.get(0).toString());
-			stArr.add(obj1);
+			for(int i=0; i<arr.length(); i++){
+				obj1 = STObject.fromJSON(arr.get(i).toString());
+				stArr.add(obj1);
+			}
 		}
 		
         return stArr;

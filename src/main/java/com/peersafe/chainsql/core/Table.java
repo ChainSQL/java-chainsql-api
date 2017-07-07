@@ -100,11 +100,13 @@ public class Table extends Submit{
 	 * @param orgs Select parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
-	public Table get(List<String> orgs){
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = Util.StrToJsonStr(s);
-				this.query.add(json);
+	public Table get(List<String> args){
+		if(args != null){
+			for(String s: args){
+				if(!"".equals(s)&&s!=null){
+					String json = Util.StrToJsonStr(s);
+					this.query.add(json);
+				}
 			}
 		}
 		

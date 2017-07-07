@@ -430,11 +430,13 @@ public class Chainsql extends Submit {
 	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
 	 */
 	public void beginTran(){
-		 if (this.connection!=null && this.connection.address!=null) {
-		    this.transaction = true;
-		    return;
-		  }
-		
+		this.transaction = true;
+	}
+	/**
+	 * End a sql-transaction type operation.
+	 */
+	public void endTran(){
+		this.transaction = false;
 	}
 	/**
 	 * Commit a sql-transaction type operation.

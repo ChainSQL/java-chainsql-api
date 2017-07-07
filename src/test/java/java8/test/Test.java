@@ -28,7 +28,7 @@ public class Test {
 //		    c.connect("ws://192.168.0.151:6006");
 //		   c.connect("ws://101.201.40.124:5006");
 //		  c.connect("ws://139.198.188.132:6006");
-		  sTableName = "abc";
+		  sTableName = "ddd";
 		 
 		/* conn.address="rEtepyQeAEgBLqXCaFRwZPK1LHArQfdKYr";
 		  conn.secret="snrJRLBSkThBXtaBYZW1zVMmThm1d";*/
@@ -68,7 +68,7 @@ public class Test {
 		  Test test =new Test();
 //		  test.testCreateTable1();
 //		  test.testValidationCreate();
-//		  test.testts();
+		  test.testts();
 //		  	test.getLedgerVersion();
 //		  	test.getLedge();
 //		  test.getUserToken();
@@ -76,7 +76,7 @@ public class Test {
 		 // c.connection.client.getAccountInfo(null);
 
 //		  test.testRecreateTable();
-		  test.testinsert();
+//		  test.testinsert();
 //		  test.testUpdateTable();
 //		  test.testdelete();
 //		  test.testrename();
@@ -89,7 +89,7 @@ public class Test {
 //		  test.getCrossChainTxs();
 //		  test.getChainInfo();
 //		  test.generateAccount();
-//		  test.activateAccount("r35d4GNRrMexdC3fzkKh1GawLEQxTSGATx");
+//		  test.activateAccount("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 //		  test.getServerInfo();
 //		  try {
 //			Thread.sleep(10000);
@@ -167,11 +167,11 @@ public class Test {
 //		  c.createTable(sTableName,args,true);
 //		  c.grant(sTableName, "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q","{insert:true,update:true}");
 //		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf','balance':'124'}","{'age': 33,'name':'小sr','balance':'300'}"));
-		  c.table(sTableName).insert(Util.array("{'age': 23,'name':'adsf'}","{'age': 33,'name':'小sr'}"));
-		  c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':500}");
+		  c.table(sTableName).insert(Util.array("{'age': 23}","{'age': 33}"));
+		  c.table(sTableName).get(Util.array("{'id': 3}")).update("{'age':500}");
 //		  c.table(sTableName).get(Util.array("{'id': 2}")).sqlAssert(c.array("{'age':200}"));
 		  JSONObject obj = c.commit((data)->{
-				 System.out.println("creat------"+data);
+				 System.out.println("sqlTrans------"+data);
 			 });
 		  System.out.println(obj);
 	  } 
@@ -231,15 +231,15 @@ public class Test {
     	//System.out.println(obj);
     	
 
-//    	obj = c.createTable(sTableName,args,false).submit((data)->{
-//    		System.out.println("creat------"+data);
-//    	});
+    	obj = c.createTable(sTableName,args,false).submit((data)->{
+    		System.out.println("creat------"+data);
+    	});
 //    	System.out.println(obj);
-    	long tm1 = System.currentTimeMillis();
- //   	obj = c.createTable(sTableName, args,true).submit(SyncCond.db_success);
-    	obj = c.createTable(sTableName, args).submit(SyncCond.validate_success);
-    	System.out.println(obj);
-    	System.out.println(System.currentTimeMillis() - tm1);
+//    	long tm1 = System.currentTimeMillis();
+// //   	obj = c.createTable(sTableName, args,true).submit(SyncCond.db_success);
+//    	obj = c.createTable(sTableName, args).submit(SyncCond.validate_success);
+//    	System.out.println(obj);
+//    	System.out.println(System.currentTimeMillis() - tm1);
 //    	List<String> raw = new ArrayList<String>();
 //		raw =(Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
 //				"{'field':'cid','type':'varchar','length':20,'NN':1,'UQ':1}",
@@ -252,11 +252,11 @@ public class Test {
     }
 	 
 	 public void testinsert(){
-//		 List<String> orgs = Util.array("{'age': 333}");
+		 List<String> orgs = Util.array("{'age': 333}");
 //		 List<String> orgs = Util.array("{'account':'rUhiKPaoqgLFqj1mjTuxVANanMZFyKPSqy','name':'lu','gender':0,'phone':18911163291,'birthDate':'2017/06/03','idNo':37142519870921464,'mailAddr':'luleigreat@163.com','status':'本科','profession':'IT'}");
 //		 List<String> orgs = Util.array("{'PAYERNAME':'张三1_111','ORISENDBANKNO':'', 'PAYERBANKNO':'100000000001', 'SESSIONID':'1', 'LIQUIDSTATUS':'0', 'DEBITCREDITFLAG':'0', 'PAYBACKREASON':'', 'PAYERACCT':'1000000000000111', 'RECVBANKNO':'100000000002', 'CURRTYPE':'156', 'AMOUNT':'12000', 'SENDBANKNO':'100000000001', 'AGENTSERIALNO':'201704050000000000000314', 'ORIAGENTSERIALNO':'', 'ORIWORKDATE':'', 'LIQUIDDATE':'20170405', 'PAYEEACCT':'2000000000000123', 'PAYEEBANKNO':'100000000002', 'PAYBACKFLAG':'00', 'PAYEENAME':'李四2_123', 'WORKDATE':'20170405'}");
-		 List<String> orgs = Util.array("{'age': 23,'name':'你好'}",
-				 						"{'age': 33,'name':'小sr'}");
+//		 List<String> orgs = Util.array("{'age': 23,'name':'你好'}",
+//				 						"{'age': 33,'name':'小sr'}");
 		 JSONObject obj;
 //		 long tm1 = System.currentTimeMillis();
 //		 obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);

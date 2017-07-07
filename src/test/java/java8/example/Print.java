@@ -1,4 +1,4 @@
-package java8.utils;
+package java8.example;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;

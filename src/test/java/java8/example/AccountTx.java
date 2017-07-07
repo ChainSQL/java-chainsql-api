@@ -1,6 +1,7 @@
 package java8.example;
 
-import static java8.utils.Print.*;
+import static java8.example.Print.*;
+
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.client.transactions.AccountTxPager;

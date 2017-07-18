@@ -6,7 +6,9 @@ import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -29,12 +31,15 @@ import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
 public class Chainsql extends Submit {
 	public	EventManager event;
-	public List<JSONObject> cache = new ArrayList<JSONObject>();
+	public List<JSONObject> cache = new ArrayList<JSONObject>();	
+	public Map<GenericPair<String,String>,String> mapToken = 
+			new HashMap<GenericPair<String,String>,String>();
 	private boolean strictMode = false;
 	private boolean transaction = false;
 	private Integer needVerify = 1;
@@ -178,6 +183,7 @@ public class Chainsql extends Submit {
 		 if (this.transaction) {
 		   	tab.transaction = this.transaction;
 		    tab.cache = this.cache;
+		    tab.mapToken = this.mapToken;
 		}
 		tab.strictMode = this.strictMode;
 		tab.event = this.event;
@@ -263,6 +269,7 @@ public class Chainsql extends Submit {
 			}
 			json.put("Token", token);
 			strRaw = Aes.aesEncrypt(password, strRaw);
+			this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),token);
 		}else{
 			strRaw = Util.toHexString(strRaw);
 		}
@@ -437,6 +444,7 @@ public class Chainsql extends Submit {
 	 */
 	public void endTran(){
 		this.transaction = false;
+		this.mapToken.clear();
 	}
 	/**
 	 * Commit a sql-transaction type operation.

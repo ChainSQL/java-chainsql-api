@@ -1,23 +1,25 @@
 package com.peersafe.chainsql.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.crypto.Aes;
-import com.peersafe.chainsql.crypto.Ecies;
-import com.peersafe.chainsql.util.EventManager;
-import com.peersafe.chainsql.util.Util;
-import com.peersafe.chainsql.util.Validate;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
-import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.chainsql.crypto.Aes;
+import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.GenericPair;
+import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.util.Validate;
 
 public class Table extends Submit{
 	private String name;
@@ -26,6 +28,8 @@ public class Table extends Submit{
 	public String message;
 	
 	public List<JSONObject> cache = new ArrayList<JSONObject>();
+	public Map<GenericPair<String,String>,String> mapToken = 
+			new HashMap<GenericPair<String,String>,String>();
 	public boolean strictMode = false;
 	public boolean transaction = false;
 	public	EventManager event;
@@ -200,25 +204,35 @@ public class Table extends Submit{
 	}
 	
 	private String tryEncryptRaw(String strRaw) throws Exception{
-		JSONObject res = Validate.getUserToken(connection,connection.scope,name);
-		if(res.get("status").equals("error")){
-			throw new Exception(res.getString("error_message"));
+		String token = "";
+		if(this.transaction){
+			GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+			if(mapToken.containsKey(pair)){
+				token = mapToken.get(pair);
+			}
 		}else{
-			String token = res.getString("token");
-			if(token.equals("")){
-				strRaw = Util.toHexString(strRaw);
+			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
+			if(res.get("status").equals("error")){
+				throw new Exception(res.getString("error_message"));
 			}else{
-				try {
-					byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
-					if(password == null){
-						return null;
-					}
-					strRaw = Aes.aesEncrypt(password, strRaw);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}	
+				token = res.getString("token");
+			}
 		}
+
+		if(token.equals("")){
+			strRaw = Util.toHexString(strRaw);
+		}else{
+			try {
+				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				if(password == null){
+					throw new Exception("decrypt token failed");
+				}
+				strRaw = Aes.aesEncrypt(password, strRaw);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}	
+
 
 		return strRaw;
 	}

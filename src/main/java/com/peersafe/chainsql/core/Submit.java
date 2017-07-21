@@ -1,6 +1,9 @@
 package com.peersafe.chainsql.core;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -25,6 +28,7 @@ import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
@@ -41,6 +45,15 @@ public abstract class Submit {
 	protected SignedTransaction signed;
 	
 	protected CrossChainArgs crossChainArgs = null;
+	
+	//事务相关
+	protected List<JSONObject> cache = new ArrayList<JSONObject>();	
+	protected Map<GenericPair<String,String>,String> mapToken = 
+			new HashMap<GenericPair<String,String>,String>();
+	protected boolean transaction = false;
+	protected Integer needVerify = 1;
+	//严格模式
+	protected boolean strictMode = false;
 	
 	public enum SyncCond {
         validate_success,	
@@ -94,6 +107,21 @@ public abstract class Submit {
 	private static final int account_wait = 5000;
 	private static final int submit_wait = 5000;
 	private static final int sync_maxtime = 200000;
+	
+	/**
+	 * Set restrict mode.
+	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
+	 * to a table and some other user interrupts this by making an operation to this identical table.  
+	 * @param falg True to enable restrict mode and false to disable restrict mode.
+	 */
+	public void setRestrict(boolean falg) {
+		this.strictMode = falg;
+	}
+	
+	public void setNeedVerify(boolean flag){
+		this.needVerify = flag ? 1 : 0;
+	}
+
 	/**
 	 * asynchronous,callback trigger with all possible status
 	 * @param cb Callback.

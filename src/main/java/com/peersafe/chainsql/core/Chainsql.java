@@ -37,13 +37,9 @@ import com.peersafe.chainsql.util.Validate;
 
 public class Chainsql extends Submit {
 	public	EventManager event;
-	public List<JSONObject> cache = new ArrayList<JSONObject>();	
-	public Map<GenericPair<String,String>,String> mapToken = 
-			new HashMap<GenericPair<String,String>,String>();
-	private boolean strictMode = false;
-	private boolean transaction = false;
-	private Integer needVerify = 1;
+
 	private JSONObject txJson;
+	private boolean strictMode = false;
 	
 	private static final int PASSWORD_LENGTH = 16;  
 	private static final int DEFAULT_TX_LIMIT = 20;
@@ -159,19 +155,6 @@ public class Chainsql extends Submit {
 		this.connection.disconnect();
 	}
 
-	/**
-	 * Set restrict mode.
-	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
-	 * to a table and some other user interrupts this by making an operation to this identical table.  
-	 * @param falg True to enable restrict mode and false to disable restrict mode.
-	 */
-	public void setRestrict(boolean falg) {
-		this.strictMode = falg;
-	}
-	
-	public void setNeedVerify(boolean flag){
-		this.needVerify = flag ? 1 : 0;
-	}
 
 	/**
 	 * Create a Table object by giving a table name.
@@ -260,22 +243,27 @@ public class Chainsql extends Submit {
 		json.put("Tables", getTableArray(name));
 		
 		String strRaw = listRaw.toString();
+		String token = "";
 		if(confidential){
 			byte[] password = Util.getRandomBytes(PASSWORD_LENGTH);
-			String token = generateUserToken(this.connection.secret,password);
+			token = generateUserToken(this.connection.secret,password);
 			if(token.length() == 0){
 				System.out.println("generateUserToken failed");
 				return null;
 			}
 			json.put("Token", token);
 			strRaw = Aes.aesEncrypt(password, strRaw);
-			this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),token);
 		}else{
 			strRaw = Util.toHexString(strRaw);
 		}
 		
 		json.put("Raw", strRaw);
 		if(this.transaction){
+			//有加密则不验证
+			if(confidential){
+				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),token);
+				this.needVerify = 0;
+			}
 			this.cache.add(json);
 			return null;
 		}

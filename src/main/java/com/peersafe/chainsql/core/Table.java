@@ -25,13 +25,7 @@ public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-	public String message;
-	
-	public List<JSONObject> cache = new ArrayList<JSONObject>();
-	public Map<GenericPair<String,String>,String> mapToken = 
-			new HashMap<GenericPair<String,String>,String>();
-	public boolean strictMode = false;
-	public boolean transaction = false;
+
 	public	EventManager event;
 
 	/**
@@ -210,10 +204,11 @@ public class Table extends Submit{
 			if(mapToken.containsKey(pair)){
 				token = mapToken.get(pair);
 			}
-		}else{
+		}
+		if(token.equals("")){
 			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
 			if(res.get("status").equals("error")){
-				throw new Exception(res.getString("error_message"));
+				//throw new Exception(res.getString("error_message"));
 			}else{
 				token = res.getString("token");
 			}
@@ -222,6 +217,10 @@ public class Table extends Submit{
 		if(token.equals("")){
 			strRaw = Util.toHexString(strRaw);
 		}else{
+			//有加密则不验证
+			if(this.transaction){
+				this.needVerify = 0;
+			}
 			try {
 				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
 				if(password == null){

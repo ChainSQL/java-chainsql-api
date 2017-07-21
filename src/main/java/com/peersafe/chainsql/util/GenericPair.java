@@ -33,6 +33,11 @@ public class GenericPair<E extends Object, F extends Object> {
         this.second = second;  
     }  
       
+    @Override
+    public int hashCode(){
+    	return this.first.hashCode() + this.second.hashCode();
+    }
+    @Override
     public boolean equals(Object obj){
     	if(obj instanceof GenericPair){
     		GenericPair<?, ?> pair = (GenericPair<?, ?>)obj;

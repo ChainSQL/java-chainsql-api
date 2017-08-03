@@ -141,13 +141,13 @@ public class Table extends Submit{
 		this.exec = "t_assert";
 		if (!this.transaction)
 			try {
-				throw new Exception("you must begin the transaction first");
+				System.out.println("Exception: you must begin the transaction first");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		if (this.name==null)
 			try {
-				throw new Exception("you must appoint the table name");
+				System.out.println("Exception: you must appoint the table name");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -208,7 +208,7 @@ public class Table extends Submit{
 		if(token.equals("")){
 			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
 			if(res.get("status").equals("error")){
-				//throw new Exception(res.getString("error_message"));
+				System.out.println("Exception: "+res.getString("error_message"));
 			}else{
 				token = res.getString("token");
 			}
@@ -224,7 +224,7 @@ public class Table extends Submit{
 			try {
 				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
 				if(password == null){
-					throw new Exception("decrypt token failed");
+					System.out.println("Exception: decrypt token failed");
 				}
 				strRaw = Aes.aesEncrypt(password, strRaw);
 			} catch (Exception e) {

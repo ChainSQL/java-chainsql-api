@@ -238,7 +238,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     // ### Getters
 
     private int reconnectDelay() {
-        return 1000;
+        return 2000;
     }
 
     /**
@@ -673,17 +673,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
     private void doOnDisconnected() {
-    	log(Level.INFO, getClass().getName() + "doOnDisconnected");
-        connected = false;
+    	log(Level.INFO, getClass().getName() + ": doOnDisconnected");
+    	if(connected)
+    		connected = false;
+    	else
+    		return;
         emitOnDisconnected();
 
         if (!manuallyDisconnected) {
-            schedule(reconnectDelay(), new Runnable() {
-                @Override
-                public void run() {
-                    connect(previousUri);
-                }
-            });
+        	reconnect();
         } else {
         	log(Level.INFO, "Currently disconnecting, so will not reconnect");
         }

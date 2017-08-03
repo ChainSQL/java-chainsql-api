@@ -461,6 +461,9 @@ public class Chainsql extends Submit {
 		try{
 			JSONObject serverInfo = getServerInfo();		
 			String ledger_range = serverInfo.getJSONObject("info").getString("complete_ledgers");
+			if(ledger_range.equals("empty")){
+				return obj;
+			}
 			int startIndex = ledger_range.indexOf(',') == -1 ? 0 : ledger_range.lastIndexOf(',') + 1;
 			int endIndex = ledger_range.lastIndexOf('-');
 			int startLedger = Integer.parseInt(ledger_range.substring(startIndex,endIndex));

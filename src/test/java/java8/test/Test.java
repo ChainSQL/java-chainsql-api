@@ -18,23 +18,28 @@ public class Test {
 	public static String sNewAccountId,sNewSecret;
 	public static void main(String[] args) {
 		// c.connect("ws://192.168.0.152:6006");
-		c.connect("ws://192.168.0.148:5008");
-		// c.connect("ws://192.168.0.194:6007");
-		sTableName = "rrrs";
+		//c.connect("ws://192.168.0.148:5008");
+		//c.connect("ws://139.198.11.189:6006");
+		// c.connect("ws://192.168.0.14:5008");
+		 
+		c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
+		
+		sTableName = "hijack22";
 		sTableName2 = "boy";
 		sReName = "boy1";
 
 		//设置日志级别
-		c.connection.client.logger.setLevel(Level.SEVERE);
+		//c.connection.client.logger.setLevel(Level.SEVERE);
 				
 		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		//c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
 
 
 //		testSubscribe();
-//		testRippleAPI();
+		testRippleAPI();
 //
 //		testAccount();
-		testChainSql();
+//		testChainSql();
 
 	//	c.disconnect();
 	}
@@ -55,7 +60,9 @@ public class Test {
 		Test test = new Test();
 //		test.testValidationCreate();
 //		test.getLedgerVersion();
-		test.getLedger();
+//		test.getLedger();
+		
+		test.getUnlList();
 //
 //		test.getTransactions();
 //		test.getTransaction();
@@ -68,7 +75,7 @@ public class Test {
 		// test.testRecreateTable();
 //		test.testCreateTable();
 //		test.testCreateTable1();
-//		test.testinsert();
+		test.testinsert();
 //		test.testUpdateTable();
 //		test.testdelete();
 //		test.testrename();
@@ -76,7 +83,7 @@ public class Test {
 //		test.testdrop();
 //		test.grant();
 //		test.insertAfterGrant();
-		test.testts();
+//		test.testts();
 		
 ////		test.testdeleteAll();
 //		test.getCrossChainTxs();
@@ -163,8 +170,9 @@ public class Test {
 		// c.table(sTableName).insert(Util.array("{'age':
 		// 23,'name':'adsf','balance':'124'}","{'age':
 		// 33,'name':'小sr','balance':'300'}"));
+		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
 		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
-		c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
+		//c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
 		// c.table(sTableName).get(Util.array("{'id':
 		// 2}")).sqlAssert(c.array("{'age':200}"));
 //		JSONObject obj = c.commit((data) -> {
@@ -179,6 +187,9 @@ public class Test {
 		c.getLedger(2, (data) -> {
 			System.out.println("getLedger------" + data);
 		});
+	}
+	public void getUnlList(){
+		System.out.println("UnlList:" + c.getUnlList());
 	}
 
 	public void getLedgerVersion() {

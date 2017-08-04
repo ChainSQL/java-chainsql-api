@@ -74,12 +74,30 @@ public class Chainsql extends Submit {
 
 	/**
 	 * Connect to a websocket url.
-	 * @param url Websocket url to connect,eg:"ws://127.0.0.1:5006".
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
 	 * @return Connection object after connected.
 	 */
 	@SuppressWarnings("resource")
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
+		doWhenConnect();
+		return connection;
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param wss url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath
+	 * @param storePass
+	 * @return
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url,String serverCertPath,String storePass) {
+		connection = new Connection().connect(url,serverCertPath,storePass);
+		doWhenConnect();
+		return connection;
+	}
+	
+	private void doWhenConnect(){
 		while (!connection.client.connected) {
 			try {
 				Thread.sleep(100);
@@ -104,8 +122,6 @@ public class Chainsql extends Submit {
 				onReconnected(args);
 			}			
 		});
-		
-		return connection;
 	}
 	
 	/**

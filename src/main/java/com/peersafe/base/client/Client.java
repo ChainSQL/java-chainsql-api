@@ -306,6 +306,22 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
         return this;
     }
+    
+    public Client connect(final String uri,final String serverCertPath,final String storePass){
+        manuallyDisconnected = false;
+
+        schedule(50, new Runnable() {
+            @Override
+            public void run() {
+                try {
+					doConnect(uri,serverCertPath,storePass);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        });
+        return this;
+    }
 
     /**
      * Connect.
@@ -317,6 +333,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         ws.connect(URI.create(uri));
     }
 
+    public void doConnect(String uri,String serverCertPath,String storePass) throws Exception {
+        log(Level.INFO, "Connecting to " + uri);
+        previousUri = uri;
+        ws.connectSSL(URI.create(uri),serverCertPath,storePass);
+    }
     /**
      * Disconnect from websocket-url
      */

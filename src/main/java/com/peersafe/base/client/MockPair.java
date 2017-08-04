@@ -195,6 +195,12 @@ public class MockPair {
             public void onConnected() {
                 handler.onConnected();
             }
+
+			@Override
+			public void connectSSL(URI url, String serverCertPath, String storePass) throws Exception {
+				// TODO Auto-generated method stub
+				
+			}
         }
 
         MockSocket ws;

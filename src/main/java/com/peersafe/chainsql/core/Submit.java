@@ -1,6 +1,9 @@
 package com.peersafe.chainsql.core;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -25,6 +28,7 @@ import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
@@ -33,12 +37,23 @@ public abstract class Submit {
 	protected Callback<JSONObject> cb;
 	private SubmitState submit_state;
 	private SyncState sync_state;
-	
 	private JSONObject submitRes;
 	private JSONObject syncRes;
 	
 	private boolean sync = false;
 	protected SyncCond condition;
+	protected SignedTransaction signed;
+	
+	protected CrossChainArgs crossChainArgs = null;
+	
+	//事务相关
+	protected List<JSONObject> cache = new ArrayList<JSONObject>();	
+	protected Map<GenericPair<String,String>,String> mapToken = 
+			new HashMap<GenericPair<String,String>,String>();
+	protected boolean transaction = false;
+	protected Integer needVerify = 1;
+	//严格模式
+	protected boolean strictMode = false;
 	
 	public enum SyncCond {
         validate_success,	
@@ -75,13 +90,38 @@ public abstract class Submit {
 	    StrictMode,
 	    NeedVerify,
 	    Statements,
-	    TxCheckHash
+	    TxCheckHash,
+	    CurTxHash,
+	    FutureTxHash,
+	    TxnLgrSeq,
+	    OriginalAddress,
 	}
 
+	public class CrossChainArgs{
+		public String originalAddress;
+		public int 	  txnLedgerSeq;
+		public String curTxHash;
+		public String futureHash;
+	}
 	private static final int wait_milli = 50; 
 	private static final int account_wait = 5000;
 	private static final int submit_wait = 5000;
 	private static final int sync_maxtime = 200000;
+	
+	/**
+	 * Set restrict mode.
+	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
+	 * to a table and some other user interrupts this by making an operation to this identical table.  
+	 * @param falg True to enable restrict mode and false to disable restrict mode.
+	 */
+	public void setRestrict(boolean falg) {
+		this.strictMode = falg;
+	}
+	
+	public void setNeedVerify(boolean flag){
+		this.needVerify = flag ? 1 : 0;
+	}
+
 	/**
 	 * asynchronous,callback trigger with all possible status
 	 * @param cb Callback.
@@ -105,15 +145,33 @@ public abstract class Submit {
 		return doSubmit();
 	}
 
+
 	/**
 	 * submit a transaction,return immediately
 	 * @return submit result
 	 */
 	public JSONObject submit(){
+		sync = false;
+		cb = null;
 		return doSubmit();
 	}
 	
-	abstract JSONObject doSubmit();
+	public void setCrossChainArgs(String originalAddress,int txnLedgerSeq,String curTxHash,String futureHash){
+		crossChainArgs = new CrossChainArgs();
+		crossChainArgs.originalAddress = originalAddress;
+		crossChainArgs.txnLedgerSeq = txnLedgerSeq;
+		crossChainArgs.curTxHash = curTxHash;
+		crossChainArgs.futureHash = futureHash;
+	}
+	
+	public void setCrossChainArgs(CrossChainArgs args){
+		this.crossChainArgs = args;
+	}
+	public boolean isCrossChainArgsSet(){
+		return this.crossChainArgs != null;
+	}
+	
+	abstract JSONObject prepareSigned();
 
 	private JSONObject getError(String err){
 		JSONObject obj = new JSONObject();
@@ -121,8 +179,15 @@ public abstract class Submit {
 		obj.put("error_message", err);
 		return obj;
 	}
-
-	protected JSONObject doSubmit(SignedTransaction signed){
+	protected JSONObject doSubmit(){
+		JSONObject obj = prepareSigned();
+		if(obj.getString("status").equals("error") || obj.has("final_result")){
+			return obj;
+		}		
+		return doSubmitNoPrepare();
+	}
+	
+	protected JSONObject doSubmitNoPrepare(){
 		if(signed == null){
 			return getError("Signing failed,maybe ripple node error");
 		}
@@ -211,7 +276,7 @@ public abstract class Submit {
 	    				res.put("status", "success");
 	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
 	    				res.put("status", "success");
-	    			}else if(!obj.get("status").equals("validate_success")){
+	    			}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
 	    				res.put("status", "error");
 	    				if(res.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
@@ -243,6 +308,9 @@ public abstract class Submit {
         obj.put("status", "error");
         if(res.result.has("engine_result_message"))
         	obj.put("error_message", res.result.getString("engine_result_message"));
+        if(res.result.has("engine_result_code")){
+        	obj.put("error_code", res.result.getInt("engine_result_code"));
+        }
         if(res.result.has("")){
         	JSONObject tx_json = (JSONObject) res.result.get("tx_json");
         	obj.put("tx_hash", tx_json.getString("hash"));
@@ -264,6 +332,7 @@ public abstract class Submit {
 	    	return false;
 	    }
 	}
+	
 	/**
 	 * Translate to transaction type.
 	 * @param json tx_json.
@@ -271,7 +340,7 @@ public abstract class Submit {
 	 * @return Transaction object.
 	 * @throws Exception Exception to be throws.
 	 */
-	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
+	protected Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
     	Transaction payment = new Transaction(type);
     	 try {  
              Iterator<String> it = json.keys();  
@@ -301,6 +370,18 @@ public abstract class Submit {
             case Account:
             	payment.as(AccountID.Account, value);
                 break;
+            case TxnLgrSeq:
+            	payment.as(UInt32.TxnLgrSeq, value);
+            	break;
+            case OriginalAddress:
+            	payment.as(AccountID.OriginalAddress, value);
+            	break;
+            case CurTxHash:
+            	payment.as(Hash256.CurTxHash, value);
+            	break;
+            case FutureTxHash:
+                payment.as(Hash256.FutureTxHash, value);
+            	break;
             case Destination:
             	payment.as(AccountID.Destination, value);
             	break;
@@ -308,7 +389,8 @@ public abstract class Submit {
             	payment.as(Amount.Amount, value);
             	break;
             case Tables:
-            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
+//            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
+            	payment.as(STArray.Tables, Validate.fromJSONArray((JSONArray)value));
                 break;
             case OpType:
             	payment.as(UInt16.OpType, value);

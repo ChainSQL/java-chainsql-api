@@ -1,33 +1,31 @@
 package com.peersafe.chainsql.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.crypto.Aes;
-import com.peersafe.chainsql.crypto.Ecies;
-import com.peersafe.chainsql.util.EventManager;
-import com.peersafe.chainsql.util.Util;
-import com.peersafe.chainsql.util.Validate;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
-import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.chainsql.crypto.Aes;
+import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.GenericPair;
+import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.util.Validate;
 
 public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-	public String message;
-	
-	public List<JSONObject> cache = new ArrayList<JSONObject>();
-	public boolean strictMode = true;
-	public boolean transaction = false;
+
 	public	EventManager event;
 
 	/**
@@ -65,14 +63,10 @@ public class Table extends Submit{
 	 * @param orgs Update parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
-	public Table update(List<String> orgs) {
-		
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = Util.StrToJsonStr(s);
-				this.query.add(0, json);
-			}			
-		}
+	public Table update(String orgs) {
+		String json = Util.StrToJsonStr(orgs);
+		this.query.add(0, json);
+
 	    this.exec = "r_update";
 	    return dealWithTransaction();
 		
@@ -96,23 +90,22 @@ public class Table extends Submit{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return null;
-		}else{
-			return this;
 		}
+		return this;
 	}
 	/**
 	 * Select data from a table.
 	 * @param orgs Select parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
-	public Table get(List<String> orgs){
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = Util.StrToJsonStr(s);
-				this.query.add(json);
+	public Table get(List<String> args){
+		if(args != null){
+			for(String s: args){
+				if(!"".equals(s)&&s!=null){
+					String json = Util.StrToJsonStr(s);
+					this.query.add(json);
+				}
 			}
-			
 		}
 		
 	    this.exec = "r_get";
@@ -137,28 +130,29 @@ public class Table extends Submit{
 	/**
 	 * Assertion when sql-transaction begins.
 	 */
-	public void sqlAssert(){
+	public Table sqlAssert(List<String> orgs){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
+			
+		}
+		this.exec = "t_assert";
 		if (!this.transaction)
 			try {
-				throw new Exception("you must begin the transaction first");
+				System.out.println("Exception: you must begin the transaction first");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		if (this.name==null)
 			try {
-				throw new Exception("you must appoint the table name");
+				System.out.println("Exception: you must appoint the table name");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		if(this.transaction){
-			JSONObject json;
-			try {
-				json = txJson();
-			this.cache.add(json);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+
+			return dealWithTransaction();
 	}
 	
 	/**
@@ -167,14 +161,9 @@ public class Table extends Submit{
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table limit(String orgs){
-		String ss = "";
-		if(!"".equals(orgs)&&orgs!=null){
-			 ss= orgs.replace("\'", "\"");
-			
-		}	
 		JSONObject json = new JSONObject();
-		json.put("$limit", ss);
-		this.query.add(json.toString());
+	    json.put("$limit", Util.StrToJson(orgs));
+	    this.query.add(json.toString());
 		return this;
 	}
 
@@ -198,8 +187,7 @@ public class Table extends Submit{
 	}
 	
 	private JSONObject txJson() throws Exception{
-
-		System.out.println(this.query.toString());
+		//System.out.println(this.query.toString());
 		JSONObject json = new JSONObject();
 		json.put("Tables", getTableArray(name));
 		json.put("Owner",  connection.scope);
@@ -210,65 +198,88 @@ public class Table extends Submit{
 	}
 	
 	private String tryEncryptRaw(String strRaw) throws Exception{
-		JSONObject res = Validate.getUserToken(connection,connection.scope,name);
-		if(res.get("status").equals("error")){
-			throw new Exception(res.getString("error_message"));
-		}else{
-			String token = res.getString("token");
-			if(token.equals("")){
-				strRaw = Util.toHexString(strRaw);
-			}else{
-				try {
-					byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
-					if(password == null){
-						return null;
-					}
-					strRaw = Aes.aesEncrypt(password, strRaw);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}	
+		String token = "";
+		if(this.transaction){
+			GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+			if(mapToken.containsKey(pair)){
+				token = mapToken.get(pair);
+			}
 		}
+		if(token.equals("")){
+			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
+			if(res.get("status").equals("error")){
+				System.out.println("Exception: "+res.getString("error_message"));
+			}else{
+				token = res.getString("token");
+			}
+		}
+
+		if(token.equals("")){
+			strRaw = Util.toHexString(strRaw);
+		}else{
+			//有加密则不验证
+			if(this.transaction){
+				this.needVerify = 0;
+			}
+			try {
+				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				if(password == null){
+					System.out.println("Exception: decrypt token failed");
+				}
+				strRaw = Aes.aesEncrypt(password, strRaw);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}	
+
 
 		return strRaw;
 	}
 	
-	private SignedTransaction prepareSQLStatement() {
+	private JSONObject prepareSQLStatement() {
 		JSONObject txjson;
 		try {
 			txjson = txJson();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return Util.errorObject(e.getMessage());
 		}
 		
 		txjson.put("Account", this.connection.address);
 		
+		//for cross chain
+		if(crossChainArgs != null){
+			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+			txjson.put("OriginalAddress", crossChainArgs.originalAddress);
+			txjson.put("CurTxHash", crossChainArgs.curTxHash);
+			txjson.put("FutureTxHash", crossChainArgs.futureHash);
+			crossChainArgs = null;
+		}
+		
 		JSONObject result = Validate.getTxJson(this.connection.client, txjson);
-		if(result.has("error")){
-			System.out.println("Error:" + result.getString("error_message"));
-			return null;
+		if(result.getString("status").equals("error")){
+			return result;
 		}
 		JSONObject tx_json = result.getJSONObject("tx_json");
 		Transaction payment;
 		
 		try {
 			payment = toPayment(tx_json,TransactionType.SQLStatement);
-	        SignedTransaction signed = payment.sign(connection.secret);
-	        return signed;
+	        signed = payment.sign(connection.secret);
+	        return Util.successObject();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return Util.errorObject(e.getMessage());
 		}   
 	}
 
 	@Override
-	JSONObject doSubmit() {
+	JSONObject prepareSigned() {
 		if(this.exec == "r_get"){
 			return select();
 		}else{
 			try {
-				return doSubmit(prepareSQLStatement());
+				return prepareSQLStatement();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return new JSONObject(e.getLocalizedMessage());
@@ -277,14 +288,15 @@ public class Table extends Submit{
 	}
 
 	private JSONObject select(){
-		if(query.size()==0||!query.get(0).substring(0, 1).contains("[")){
+		if(query.size()==0 || !query.get(0).substring(0, 1).contains("[")){
 			query.add(0, "[]");
 		}
-		AccountID account = AccountID.fromAddress(connection.scope);
+		AccountID account = AccountID.fromAddress(connection.address);
+		AccountID owner = AccountID.fromAddress(connection.scope);
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
 		JSONObject tabjson = new JSONObject(tables);
 		JSONObject[] tabarr ={tabjson};
-		Request req = connection.client.select(account,tabarr,query.toString(),new Callback<Response>(){
+		Request req = connection.client.select(account,owner,tabarr,query.toString(),new Callback<Response>(){
 
 			@Override
 			public void called(Response response) {
@@ -303,6 +315,7 @@ public class Table extends Submit{
 		obj.put("status", response.status);
 		if( !"error".equals(response.status)){
 			//this.data = response.result.get("lines");
+			obj.put("final_result", true);
 			obj.put("lines", response.result.get("lines"));
 		}else{
 			obj.put("error_message", response.error);

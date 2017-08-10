@@ -238,7 +238,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     // ### Getters
 
     private int reconnectDelay() {
-        return 1000;
+        return 2000;
     }
 
     /**
@@ -306,6 +306,22 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
         return this;
     }
+    
+    public Client connect(final String uri,final String serverCertPath,final String storePass){
+        manuallyDisconnected = false;
+
+        schedule(50, new Runnable() {
+            @Override
+            public void run() {
+                try {
+					doConnect(uri,serverCertPath,storePass);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        });
+        return this;
+    }
 
     /**
      * Connect.
@@ -317,6 +333,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         ws.connect(URI.create(uri));
     }
 
+    public void doConnect(String uri,String serverCertPath,String storePass) throws Exception {
+        log(Level.INFO, "Connecting to " + uri);
+        previousUri = uri;
+        ws.connectSSL(URI.create(uri),serverCertPath,storePass);
+    }
     /**
      * Disconnect from websocket-url
      */
@@ -666,29 +687,25 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             //logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             // This seems to be swallowed higher up, (at least by the
             // Java-WebSocket transport implementation)
-            System.out.println("error_message: "+e.getLocalizedMessage());
+            //System.out.println("error_message: "+msg);
            // throw new RuntimeException(e);
         } finally {
             emit(OnStateChange.class, this);
         }
     }
     private void doOnDisconnected() {
-        logger.entering(getClass().getName(), "doOnDisconnected");
-        connected = false;
+    	log(Level.INFO, getClass().getName() + ": doOnDisconnected");
+    	if(connected)
+    		connected = false;
+    	else
+    		return;
         emitOnDisconnected();
 
         if (!manuallyDisconnected) {
-            schedule(reconnectDelay(), new Runnable() {
-                @Override
-                public void run() {
-                    connect(previousUri);
-                }
-            });
+        	reconnect();
         } else {
-            logger.fine("Currently disconnecting, so will not reconnect");
+        	log(Level.INFO, "Currently disconnecting, so will not reconnect");
         }
-
-        logger.entering(getClass().getName(), "doOnDisconnected");
     }
 
     private void doOnConnected() {
@@ -795,9 +812,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     private Account account(final AccountID id, IKeyPair keyPair) {
-        if (accounts.containsKey(id)) {
-            return accounts.get(id);
-        } else {
+//        if (accounts.containsKey(id)) {
+//            return accounts.get(id);
+//        } else {
             TrackedAccountRoot accountRoot = accountRoot(id);
             Account account = new Account(
                     id,
@@ -809,7 +826,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             subscriptions.addAccount(id);
 
             return account;
-        }
+//        }
     }
 
     private TrackedAccountRoot accountRoot(AccountID id) {
@@ -1153,10 +1170,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-    public  Request select(AccountID account,JSONObject[] tabarr,String raw,final Callback<Response> cb){
+    public  Request select(AccountID account,AccountID owner,JSONObject[] tabarr,String raw,final Callback<Response> cb){
 	   	 Request request = newRequest(Command.r_get);
 	   	 JSONObject txjson = new JSONObject();
-	   	 txjson.put("Owner", account);
+	   	 txjson.put("Account", account);
+	   	 txjson.put("Owner", owner);
 	   	 txjson.put("Tables", tabarr);
 	   	 txjson.put("Raw", raw);
 	   	 txjson.put("OpType", 7);
@@ -1238,7 +1256,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param address Account address.
      * @param cb Callback.
      */
-    public  void getTransactions(final String address,final Callback<JSONObject> cb){
+    public  void getTransactions(final String address,final int limit,final Callback<JSONObject> cb){
     	makeManagedRequest(Command.account_tx, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1255,7 +1273,46 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	           	 request.json("account", address);
 	           	 request.json("ledger_index_min", -1);
 	           	 request.json("ledger_index_max", -1);
-	           	 request.json("limit", 10);
+	           	 request.json("limit", limit);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+            	JSONArray txs = (JSONArray)response.result.get("transactions");
+            	for(int i=0; i<txs.length(); i++){
+            		JSONObject tx = (JSONObject)txs.get(i);
+            		Util.unHexData(tx.getJSONObject("tx"));
+            		if(tx.has("meta")){
+            			tx.remove("meta");
+            		}
+            	}
+            	
+                return response.result;
+            }
+        });
+    }
+    /**
+     * Request for transaction information.
+     * @param address Account address.
+     * @param cb Callback.
+     */
+    public  void getCrossChainTxs(final String hash,final int limit,final boolean include,final Callback<JSONObject> cb){
+    	makeManagedRequest(Command.tx_crossget, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+	           	 request.json("transaction_hash", hash);
+	           	 request.json("limit", limit);
+	           	 request.json("inclusive",include);
             }
 
             @Override
@@ -1304,6 +1361,16 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    	 	return request.response.result;
     }
 
+    /**
+     * Get unl_list
+     * @return unl_list data
+     */
+    public JSONObject getUnlList(){
+    	Request request = newRequest(Command.unl_list);
+        request.request();
+        waiting(request);
+   	 	return request.response.result;
+    }
     /**
      * Get user_token for table,if token got not null, it is a confidential table.
      * @param owner Table's owner/creator.

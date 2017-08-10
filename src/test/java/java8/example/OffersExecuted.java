@@ -1,7 +1,9 @@
 package java8.example;
 
+import static java8.example.Print.*;
+
 import java.util.logging.Level;
-import static java8.utils.Print.*;
+
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.subscriptions.ServerInfo;
 import com.peersafe.base.client.subscriptions.SubscriptionManager;

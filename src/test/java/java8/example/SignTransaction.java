@@ -1,12 +1,13 @@
 package java8.example;
 
+import static java8.example.Print.*;
+
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.coretypes.STObject;
 import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.core.types.known.tx.txns.Payment;
-import static java8.utils.Print.*;
 /**
  * This example shows how to sign a transaction built using
  * the ripple-lib-java API and one already built in json.

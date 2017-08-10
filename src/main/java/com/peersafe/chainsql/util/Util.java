@@ -108,7 +108,7 @@ public class Util {
 
             }else if("text".equals(type)){
 
-            }else if("datatime".equals(type)){
+            }else if("datetime".equals(type) || "date".equals(type)){
 
             }else{
             	throw new Exception("invalid type "+type);
@@ -228,6 +228,12 @@ public class Util {
 			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
 			table = table.getJSONObject("Table");
 			table.put("TableName", fromHexString(table.getString("TableName")));
+			if(table.has("TableNewName")){
+				table.put("TableNewName", fromHexString(table.getString("TableNewName")));
+			}
+		}
+		if(tx.has("Statements")){
+			tx.put("Statements", fromHexString(tx.getString("Statements")));
 		}
 	}
 	/**
@@ -239,5 +245,18 @@ public class Util {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static JSONObject successObject(){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "success");
+		return obj;
+	}
+	
+	public static JSONObject errorObject(String errMsg){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "error");
+		obj.put("error_message", errMsg);
+		return obj;
 	}
 }

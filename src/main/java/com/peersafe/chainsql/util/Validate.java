@@ -3,15 +3,16 @@ package com.peersafe.chainsql.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.STArray;
 import com.peersafe.base.core.coretypes.STObject;
+import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.resources.Constant;
 
 public class Validate {
 	public Object create(String obj) {
@@ -27,12 +28,17 @@ public class Validate {
 		return result;
 	}
 	
-	public static STArray fromJSONArray(String str) {
-		STObject obj1 = new STObject();
-		obj1 = STObject.fromJSON(str);
-		STArray arr = new STArray();
-		arr.add(obj1);
-        return arr;
+	public static STArray fromJSONArray(JSONArray arr) {
+		STArray stArr = new STArray();
+		if(arr.length() > 0){
+			STObject obj1 = new STObject();
+			for(int i=0; i<arr.length(); i++){
+				obj1 = STObject.fromJSON(arr.get(i).toString());
+				stArr.add(obj1);
+			}
+		}
+		
+        return stArr;
     }
 	
 	public static JSONObject getUserToken(Connection connection,String owner, String name) {

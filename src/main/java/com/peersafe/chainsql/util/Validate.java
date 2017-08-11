@@ -46,8 +46,8 @@ public class Validate {
 		return request.response.result;
 	}
 	
-	public static JSONObject getTxJson(Client client, JSONObject tx_json) {
-		Request request = client.getTxJson(tx_json);
+	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
+		Request request = client.tablePrepare(tx_json);
 		return request.response.result;
 		
 	}

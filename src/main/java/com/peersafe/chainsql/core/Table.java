@@ -256,7 +256,7 @@ public class Table extends Submit{
 			crossChainArgs = null;
 		}
 		
-		JSONObject result = Validate.getTxJson(this.connection.client, txjson);
+		JSONObject result = Validate.tablePrepare(this.connection.client, txjson);
 		if(result.getString("status").equals("error")){
 			return result;
 		}
@@ -264,7 +264,7 @@ public class Table extends Submit{
 		Transaction payment;
 		
 		try {
-			payment = toPayment(tx_json,TransactionType.SQLStatement);
+			payment = toTransaction(tx_json,TransactionType.SQLStatement);
 	        signed = payment.sign(connection.secret);
 	        return Util.successObject();
 		} catch (Exception e) {

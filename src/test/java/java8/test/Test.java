@@ -20,11 +20,11 @@ public class Test {
 		// c.connect("ws://192.168.0.152:6006");
 		//c.connect("ws://192.168.0.148:5008");
 		//c.connect("ws://139.198.11.189:6006");
-		// c.connect("ws://192.168.0.14:5008");
+		 c.connect("ws://192.168.0.14:5008");
 		 
-		c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
+		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
 		
-		sTableName = "hijack22";
+		sTableName = "hijack44";
 		sTableName2 = "boy";
 		sReName = "boy1";
 
@@ -73,9 +73,9 @@ public class Test {
 	private static void testChainSql() {
 		Test test = new Test();
 		// test.testRecreateTable();
-//		test.testCreateTable();
+		test.testCreateTable();
 //		test.testCreateTable1();
-		test.testinsert();
+//		test.testinsert();
 //		test.testUpdateTable();
 //		test.testdelete();
 //		test.testrename();

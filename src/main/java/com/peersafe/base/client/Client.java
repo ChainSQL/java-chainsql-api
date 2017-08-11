@@ -1396,7 +1396,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param txjson tx_json with fields and value a transaction needed.
      * @return Prepared tx_json.
      */
-    public Request getTxJson(JSONObject txjson){
+    public Request tablePrepare(JSONObject txjson){
     	Request request = newRequest(Command.t_prepare);
 	   	request.json("tx_json", txjson);
 	    request.request();

@@ -21,8 +21,11 @@ import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.coretypes.Amount;
+import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
@@ -191,6 +194,89 @@ public class Chainsql extends Submit {
 		return tab;
 	}
 	
+	/**
+	 * Sign a transaction.
+	 * @param tx transaction Json.
+	 * @param sequence Sequence number for this transaction.
+	 * @return tx_blob to submit.
+	 */
+	public String sign(JSONObject tx,int sequence){
+		JSONObject tx_json = tx.getJSONObject("tx_json");
+		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
+		Transaction transaction = new Transaction(type);
+		try {
+			tx_json.put("Sequence", sequence);
+			transaction.parseFromJson(tx_json);
+			//Fee
+			checkFee(transaction,tx_json);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		SignedTransaction signed = transaction.sign(tx.getString("secret"));
+		
+		return signed.tx_blob;
+	}
+	/**
+	 * sign for 
+	 * @param tx transaction Json.
+	 * @param sequence
+	 * @return sign result form:
+	 {
+	    "Signer":{
+	        "Account":"rDsFXt1KRDNNckSh3exyTqkQeBKQCXawb2",
+	        "SigningPubKey":"02E37D565DF377D0C30D93163CF40F41BB81B966B11757821F25FBCDCFEA18E8A9",
+	        "TxnSignature":"3044022050903320FF924BCD7F55D3BE095A457BF2421E805C5B39DA77F006BB217D6398022024C51DECA25018D80CB16AB65674B71BFD20789D63EC47FD5EAD7FC75B880055"
+	    }
+	 }
+	 */
+	public JSONObject sign_for(JSONObject tx,int sequence){
+		if(!tx.has("secret"))
+			return Util.errorObject("no secret supplied");
+		if(!tx.has("account"))
+			return Util.errorObject("no account supplied");
+		
+		JSONObject tx_json = tx.getJSONObject("tx_json");
+		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
+		Transaction transaction = new Transaction(type);
+		try {
+			tx_json.put("Sequence", sequence);
+			transaction.parseFromJson(tx_json);
+			//Fee
+			checkFee(transaction,tx_json);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		String secret = tx.getString("secret");
+		SignedTransaction signed = transaction.multiSign(secret);
+		
+		String sJson = signed.txn.prettyJSON();
+//		System.out.println(sJson);
+		
+		IKeyPair keyPair = Seed.fromBase58(secret).keyPair();
+		String publicKey = Util.bytesToHex(keyPair.canonicalPubBytes());
+		
+		JSONObject json = new JSONObject(sJson);
+		JSONObject signer = new JSONObject();
+		signer.put("Account",tx.getString("account"));
+		signer.put("SigningPubKey", publicKey);
+		signer.put("TxnSignature", json.getString("TxnSignature"));
+		JSONObject ret = new JSONObject();
+		ret.put("Signer", signer);
+		return ret;
+	}
+	
+	private void checkFee(Transaction transaction,JSONObject tx_json){
+		if(!tx_json.has("Fee")){
+			if(connection != null && connection.client != null && connection.client.serverInfo != null){
+				Amount fee = connection.client.serverInfo.transactionFee(transaction);
+				transaction.as(Amount.Fee, fee);
+			}else{
+				transaction.as(Amount.Fee, "50");
+			}
+		}
+	}
 	@Override
 	JSONObject prepareSigned() {
 		try {
@@ -205,7 +291,7 @@ public class Chainsql extends Submit {
 				crossChainArgs = null;
 			}
 			
-	    	JSONObject tx_json = Validate.getTxJson(this.connection.client, txJson);
+	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, txJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
 	    		return tx_json;
@@ -215,9 +301,9 @@ public class Chainsql extends Submit {
 	    	
 	    	Transaction payment;
 	    	if(this.transaction){
-	    		payment = toPayment(tx_json,TransactionType.SQLTransaction);
+	    		payment = toTransaction(tx_json,TransactionType.SQLTransaction);
 	    	}else{
-	    		payment = toPayment(tx_json,TransactionType.TableListSet);
+	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
 	    	}
 			
 			signed = payment.sign(this.connection.secret);
@@ -427,7 +513,7 @@ public class Chainsql extends Submit {
 		
 		Transaction payment;
 		try {
-			payment = toPayment(obj,TransactionType.Payment);
+			payment = toTransaction(obj,TransactionType.Payment);
 			signed = payment.sign(this.connection.secret);
 			return doSubmitNoPrepare();
 		} catch (Exception e) {
@@ -846,7 +932,7 @@ public class Chainsql extends Submit {
 		//this line must add here
 		json.put("TransactionType",TransactionType.SQLTransaction);
 		json.put( "Account", this.connection.address);
-		json.put("Statements", statements);
+		json.put("Statements", Util.toHexString(statements.toString()));
 		json.put("NeedVerify",this.needVerify);
 		this.txJson = json;
 		

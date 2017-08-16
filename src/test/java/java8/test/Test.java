@@ -24,8 +24,8 @@ public class Test {
 		 
 		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
 		
-		sTableName = "hijack44";
-		sTableName2 = "boy";
+		sTableName = "zt804tri1";
+		sTableName2 = "boy2";
 		sReName = "boy1";
 
 		//设置日志级别
@@ -33,13 +33,14 @@ public class Test {
 				
 		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		//c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
+		//c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
 
 
 //		testSubscribe();
-		testRippleAPI();
+//		testRippleAPI();
 //
 //		testAccount();
-//		testChainSql();
+		testChainSql();
 
 	//	c.disconnect();
 	}
@@ -73,7 +74,7 @@ public class Test {
 	private static void testChainSql() {
 		Test test = new Test();
 		// test.testRecreateTable();
-		test.testCreateTable();
+//		test.testCreateTable();
 //		test.testCreateTable1();
 //		test.testinsert();
 //		test.testUpdateTable();
@@ -88,6 +89,7 @@ public class Test {
 ////		test.testdeleteAll();
 //		test.getCrossChainTxs();
 //		test.getChainInfo();
+		test.testget();
 	}
 
 	private static void testAccount() {
@@ -362,12 +364,12 @@ public class Test {
 		 * array("{age:-1}")).filterWith("[]").submit();
 		 */
 
-		// JSONObject obj =
-		// c.table(sTableName).get(Util.array("{age:{$ne:232}}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
-		// System.out.println("testget------"+data);
-		// });
+		 JSONObject obj =
+		 c.table(sTableName).get(Util.array("{id:1}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
+		 System.out.println("testget------"+data);
+		 });
 
-		JSONObject obj = c.table(sTableName).get(null).submit();
+		//JSONObject obj = c.table(sTableName).get(null).submit();
 
 		System.out.println("get result:" + obj.toString());
 	}

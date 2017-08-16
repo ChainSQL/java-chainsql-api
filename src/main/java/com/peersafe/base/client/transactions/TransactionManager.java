@@ -129,7 +129,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		return !txn.isFinalized() && seenValidatedSequences.contains(txn.sequence().longValue());
 	}
 
-	public Request submitSigned(ManagedTxn txn){
+	public Request submitSigned(final ManagedTxn txn){
 		final Request req = client.newRequest(Command.submit);
 		// tx_blob is a hex string, right o' the bat
 		req.json("tx_blob", txn.tx_blob);

@@ -41,13 +41,13 @@ import com.peersafe.chainsql.util.Validate;
 public class Chainsql extends Submit {
 	public	EventManager event;
 
-	private JSONObject txJson;
+	private JSONObject mTxJson;
 	private boolean strictMode = false;
 	
 	private static final int PASSWORD_LENGTH = 16;  
 	private static final int DEFAULT_TX_LIMIT = 20;
 	
-	private JSONObject retJson;
+	private JSONObject mRetJson;
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
@@ -280,27 +280,28 @@ public class Chainsql extends Submit {
 	@Override
 	JSONObject prepareSigned() {
 		try {
-			txJson.put("Account",this.connection.address);
+			mTxJson.put("Account",this.connection.address);
 
 			//for cross chain
 			if(crossChainArgs != null){
-				txJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
-				txJson.put("OriginalAddress", crossChainArgs.originalAddress);
-				txJson.put("CurTxHash", crossChainArgs.curTxHash);
-				txJson.put("FutureTxHash", crossChainArgs.futureHash);
+				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+				mTxJson.put("OriginalAddress", crossChainArgs.originalAddress);
+				mTxJson.put("CurTxHash", crossChainArgs.curTxHash);
+				mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
 				crossChainArgs = null;
 			}
 			
-	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, txJson);
+	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
 	    		return tx_json;
 	    	}else{
-	    		tx_json = tx_json.getJSONObject("tx_json");
+	    		tx_json = tx_json.getJSONObject("tx_json");	    			
 	    	}
 	    	
 	    	Transaction payment;
 	    	if(this.transaction){
+	    		tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
 	    		payment = toTransaction(tx_json,TransactionType.SQLTransaction);
 	    	}else{
 	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
@@ -369,7 +370,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 	
@@ -390,7 +391,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 	/**
@@ -406,7 +407,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 
@@ -427,7 +428,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 		
 	}
@@ -494,7 +495,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 	/**
@@ -545,10 +546,10 @@ public class Chainsql extends Submit {
 	}
 	
 	public Chainsql report(){
-		this.txJson = new JSONObject();
-		this.txJson.put("OpType", Constant.opType.get("t_report"));
+		this.mTxJson = new JSONObject();
+		this.mTxJson.put("OpType", Constant.opType.get("t_report"));
 //		this.txJson.put("Tables", new JSONArray());
-		this.txJson.put("Tables", getTableArray("t_report_tablename_xxx_xxx"));
+		this.mTxJson.put("Tables", getTableArray("t_report_tablename_xxx_xxx"));
 		return this;
 	}
 	/**
@@ -614,23 +615,23 @@ public class Chainsql extends Submit {
 			option.put("ledger_index",  ledger_index);
 		}
 		
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getLedger(option,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("ledger")){
-			return retJson;
+		if(mRetJson.has("ledger")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -663,23 +664,23 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject getLedgerVersion(){
 		
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getLedgerVersion(new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("ledger_current_index")){
-			return retJson;
+		if(mRetJson.has("ledger_current_index")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -700,23 +701,23 @@ public class Chainsql extends Submit {
 	 * @return Result.
 	 */
 	public JSONObject getTransactions(String address,int limit){
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getTransactions(address,limit,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("transactions")){
-			return retJson;
+		if(mRetJson.has("transactions")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -732,23 +733,23 @@ public class Chainsql extends Submit {
 		if(hash == null){
 			return Util.errorObject("hash cannot be null");
 		}
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getCrossChainTxs(hash, limit,include,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("transactions")){
-			return retJson;
+		if(mRetJson.has("transactions")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -784,23 +785,23 @@ public class Chainsql extends Submit {
 	 * @return Transaction information.
 	 */
 	public JSONObject getTransaction(String hash){
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getTransaction(hash,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}			
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("ledger_index")){
-			return retJson;
+		if(mRetJson.has("ledger_index")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -932,9 +933,9 @@ public class Chainsql extends Submit {
 		//this line must add here
 		json.put("TransactionType",TransactionType.SQLTransaction);
 		json.put( "Account", this.connection.address);
-		json.put("Statements", Util.toHexString(statements.toString()));
+		json.put("Statements", statements);
 		json.put("NeedVerify",this.needVerify);
-		this.txJson = json;
+		this.mTxJson = json;
 		
 		try {
 			if(commitType instanceof SyncCond ){

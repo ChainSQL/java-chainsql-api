@@ -296,16 +296,7 @@ public class Table extends Submit{
 		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
 		JSONObject tabjson = new JSONObject(tables);
 		JSONObject[] tabarr ={tabjson};
-		Request req = connection.client.select(account,owner,tabarr,query.toString(),new Callback<Response>(){
-
-			@Override
-			public void called(Response response) {
-				if(cb != null){
-					cb.called(getSelectRes(response));
-				}
-			}
-			
-		});
+		Request req = connection.client.select(account,owner,tabarr,query.toString());
 		
 		return getSelectRes(req.response);
 	}

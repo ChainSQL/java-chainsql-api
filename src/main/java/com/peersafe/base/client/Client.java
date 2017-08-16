@@ -1170,27 +1170,18 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-    public  Request select(AccountID account,AccountID owner,JSONObject[] tabarr,String raw,final Callback<Response> cb){
-	   	 Request request = newRequest(Command.r_get);
-	   	 JSONObject txjson = new JSONObject();
-	   	 txjson.put("Account", account);
-	   	 txjson.put("Owner", owner);
-	   	 txjson.put("Tables", tabarr);
-	   	 txjson.put("Raw", raw);
-	   	 txjson.put("OpType", 7);
-	   	 request.json("tx_json", txjson);
-	   	 request.once(Request.OnResponse.class, new Request.OnResponse() {
-	            public  void called(Response response) {
-	                if (response.succeeded) {
-	                	//System.out.println("response:" + response.message.toString());
-	                	cb.called(response);
-	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
-	                }
-	            }
-	        });
-        request.request();
-        waiting(request);
-   	 	return request;	
+	public Request select(AccountID account, AccountID owner, JSONObject[] tabarr, String raw) {
+		Request request = newRequest(Command.r_get);
+		JSONObject txjson = new JSONObject();
+		txjson.put("Account", account);
+		txjson.put("Owner", owner);
+		txjson.put("Tables", tabarr);
+		txjson.put("Raw", raw);
+		txjson.put("OpType", 7);
+		request.json("tx_json", txjson);
+		request.request();
+		waiting(request);
+		return request;
 	}
     
     /**

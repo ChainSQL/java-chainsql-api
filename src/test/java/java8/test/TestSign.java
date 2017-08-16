@@ -18,21 +18,20 @@ public class TestSign {
 	
 	private static void testSignPayment(){
 		JSONObject obj = new JSONObject();
-		obj.put("secret", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		JSONObject tx_json = new JSONObject();
 		tx_json.put("Account", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 		tx_json.put("Amount", "10000000000");
 		tx_json.put("Destination", "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 		tx_json.put("TransactionType", "Payment");
+		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		String tx_blob = c.sign(obj, 2);
-		System.out.println("sign payment tx_blob:" + tx_blob);
+		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		System.out.println("sign payment result:" + res);
 	}
 	
 	private static void testSignTrustSet(){
 		JSONObject obj = new JSONObject();
-		obj.put("secret", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		
 		JSONObject limitAmount = new JSONObject();
 		limitAmount.put("currency", "GRD");
@@ -44,10 +43,11 @@ public class TestSign {
 		tx_json.put("LimitAmount", limitAmount);
 		tx_json.put("Flags", 0);
 		tx_json.put("TransactionType", "TrustSet");
+		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		String tx_blob = c.sign(obj, 2);
-		System.out.println("sign trustset tx_blob:" + tx_blob);
+		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		System.out.println("sign TrustSet result:" + res);
 	}
 
 	private static void testSignAccountSet(){
@@ -64,10 +64,11 @@ public class TestSign {
 		JSONArray arr = new JSONArray();
 		arr.put(memo2);
 		tx_json.put("Memos", arr);
+		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		String tx_blob = c.sign(obj, 2);
-		System.out.println("sign AccountSet tx_blob:" + tx_blob);
+		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		System.out.println("sign AccountSet result:" + res);
 	}
 
 	private static void testSignSignerListSet(){
@@ -104,11 +105,11 @@ public class TestSign {
 		
 		tx_json.put("SignerEntries", arr);
 		tx_json.put("TransactionType", "SignerListSet");
+		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
-		System.out.println(obj);
 		
-		String tx_blob = c.sign(obj, 2);
-		System.out.println("sign signerListSet tx_blob:" + tx_blob);
+		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		System.out.println("sign signerListSet result:" + res);
 	}
 	
 	private static void testSignForPayment(){
@@ -120,10 +121,11 @@ public class TestSign {
 		tx_json.put("Amount", "1000000000");
 		tx_json.put("Destination", "rfnmWkQ1jpVvWFvw7rnFNt7AUe58rQvMet");
 		tx_json.put("TransactionType", "Payment");
+		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		JSONObject signer = c.sign_for(obj, 1);
-		System.out.println("sign_for payment signer:" + signer);
+		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		System.out.println("sign_for payment signer:" + res);
 	}
 	
 	private static void testSignForTrustSet(){
@@ -141,9 +143,10 @@ public class TestSign {
 		tx_json.put("LimitAmount", limitAmount);
 		tx_json.put("Flags", 0);
 		tx_json.put("TransactionType", "TrustSet");
+		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		JSONObject signer = c.sign_for(obj, 2);
-		System.out.println("sign_for trustset signer:" + signer);
+		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		System.out.println("sign_for trustset signer:" + res);
 	}
 }

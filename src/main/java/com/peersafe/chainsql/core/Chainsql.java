@@ -197,15 +197,18 @@ public class Chainsql extends Submit {
 	/**
 	 * Sign a transaction.
 	 * @param tx transaction Json.
-	 * @param sequence Sequence number for this transaction.
-	 * @return tx_blob to submit.
+	 * @param secret 
+	 * @return tx_blob and hash:
+	 * {
+	 * 	  "tx_blob":"xxxxx",
+	 *	  "hash":"xxx"
+	 * }
 	 */
-	public String sign(JSONObject tx,int sequence){
+	public JSONObject sign(JSONObject tx,String secret){
 		JSONObject tx_json = tx.getJSONObject("tx_json");
 		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
 		Transaction transaction = new Transaction(type);
 		try {
-			tx_json.put("Sequence", sequence);
 			transaction.parseFromJson(tx_json);
 			//Fee
 			checkFee(transaction,tx_json);
@@ -213,34 +216,40 @@ public class Chainsql extends Submit {
 			e.printStackTrace();
 		}
 
-		SignedTransaction signed = transaction.sign(tx.getString("secret"));
+		SignedTransaction signed = transaction.sign(secret);
 		
-		return signed.tx_blob;
+		JSONObject obj = new JSONObject();
+		obj.put("tx_blob", signed.tx_blob);
+		obj.put("hash", signed.hash.toString());
+		return obj;
 	}
 	/**
 	 * sign for 
 	 * @param tx transaction Json.
-	 * @param sequence
+	 * @param secret
 	 * @return sign result form:
 	 {
 	    "Signer":{
 	        "Account":"rDsFXt1KRDNNckSh3exyTqkQeBKQCXawb2",
 	        "SigningPubKey":"02E37D565DF377D0C30D93163CF40F41BB81B966B11757821F25FBCDCFEA18E8A9",
 	        "TxnSignature":"3044022050903320FF924BCD7F55D3BE095A457BF2421E805C5B39DA77F006BB217D6398022024C51DECA25018D80CB16AB65674B71BFD20789D63EC47FD5EAD7FC75B880055"
-	    }
+	    },
+	    "hash":""
 	 }
 	 */
-	public JSONObject sign_for(JSONObject tx,int sequence){
-		if(!tx.has("secret"))
+	public JSONObject sign_for(JSONObject tx,String secret){
+		if(!tx.has("secret")){
 			return Util.errorObject("no secret supplied");
-		if(!tx.has("account"))
+		}
+			;
+		if(!tx.has("account")){
 			return Util.errorObject("no account supplied");
-		
+		}
+
 		JSONObject tx_json = tx.getJSONObject("tx_json");
 		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
 		Transaction transaction = new Transaction(type);
 		try {
-			tx_json.put("Sequence", sequence);
 			transaction.parseFromJson(tx_json);
 			//Fee
 			checkFee(transaction,tx_json);
@@ -248,7 +257,6 @@ public class Chainsql extends Submit {
 			e.printStackTrace();
 		}
 		
-		String secret = tx.getString("secret");
 		SignedTransaction signed = transaction.multiSign(secret);
 		
 		String sJson = signed.txn.prettyJSON();
@@ -264,6 +272,7 @@ public class Chainsql extends Submit {
 		signer.put("TxnSignature", json.getString("TxnSignature"));
 		JSONObject ret = new JSONObject();
 		ret.put("Signer", signer);
+		ret.put("hash", signed.hash.toString());
 		return ret;
 	}
 	

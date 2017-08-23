@@ -72,8 +72,7 @@ public abstract class Submit {
 		public String curTxHash;
 		public String futureHash;
 	}
-	private static final int wait_milli = 50; 
-	private static final int account_wait = 5000;
+	private static final int wait_milli = 50;
 	private static final int submit_wait = 5000;
 	private static final int sync_maxtime = 200000;
 	
@@ -167,18 +166,6 @@ public abstract class Submit {
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
 	    ManagedTxn tx = new ManagedTxn(signed);
-	    
-//        ManagedTxn tx = tm.manage(signed.txn);
-//        int count = account_wait/wait_milli;
-//        while(!account.getAccountRoot().primed()){
-//        	Util.waiting();
-//        	if(--count <= 0){
-//        		break;
-//        	}
-//        }
-        
-//        tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
-//                   .onError(this::onSubmitError));
         
         tm.submitSigned(tx.onSubmitSuccess(new OnSubmitSuccess(){
 			@Override

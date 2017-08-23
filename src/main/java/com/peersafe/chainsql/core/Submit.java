@@ -314,7 +314,11 @@ public abstract class Submit {
 	 */
 	protected Transaction toTransaction(JSONObject json,TransactionType type) throws Exception{
     	Transaction tx = new Transaction(type);
-     	Amount fee = connection.client.serverInfo.transactionFee(tx);
+    	Amount fee;
+    	if(connection.client.serverInfo.primed())
+     		fee = connection.client.serverInfo.transactionFee(tx);
+    	else
+    		fee = Amount.fromString("50");
   		AccountID account = AccountID.fromAddress(this.connection.address);
  		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
  		if(mapError(map)){

@@ -20,11 +20,11 @@ public class Test {
 		// c.connect("ws://192.168.0.152:6006");
 		//c.connect("ws://192.168.0.148:5008");
 		//c.connect("ws://139.198.11.189:6006");
-		 c.connect("ws://192.168.0.14:5008");
+		 c.connect("ws://192.168.0.112:6007");
 		 
 		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
 		
-		sTableName = "zt804tri1";
+		sTableName = "ffffe";
 		sTableName2 = "boy2";
 		sReName = "boy1";
 
@@ -89,7 +89,8 @@ public class Test {
 ////		test.testdeleteAll();
 //		test.getCrossChainTxs();
 //		test.getChainInfo();
-		test.testget();
+//		test.testget();
+		test.testOperationRule();
 	}
 
 	private static void testAccount() {
@@ -283,6 +284,38 @@ public class Test {
 		System.out.println("insert result:" + obj);
 	}
 
+	public void testOperationRule(){
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+									   "{'field':'name','type':'varchar','length':50,'default':null}", 
+									   "{'field':'age','type':'int'}",
+									   "{'field':'account','type':'varchar','length':64}");
+		String operationRule = "{" +
+			"'Insert':{" +
+			"	'Condition':{'account':'$account'},"+
+			"	'Count':{'AccountField':'account','CountLimit':5}" +
+			"},"+
+			"'Update':{"+
+			"	'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},"+
+			"	'Fields':['age']" +
+			"},"+
+			"'Delete':{"+
+			"	'Condition':{'age':'$lt18'}"+
+			"},"+
+			"'Get':{"+
+			"	'Condition':{'id':{'$ge':3}}"+
+			"}"+
+		"}";
+							
+		JSONObject obj;
+		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
+		System.out.println("create result:" + obj);
+		
+		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+		System.out.println("insert result:" + obj);
+		
+		
+	}
 	
 	public void insertAfterGrant(){
 		c.as(sNewAccountId, sNewSecret);

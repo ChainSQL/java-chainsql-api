@@ -142,6 +142,7 @@ public enum Field {
     TableNewName(53,Type.Blob),	
     AutoFillField(54,Type.Blob),	
     Statements(55,Type.Blob),
+    OperationRule(56,Type.Blob),
  
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),

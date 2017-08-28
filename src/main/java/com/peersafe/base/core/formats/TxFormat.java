@@ -133,7 +133,8 @@ public class TxFormat extends Format {
             Field.TxnLgrSeq,	 Requirement.OPTIONAL,
             Field.OriginalAddress,Requirement.OPTIONAL,
             Field.CurTxHash,	 Requirement.OPTIONAL,
-            Field.FutureTxHash,	 Requirement.OPTIONAL);
+            Field.FutureTxHash,	 Requirement.OPTIONAL,
+            Field.OperationRule, Requirement.OPTIONAL);
     
     static public TxFormat SQLStatement = new TxFormat(
             TransactionType.SQLStatement,

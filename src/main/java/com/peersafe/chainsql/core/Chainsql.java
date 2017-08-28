@@ -20,6 +20,7 @@ import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
+import com.peersafe.base.core.fields.Field;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
@@ -333,6 +334,33 @@ public class Chainsql extends Submit {
 	}
 	
 	/**
+	 * Create table with operation-rule
+	 * @param name Table name
+	 * @param raw Option or conditions to create a table.
+	 * @param operationRule Conditions to operate this table,this is a json-string like:
+	 * "{
+			'Insert':{
+				'Condition':{'account':'$account','txid':'$tx_hash'},
+				'Count':{'AccountField':'account','CountLimit':5}
+			},
+			'Update':{
+				'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},
+				'Fields':['age']
+			},
+			'Delete':{
+				'Condition':{'age':'$lt18'}
+			},
+			'Get':{
+				'Condition':{'id':{'$ge':3}}
+			}
+		}"
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
+	public Chainsql createTable(String name, List<String> raw,JSONObject operationRule) {
+		return createTable(name, raw ,operationRule, false);
+	}
+	
+	/**
 	 * A create table operation.
 	 * @param name Table name.
 	 * @param rawList Option or conditions to create a table.
@@ -340,6 +368,10 @@ public class Chainsql extends Submit {
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
+		return createTable(name,rawList,null,confidential);
+	}
+	
+	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
 			Util.checkinsert(listRaw);
@@ -366,7 +398,10 @@ public class Chainsql extends Submit {
 			strRaw = Util.toHexString(strRaw);
 		}
 		
-		json.put("Raw", strRaw);
+		json.put(Field.Raw.toString(), strRaw);
+		if(operationRule != null){
+			json.put(Field.OperationRule.toString(), Util.toHexString(operationRule.toString()));
+		}
 		if(this.transaction){
 			//有加密则不验证
 			if(confidential){

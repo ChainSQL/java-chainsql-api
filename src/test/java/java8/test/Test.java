@@ -39,8 +39,8 @@ public class Test {
 //		testSubscribe();
 //		testRippleAPI();
 //
-		testAccount();
-//		testChainSql();
+//		testAccount();
+		testChainSql();
 
 	//	c.disconnect();
 	}
@@ -114,7 +114,7 @@ public class Test {
 		}
 		return true;
 	}
-
+	
 	// 创建表
 	public void testCreateTable1() {
 		// 创建表字段		

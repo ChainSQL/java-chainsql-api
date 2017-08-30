@@ -19,28 +19,28 @@ public class Test {
 	public static void main(String[] args) {
 		// c.connect("ws://192.168.0.152:6006");
 		//c.connect("ws://192.168.0.148:5008");
-		//c.connect("ws://139.198.11.189:6006");
-		 c.connect("ws://192.168.0.112:6007");
+		c.connect("ws://139.198.11.189:6006");
+		// c.connect("ws://192.168.0.112:6007");
 		 
 		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
 		
-		sTableName = "ffffe";
+		sTableName = "Invoice";
 		sTableName2 = "boy2";
 		sReName = "boy1";
 
 		//设置日志级别
 		//c.connection.client.logger.setLevel(Level.SEVERE);
 				
-		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-		//c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
+		//c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
 		//c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
 
 
 //		testSubscribe();
 //		testRippleAPI();
 //
-//		testAccount();
-		testChainSql();
+		testAccount();
+//		testChainSql();
 
 	//	c.disconnect();
 	}
@@ -84,13 +84,13 @@ public class Test {
 //		test.testdrop();
 //		test.grant();
 //		test.insertAfterGrant();
-//		test.testts();
+		test.testts();
 		
 ////		test.testdeleteAll();
 //		test.getCrossChainTxs();
 //		test.getChainInfo();
 //		test.testget();
-		test.testOperationRule();
+//		test.testOperationRule();
 	}
 
 	private static void testAccount() {
@@ -173,9 +173,10 @@ public class Test {
 		// c.table(sTableName).insert(Util.array("{'age':
 		// 23,'name':'adsf','balance':'124'}","{'age':
 		// 33,'name':'小sr','balance':'300'}"));
-		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
-		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
-		//c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
+//		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
+//		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
+//		c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
+		c.table(sTableName).get(Util.array("{'DOCID': 'INV101'}")).update("{'STATE':3}");
 		// c.table(sTableName).get(Util.array("{'id':
 		// 2}")).sqlAssert(c.array("{'age':200}"));
 //		JSONObject obj = c.commit((data) -> {
@@ -307,8 +308,8 @@ public class Test {
 		"}";
 							
 		JSONObject obj;
-		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
-		System.out.println("create result:" + obj);
+//		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
+//		System.out.println("create result:" + obj);
 		
 		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);

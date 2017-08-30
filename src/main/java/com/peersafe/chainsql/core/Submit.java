@@ -73,7 +73,7 @@ public abstract class Submit {
 		public String futureHash;
 	}
 	private static final int wait_milli = 50;
-	private static final int submit_wait = 5000;
+	private static final int submit_wait = 10000;
 	private static final int sync_maxtime = 200000;
 	
 	/**

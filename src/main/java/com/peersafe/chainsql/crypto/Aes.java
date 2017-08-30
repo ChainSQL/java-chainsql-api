@@ -29,7 +29,7 @@ public class Aes {
 		return encrypt(password,content);
 	}
 	/**
-	 * AES encrypting.
+	 * AES encrypting.	
 	 * @param password Password.
 	 * @param content Content.
 	 * @return Return value.

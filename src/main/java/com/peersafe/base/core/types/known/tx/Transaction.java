@@ -57,11 +57,7 @@ public class Transaction extends STObject {
     	EnumMap<Field, Requirement> fieldMap = this.format.requirements();
     	for(Field field : fieldMap.keySet()){
     		String fieldName = field.name();
-//    		if(fieldMap.get(field) == Requirement.REQUIRED){
-//    			if(!obj.has(fieldName) && !fields.containsKey(field)){
-//    				throw new Exception("required field " + fieldName + " is missing");
-//    			}
-//    		}
+    		
     		if(obj.has(fieldName)){
     			this.putTranslated(field, obj.get(fieldName));
     		}

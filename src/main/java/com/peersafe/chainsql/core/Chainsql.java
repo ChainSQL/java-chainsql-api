@@ -867,6 +867,16 @@ public class Chainsql extends Submit {
 		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.randomSeed();
 		
+		return generateAddress(seed);
+	}
+	
+	public JSONObject generateAddress(String secret){
+		Security.addProvider(new BouncyCastleProvider());
+		Seed seed = Seed.fromBase58(secret);
+		return generateAddress(seed);
+	}
+	
+	private JSONObject generateAddress(Seed seed){
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;

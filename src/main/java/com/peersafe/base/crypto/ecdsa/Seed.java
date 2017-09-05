@@ -16,6 +16,7 @@ import com.peersafe.base.utils.Utils;
 public class Seed {
     public static byte[] VER_K256 = new byte[]{(byte) B58IdentiferCodecs.VER_FAMILY_SEED};
     public static byte[] VER_ED25519 = new byte[]{(byte) 0x1, (byte) 0xe1, (byte) 0x4b};
+    public static byte[] VER_SM = new byte[]{};
 
     final byte[] seedBytes;
     byte[] version;
@@ -58,7 +59,9 @@ public class Seed {
         if (Arrays.equals(version, VER_ED25519)) {
             if (account != 0) throw new AssertionError();
             return EDKeyPair.from128Seed(seedBytes);
-        }  else {
+        }  else if(Arrays.equals(version, VER_SM)){
+        	return new SMKeyPair();
+        }else {
             return createKeyPair(seedBytes, account);
         }
 

@@ -1,7 +1,10 @@
 package com.peersafe.chainsql.core;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 import java.util.ArrayList;
 import java.util.List;
+
 
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
@@ -13,6 +16,7 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
@@ -219,11 +223,12 @@ public class Table extends Submit{
 				this.needVerify = 0;
 			}
 			try {
-				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret)) ;
 				if(password == null){
 					System.out.println("Exception: decrypt token failed");
 				}
-				strRaw = Aes.aesEncrypt(password, strRaw);
+				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password);
+				strRaw = Util.bytesToHex(rawBytes);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

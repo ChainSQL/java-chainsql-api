@@ -2,6 +2,7 @@ package com.peersafe.base.core.types.known.tx.signed;
 
 import java.util.Arrays;
 
+import com.peersafe.base.config.Config;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.coretypes.Blob;
@@ -16,6 +17,8 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.crypto.sm.SMDigest;
+import com.peersafe.base.crypto.sm.SMKeyPair;
 
 public class SignedTransaction {
     private SignedTransaction(Transaction of) {
@@ -139,6 +142,7 @@ public class SignedTransaction {
             BytesList blob = new BytesList();
             HalfSha512 id = HalfSha512.prefixed256(HashPrefix.transactionID);
 
+//             System.out.println("Transaction:" + txn.prettyJSON());
 //            for (Field field : txn) {
 //            	if(field.isSerialized()){
 //            		System.out.println(field.toString() + "1");
@@ -149,7 +153,12 @@ public class SignedTransaction {
             //signingData = txn.signingData();
             txn.toBytesSink(new MultiSink(blob, id));
             tx_blob = blob.bytesHex();
-            hash = Hash256.prefixedHalfSha512(HashPrefix.transactionID, blob.bytes());
+            if(Config.isUseGM()){
+            	hash = SMDigest.getTransactionHash(HashPrefix.transactionID, blob.bytes());
+            }else{
+            	hash = Hash256.prefixedHalfSha512(HashPrefix.transactionID, blob.bytes());	
+            }
+            
             //hash = id.finish();
         } catch (Exception e) {
             // electric paranoia

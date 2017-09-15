@@ -434,7 +434,11 @@ public class Chainsql extends Submit {
 	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
-		byte[] tokenBytes = EncryptCommon.asymEncrypt(password, keyPair.canonicalPubBytes());
+		byte[] tokenBytes = null;
+		if(Config.isUseGM())
+			tokenBytes = EncryptCommon.asymEncrypt(password, null);
+		else
+			tokenBytes = EncryptCommon.asymEncrypt(password, keyPair.canonicalPubBytes());
 		return tokenBytes == null ? "" :Util.bytesToHex(tokenBytes);
 	}
 	/**
@@ -512,7 +516,11 @@ public class Chainsql extends Submit {
 		String newToken = "";
 		if(token.length() != 0){
 			try {
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret)) ;
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+				}
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
 				if(password == null){
 					return null;
 				}

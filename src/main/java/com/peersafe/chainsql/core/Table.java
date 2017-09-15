@@ -223,7 +223,11 @@ public class Table extends Submit{
 				this.needVerify = 0;
 			}
 			try {
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret)) ;
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+				}
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
 				if(password == null){
 					System.out.println("Exception: decrypt token failed");
 				}

@@ -8,7 +8,7 @@ public class EncryptCommon {
 	//通用非对称加密
 	public static byte[] asymEncrypt(byte[] plainBytes,byte[] publicKey){
 		if(Config.isUseGM()){
-			return SM2.encrypt(plainBytes);
+			return SM2.encrypt(plainBytes,publicKey);
 		}else{
 			return Ecies.eciesEncrypt(plainBytes, publicKey);
 		}
@@ -16,7 +16,7 @@ public class EncryptCommon {
 	//通用非对称解密
 	public static byte[]  asymDecrypt (byte[] cipher,byte[] privateKey) {
 		if(Config.isUseGM()){
-			return SM2.decrypt(cipher);
+			return SM2.decrypt(cipher,privateKey);
 		}else{
 			try {
 				return Ecies.eciesDecrypt(cipher, privateKey);

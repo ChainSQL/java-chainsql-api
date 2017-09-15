@@ -23,11 +23,11 @@ public class SMDevice {
 		// 判断是否成功打开设备
 		boolean bRet = sdkey.getOpenResult();
 		if (!bRet) {
-			Client.log(Level.SEVERE, "{0}", "打开SDKey失败，请确认设备是否存在！");
+			Client.log(Level.SEVERE, "打开SDKey失败，请确认设备是否存在！");
 			sdkey = null;
 			return false;
 		} else{
-			Client.log(Level.SEVERE, "{0}", "打开SDKey设备成功！");
+			Client.log(Level.INFO, "打开SDKey设备成功！");
 			return true;
 		}
 	}
@@ -44,14 +44,14 @@ public class SMDevice {
 
 	public static boolean verifyPin(String pin){
 		if (sdkey == null) {
-			Client.log(Level.SEVERE, "{0}", "尚未打开SDKey设备！");
+			Client.log(Level.SEVERE, "尚未打开SDKey设备！");
 			return false;
 		}
 
 		// 获取到口令字符串 Pin
 		String Pin = pin.isEmpty() ? "66666666" : pin;
 		if ((Pin.length() == 0) || (Pin.length() > 16)) {
-			Client.log(Level.SEVERE, "{0}", "用户口令长度错误，请重新输入！");
+			Client.log(Level.SEVERE, "用户口令长度错误，请重新输入！");
 			return false;
 		}
 
@@ -65,14 +65,14 @@ public class SMDevice {
 
 		// 获取函数返回值
 		if (returnValue == 1) {
-			Client.log(Level.SEVERE, "{0}", "口令验证正确，用户已登录！");
+			Client.log(Level.INFO, "口令验证正确，用户已登录！");
 			return true;
 		} else if (returnValue == 0) {
-			Client.log(Level.SEVERE, "{0}", "用户口令已锁死，请联系管理员解锁！");
+			Client.log(Level.SEVERE, "用户口令已锁死，请联系管理员解锁！");
 			return false;
 		} else {
 			int nRetry = 0 - returnValue;
-			Client.log(Level.SEVERE, "用户口令错误，还可以重试{0}次!",Integer.toString(nRetry));
+			Client.log(Level.SEVERE, "用户口令错误，还可以重试" +Integer.toString(nRetry) + "次!");
 			return false;
 		}
 	}

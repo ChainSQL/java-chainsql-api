@@ -127,6 +127,14 @@ public class Seed {
     }
 
     public static IKeyPair getKeyPair(String b58) {
+    	if(Config.isUseGM()){
+    		try {
+				return new SMKeyPair();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+    	}
         return getKeyPair(getB58IdentiferCodecs().decodeFamilySeed(b58));
     }
 

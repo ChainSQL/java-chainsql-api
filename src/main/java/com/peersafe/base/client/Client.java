@@ -1170,12 +1170,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-	public Request select(AccountID account, AccountID owner, JSONObject[] tabarr, String raw) {
+	public Request select(AccountID account, AccountID owner, String name, String raw) {
+		String tablestr = "{\"Table\":{\"TableName\":\"" + name+ "\"}}";
+		JSONArray tableArray =  Util.strToJSONArray(tablestr);
 		Request request = newRequest(Command.r_get);
 		JSONObject txjson = new JSONObject();
 		txjson.put("Account", account);
 		txjson.put("Owner", owner);
-		txjson.put("Tables", tabarr);
+		txjson.put("Tables", tableArray);
 		txjson.put("Raw", raw);
 		txjson.put("OpType", 7);
 		request.json("tx_json", txjson);

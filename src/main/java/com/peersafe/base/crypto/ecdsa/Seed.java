@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import com.peersafe.base.config.Config;
+import com.peersafe.base.crypto.sm.SMKeyPair;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.encodings.base58.B58;
 import com.peersafe.base.utils.Sha512;
@@ -16,6 +17,7 @@ import com.peersafe.base.utils.Utils;
 public class Seed {
     public static byte[] VER_K256 = new byte[]{(byte) B58IdentiferCodecs.VER_FAMILY_SEED};
     public static byte[] VER_ED25519 = new byte[]{(byte) 0x1, (byte) 0xe1, (byte) 0x4b};
+    public static byte[] VER_SM = new byte[]{(byte)0x02,(byte)0xe2,(byte)0x4c};
 
     final byte[] seedBytes;
     byte[] version;
@@ -45,6 +47,11 @@ public class Seed {
         this.version = VER_ED25519;
         return this;
     }
+    
+    public Seed setGM(){
+    	this.version = VER_SM;
+    	return this;
+    }
 
     public IKeyPair keyPair() {
         return keyPair(0);
@@ -58,15 +65,28 @@ public class Seed {
         if (Arrays.equals(version, VER_ED25519)) {
             if (account != 0) throw new AssertionError();
             return EDKeyPair.from128Seed(seedBytes);
-        }  else {
+        }  else if(Arrays.equals(version, VER_SM)){
+        	try {
+				return new SMKeyPair();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+        }else {
             return createKeyPair(seedBytes, account);
         }
 
     }
 
     public static Seed fromBase58(String b58) {
-        B58.Decoded decoded = Config.getB58().decodeMulti(b58, 16, VER_K256, VER_ED25519);
-        return new Seed(decoded.version, decoded.payload);
+    	if(Config.isUseGM()){
+    		Seed seed = randomSeed();
+    		seed.setGM();
+    		return seed;
+    	}else{
+            B58.Decoded decoded = Config.getB58().decodeMulti(b58, 16, VER_K256, VER_ED25519);
+            return new Seed(decoded.version, decoded.payload);
+    	}
     }
 
     public static Seed fromPassPhrase(String passPhrase) {
@@ -107,6 +127,14 @@ public class Seed {
     }
 
     public static IKeyPair getKeyPair(String b58) {
+    	if(Config.isUseGM()){
+    		try {
+				return new SMKeyPair();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+    	}
         return getKeyPair(getB58IdentiferCodecs().decodeFamilySeed(b58));
     }
 

@@ -1,8 +1,11 @@
 package com.peersafe.chainsql.core;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
@@ -11,8 +14,7 @@ import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
-import com.peersafe.chainsql.crypto.Aes;
-import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
@@ -170,11 +172,11 @@ public class Table extends Submit{
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table order(List<String> orgs){
-		List<JSONObject> orderarr = new ArrayList<JSONObject>();
+		JSONArray orderarr = new JSONArray();
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
 				JSONObject json = Util.StrToJson(s);
-				orderarr.add(json);
+				orderarr.put(json);
 			}
 		}
 		JSONObject json = new JSONObject();
@@ -219,11 +221,16 @@ public class Table extends Submit{
 				this.needVerify = 0;
 			}
 			try {
-				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+				}
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
 				if(password == null){
 					System.out.println("Exception: decrypt token failed");
 				}
-				strRaw = Aes.aesEncrypt(password, strRaw);
+				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password);
+				strRaw = Util.bytesToHex(rawBytes);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -290,10 +297,7 @@ public class Table extends Submit{
 		}
 		AccountID account = AccountID.fromAddress(connection.address);
 		AccountID owner = AccountID.fromAddress(connection.scope);
-		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
-		JSONObject tabjson = new JSONObject(tables);
-		JSONObject[] tabarr ={tabjson};
-		Request req = connection.client.select(account,owner,tabarr,query.toString());
+		Request req = connection.client.select(account,owner,name,query.toString());
 		
 		return getSelectRes(req.response);
 	}

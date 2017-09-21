@@ -1,6 +1,7 @@
 package com.peersafe.base.core.formats;
 
 import com.peersafe.base.core.fields.Field;
+import com.peersafe.base.core.formats.Format.Requirement;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 
 import java.util.EnumMap;
@@ -100,6 +101,11 @@ public class TxFormat extends Format {
     static public TxFormat TicketCancel = new TxFormat(
             TransactionType.TicketCancel,
             Field.TicketID,   Requirement.REQUIRED);
+    
+    static public TxFormat SignerListSet = new TxFormat(
+            TransactionType.SignerListSet,
+            Field.SignerQuorum,   Requirement.REQUIRED,
+            Field.SignerEntries,  Requirement.OPTIONAL);
 
     static public TxFormat SetRegularKey = new TxFormat(
             TransactionType.SetRegularKey,
@@ -127,7 +133,8 @@ public class TxFormat extends Format {
             Field.TxnLgrSeq,	 Requirement.OPTIONAL,
             Field.OriginalAddress,Requirement.OPTIONAL,
             Field.CurTxHash,	 Requirement.OPTIONAL,
-            Field.FutureTxHash,	 Requirement.OPTIONAL);
+            Field.FutureTxHash,	 Requirement.OPTIONAL,
+            Field.OperationRule, Requirement.OPTIONAL);
     
     static public TxFormat SQLStatement = new TxFormat(
             TransactionType.SQLStatement,
@@ -152,26 +159,7 @@ public class TxFormat extends Format {
             Field.FutureTxHash,	 		Requirement.OPTIONAL);
 
 
-//    static public TxFormat SuspendedPaymentCreate = new TxFormat(
-//            TransactionType.SuspendedPaymentCreate,
-//            Field.Destination,      Requirement.REQUIRED,
-//            Field.Amount,           Requirement.REQUIRED,
-//            Field.Digest,           Requirement.OPTIONAL,
-//            Field.CancelAfter,      Requirement.OPTIONAL,
-//            Field.FinishAfter,      Requirement.OPTIONAL,
-//            Field.DestinationTag,   Requirement.OPTIONAL);
 
-//    static public TxFormat SuspendedPaymentFinish = new TxFormat(
-//            TransactionType.SuspendedPaymentFinish,
-//            Field.Owner,            Requirement.REQUIRED,
-//            Field.OfferSequence,    Requirement.REQUIRED,
-//            Field.Method,           Requirement.OPTIONAL,
-//            Field.Digest,           Requirement.OPTIONAL);
-//
-//    static public TxFormat SuspendedPaymentCancel = new TxFormat(
-//            TransactionType.SuspendedPaymentCancel,
-//            Field.Owner,          Requirement.REQUIRED,
-//            Field.OfferSequence,  Requirement.REQUIRED);
 
     static public TxFormat EnableAmendment = new TxFormat(
             TransactionType.EnableAmendment,

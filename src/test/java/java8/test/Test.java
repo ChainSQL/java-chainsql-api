@@ -18,16 +18,22 @@ public class Test {
 	public static String sNewAccountId,sNewSecret;
 	public static void main(String[] args) {
 		// c.connect("ws://192.168.0.152:6006");
-		c.connect("ws://192.168.0.148:5008");
-		// c.connect("ws://192.168.0.194:6007");
-		sTableName = "rrrs";
-		sTableName2 = "boy";
+		//c.connect("ws://192.168.0.148:5008");
+		c.connect("ws://139.198.11.189:6006");
+		// c.connect("ws://192.168.0.112:6007");
+		 
+		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
+		
+		sTableName = "Invoice";
+		sTableName2 = "boy2";
 		sReName = "boy1";
 
 		//设置日志级别
-		c.connection.client.logger.setLevel(Level.SEVERE);
+		//c.connection.client.logger.setLevel(Level.SEVERE);
 				
-		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		//c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
+		//c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
 
 
 //		testSubscribe();
@@ -55,7 +61,9 @@ public class Test {
 		Test test = new Test();
 //		test.testValidationCreate();
 //		test.getLedgerVersion();
-		test.getLedger();
+//		test.getLedger();
+		
+		test.getUnlList();
 //
 //		test.getTransactions();
 //		test.getTransaction();
@@ -81,6 +89,8 @@ public class Test {
 ////		test.testdeleteAll();
 //		test.getCrossChainTxs();
 //		test.getChainInfo();
+//		test.testget();
+//		test.testOperationRule();
 	}
 
 	private static void testAccount() {
@@ -104,7 +114,7 @@ public class Test {
 		}
 		return true;
 	}
-
+	
 	// 创建表
 	public void testCreateTable1() {
 		// 创建表字段		
@@ -163,8 +173,10 @@ public class Test {
 		// c.table(sTableName).insert(Util.array("{'age':
 		// 23,'name':'adsf','balance':'124'}","{'age':
 		// 33,'name':'小sr','balance':'300'}"));
-		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
-		c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
+//		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
+//		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
+//		c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
+		c.table(sTableName).get(Util.array("{'DOCID': 'INV101'}")).update("{'STATE':3}");
 		// c.table(sTableName).get(Util.array("{'id':
 		// 2}")).sqlAssert(c.array("{'age':200}"));
 //		JSONObject obj = c.commit((data) -> {
@@ -179,6 +191,9 @@ public class Test {
 		c.getLedger(2, (data) -> {
 			System.out.println("getLedger------" + data);
 		});
+	}
+	public void getUnlList(){
+		System.out.println("UnlList:" + c.getUnlList());
 	}
 
 	public void getLedgerVersion() {
@@ -270,6 +285,38 @@ public class Test {
 		System.out.println("insert result:" + obj);
 	}
 
+	public void testOperationRule(){
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+									   "{'field':'name','type':'varchar','length':50,'default':null}", 
+									   "{'field':'age','type':'int'}",
+									   "{'field':'account','type':'varchar','length':64}");
+		String operationRule = "{" +
+			"'Insert':{" +
+			"	'Condition':{'account':'$account'},"+
+			"	'Count':{'AccountField':'account','CountLimit':5}" +
+			"},"+
+			"'Update':{"+
+			"	'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},"+
+			"	'Fields':['age']" +
+			"},"+
+			"'Delete':{"+
+			"	'Condition':{'age':'$lt18'}"+
+			"},"+
+			"'Get':{"+
+			"	'Condition':{'id':{'$ge':3}}"+
+			"}"+
+		"}";
+							
+		JSONObject obj;
+//		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
+//		System.out.println("create result:" + obj);
+		
+		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+		System.out.println("insert result:" + obj);
+		
+		
+	}
 	
 	public void insertAfterGrant(){
 		c.as(sNewAccountId, sNewSecret);
@@ -351,12 +398,12 @@ public class Test {
 		 * array("{age:-1}")).filterWith("[]").submit();
 		 */
 
-		// JSONObject obj =
-		// c.table(sTableName).get(Util.array("{age:{$ne:232}}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
-		// System.out.println("testget------"+data);
-		// });
+		 JSONObject obj =
+		 c.table(sTableName).get(Util.array("{id:1}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
+		 System.out.println("testget------"+data);
+		 });
 
-		JSONObject obj = c.table(sTableName).get(null).submit();
+		//JSONObject obj = c.table(sTableName).get(null).submit();
 
 		System.out.println("get result:" + obj.toString());
 	}

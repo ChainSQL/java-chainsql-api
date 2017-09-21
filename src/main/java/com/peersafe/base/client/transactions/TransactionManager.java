@@ -21,6 +21,7 @@ import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.serialized.enums.EngineResult;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.result.TransactionResult;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.core.types.known.tx.txns.AccountSet;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 
@@ -128,6 +129,36 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		return !txn.isFinalized() && seenValidatedSequences.contains(txn.sequence().longValue());
 	}
 
+	public Request submitSigned(final ManagedTxn txn){
+		final Request req = client.newRequest(Command.submit);
+		// tx_blob is a hex string, right o' the bat
+		req.json("tx_blob", txn.tx_blob);
+
+		//System.out.println("before request");
+		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
+			@Override
+			public void called(Response response) {
+				//System.out.println("response:" + response.message.toString());
+
+				handleSubmitSuccess(txn, response);
+			}
+		});
+
+		req.once(Request.OnError.class, new Request.OnError() {
+			@Override
+			public void called(Response response) {
+				//System.out.println("response:" + response.message.toString());
+				handleSubmitError(txn, response);
+			}
+		});
+
+		// Keep track of the submission, including the hash submitted
+		// to the network, and the ledger_index at that point in time.
+		txn.trackSubmitRequest(req, client.serverInfo.ledger_index);
+		req.request();
+		return req;
+	}
+	
 	/**
 	 * queue
 	 * @param tx ManagedTxn
@@ -303,33 +334,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 
 		txn.prepare(keyPair, fee, sequence, lastLedgerSequence);
 		
-		final Request req = client.newRequest(Command.submit);
-		// tx_blob is a hex string, right o' the bat
-		req.json("tx_blob", txn.tx_blob);
-
-		//System.out.println("before request");
-		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
-			@Override
-			public void called(Response response) {
-				//System.out.println("response:" + response.message.toString());
-
-				handleSubmitSuccess(txn, response);
-			}
-		});
-
-		req.once(Request.OnError.class, new Request.OnError() {
-			@Override
-			public void called(Response response) {
-				//System.out.println("response:" + response.message.toString());
-				handleSubmitError(txn, response);
-			}
-		});
-
-		// Keep track of the submission, including the hash submitted
-		// to the network, and the ledger_index at that point in time.
-		txn.trackSubmitRequest(req, client.serverInfo.ledger_index);
-		req.request();
-		return req;
+		return submitSigned(txn);
 	}
 
 	/**

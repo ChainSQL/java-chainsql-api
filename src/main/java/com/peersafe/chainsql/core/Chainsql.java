@@ -6,9 +6,7 @@ import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -20,14 +18,17 @@ import com.peersafe.base.client.Client.OnReconnected;
 import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.config.Config;
 import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.coretypes.Amount;
+import com.peersafe.base.core.fields.Field;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
-import com.peersafe.chainsql.crypto.Aes;
-import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.EventManager;
@@ -38,13 +39,12 @@ import com.peersafe.chainsql.util.Validate;
 public class Chainsql extends Submit {
 	public	EventManager event;
 
-	private JSONObject txJson;
-	private boolean strictMode = false;
+	private JSONObject mTxJson;
 	
 	private static final int PASSWORD_LENGTH = 16;  
 	private static final int DEFAULT_TX_LIMIT = 20;
 	
-	private JSONObject retJson;
+	private JSONObject mRetJson;
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
@@ -74,12 +74,30 @@ public class Chainsql extends Submit {
 
 	/**
 	 * Connect to a websocket url.
-	 * @param url Websocket url to connect,eg:"ws://127.0.0.1:5006".
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
 	 * @return Connection object after connected.
 	 */
 	@SuppressWarnings("resource")
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
+		doWhenConnect();
+		return connection;
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param wss url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath
+	 * @param storePass
+	 * @return
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url,String serverCertPath,String storePass) {
+		connection = new Connection().connect(url,serverCertPath,storePass);
+		doWhenConnect();
+		return connection;
+	}
+	
+	private void doWhenConnect(){
 		while (!connection.client.connected) {
 			try {
 				Thread.sleep(100);
@@ -104,8 +122,6 @@ public class Chainsql extends Submit {
 				onReconnected(args);
 			}			
 		});
-		
-		return connection;
 	}
 	
 	/**
@@ -175,33 +191,143 @@ public class Chainsql extends Submit {
 		return tab;
 	}
 	
+	/**
+	 * use guomi algorithm
+	 * @param useGM 
+	 * @param bNewKeyPair 是否生成新的公私钥对
+	 * @param pin default is '666666'
+	 * @throws Exception throws exception if failed.
+	 */
+	public void setUseGM(boolean useGM,boolean bNewKeyPair,String pin) throws Exception{
+		boolean isSuccess =  Config.setUseGM(useGM,bNewKeyPair,pin);
+		if(!isSuccess){
+			throw new Exception("设置使用国密失败!");
+		}
+	}
+	
+	public boolean isUseGM(){
+		return Config.isUseGM();
+	}
+	/**
+	 * Sign a transaction.
+	 * @param tx transaction Json.
+	 * @param secret 
+	 * @return tx_blob and hash:
+	 * {
+	 * 	  "tx_blob":"xxxxx",
+	 *	  "hash":"xxx"
+	 * }
+	 */
+	public JSONObject sign(JSONObject tx,String secret){
+		JSONObject tx_json = tx.getJSONObject("tx_json");
+		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
+		Transaction transaction = new Transaction(type);
+		try {
+			transaction.parseFromJson(tx_json);
+			//Fee
+			checkFee(transaction,tx_json);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		SignedTransaction signed = transaction.sign(secret);
+		
+		JSONObject obj = new JSONObject();
+		obj.put("tx_blob", signed.tx_blob);
+		obj.put("hash", signed.hash.toString());
+		return obj;
+	}
+	/**
+	 * sign for 
+	 * @param tx transaction Json.
+	 * @param secret
+	 * @return sign result form:
+	 {
+	    "Signer":{
+	        "Account":"rDsFXt1KRDNNckSh3exyTqkQeBKQCXawb2",
+	        "SigningPubKey":"02E37D565DF377D0C30D93163CF40F41BB81B966B11757821F25FBCDCFEA18E8A9",
+	        "TxnSignature":"3044022050903320FF924BCD7F55D3BE095A457BF2421E805C5B39DA77F006BB217D6398022024C51DECA25018D80CB16AB65674B71BFD20789D63EC47FD5EAD7FC75B880055"
+	    },
+	    "hash":""
+	 }
+	 */
+	public JSONObject sign_for(JSONObject tx,String secret){
+		if(!tx.has("secret")){
+			return Util.errorObject("no secret supplied");
+		}
+			;
+		if(!tx.has("account")){
+			return Util.errorObject("no account supplied");
+		}
+
+		JSONObject tx_json = tx.getJSONObject("tx_json");
+		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
+		Transaction transaction = new Transaction(type);
+		try {
+			transaction.parseFromJson(tx_json);
+			//Fee
+			checkFee(transaction,tx_json);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		SignedTransaction signed = transaction.multiSign(secret);
+		
+		String sJson = signed.txn.prettyJSON();
+//		System.out.println(sJson);
+		
+		IKeyPair keyPair = Seed.fromBase58(secret).keyPair();
+		String publicKey = Util.bytesToHex(keyPair.canonicalPubBytes());
+		
+		JSONObject json = new JSONObject(sJson);
+		JSONObject signer = new JSONObject();
+		signer.put("Account",tx.getString("account"));
+		signer.put("SigningPubKey", publicKey);
+		signer.put("TxnSignature", json.getString("TxnSignature"));
+		JSONObject ret = new JSONObject();
+		ret.put("Signer", signer);
+		ret.put("hash", signed.hash.toString());
+		return ret;
+	}
+	
+	private void checkFee(Transaction transaction,JSONObject tx_json){
+		if(!tx_json.has("Fee")){
+			if(connection != null && connection.client != null && connection.client.serverInfo != null){
+				Amount fee = connection.client.serverInfo.transactionFee(transaction);
+				transaction.as(Amount.Fee, fee);
+			}else{
+				transaction.as(Amount.Fee, "50");
+			}
+		}
+	}
 	@Override
 	JSONObject prepareSigned() {
 		try {
-			txJson.put("Account",this.connection.address);
+			mTxJson.put("Account",this.connection.address);
 
 			//for cross chain
 			if(crossChainArgs != null){
-				txJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
-				txJson.put("OriginalAddress", crossChainArgs.originalAddress);
-				txJson.put("CurTxHash", crossChainArgs.curTxHash);
-				txJson.put("FutureTxHash", crossChainArgs.futureHash);
+				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+				mTxJson.put("OriginalAddress", crossChainArgs.originalAddress);
+				mTxJson.put("CurTxHash", crossChainArgs.curTxHash);
+				mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
 				crossChainArgs = null;
 			}
 			
-	    	JSONObject tx_json = Validate.getTxJson(this.connection.client, txJson);
+	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
 	    		return tx_json;
 	    	}else{
-	    		tx_json = tx_json.getJSONObject("tx_json");
+	    		tx_json = tx_json.getJSONObject("tx_json");	    			
 	    	}
 	    	
 	    	Transaction payment;
 	    	if(this.transaction){
-	    		payment = toPayment(tx_json,TransactionType.SQLTransaction);
+	    		tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
+	    		payment = toTransaction(tx_json,TransactionType.SQLTransaction);
 	    	}else{
-	    		payment = toPayment(tx_json,TransactionType.TableListSet);
+	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
 	    	}
 			
 			signed = payment.sign(this.connection.secret);
@@ -224,6 +350,33 @@ public class Chainsql extends Submit {
 	}
 	
 	/**
+	 * Create table with operation-rule
+	 * @param name Table name
+	 * @param raw Option or conditions to create a table.
+	 * @param operationRule Conditions to operate this table,this is a json-string like:
+	 * "{
+			'Insert':{
+				'Condition':{'account':'$account','txid':'$tx_hash'},
+				'Count':{'AccountField':'account','CountLimit':5}
+			},
+			'Update':{
+				'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},
+				'Fields':['age']
+			},
+			'Delete':{
+				'Condition':{'age':'$lt18'}
+			},
+			'Get':{
+				'Condition':{'id':{'$ge':3}}
+			}
+		}"
+	 * @return You can use this to call other Chainsql functions continuely.
+	 */
+	public Chainsql createTable(String name, List<String> raw,JSONObject operationRule) {
+		return createTable(name, raw ,operationRule, false);
+	}
+	
+	/**
 	 * A create table operation.
 	 * @param name Table name.
 	 * @param rawList Option or conditions to create a table.
@@ -231,6 +384,10 @@ public class Chainsql extends Submit {
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
+		return createTable(name,rawList,null,confidential);
+	}
+	
+	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
 			Util.checkinsert(listRaw);
@@ -252,12 +409,16 @@ public class Chainsql extends Submit {
 				return null;
 			}
 			json.put("Token", token);
-			strRaw = Aes.aesEncrypt(password, strRaw);
+			byte[] rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password );
+			strRaw = Util.bytesToHex(rawBytes);
 		}else{
 			strRaw = Util.toHexString(strRaw);
 		}
 		
-		json.put("Raw", strRaw);
+		json.put(Field.Raw.toString(), strRaw);
+		if(operationRule != null){
+			json.put(Field.OperationRule.toString(), Util.toHexString(operationRule.toString()));
+		}
 		if(this.transaction){
 			//有加密则不验证
 			if(confidential){
@@ -267,13 +428,18 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
-		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
+		byte[] tokenBytes = null;
+		if(Config.isUseGM())
+			tokenBytes = EncryptCommon.asymEncrypt(password, null);
+		else
+			tokenBytes = EncryptCommon.asymEncrypt(password, keyPair.canonicalPubBytes());
+		return tokenBytes == null ? "" :Util.bytesToHex(tokenBytes);
 	}
 	/**
 	 * Recreate a table, for slimming the chain.
@@ -288,7 +454,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 	/**
@@ -304,7 +470,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 
@@ -325,7 +491,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 		
 	}
@@ -350,12 +516,17 @@ public class Chainsql extends Submit {
 		String newToken = "";
 		if(token.length() != 0){
 			try {
-				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+				}
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
 				if(password == null){
 					return null;
 				}
 				byte [] pubBytes = getB58IdentiferCodecs().decode(userPublicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-				newToken = Ecies.eciesEncrypt(password, pubBytes);
+				byte[] newBytes = EncryptCommon.asymEncrypt(password, pubBytes);
+				newToken = Util.bytesToHex(newBytes);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -392,7 +563,7 @@ public class Chainsql extends Submit {
 			this.cache.add(json);
 			return null;
 		}
-		this.txJson = json;
+		this.mTxJson = json;
 		return this;
 	}
 	/**
@@ -411,7 +582,7 @@ public class Chainsql extends Submit {
 		
 		Transaction payment;
 		try {
-			payment = toPayment(obj,TransactionType.Payment);
+			payment = toTransaction(obj,TransactionType.Payment);
 			signed = payment.sign(this.connection.secret);
 			return doSubmitNoPrepare();
 		} catch (Exception e) {
@@ -443,10 +614,10 @@ public class Chainsql extends Submit {
 	}
 	
 	public Chainsql report(){
-		this.txJson = new JSONObject();
-		this.txJson.put("OpType", Constant.opType.get("t_report"));
+		this.mTxJson = new JSONObject();
+		this.mTxJson.put("OpType", Constant.opType.get("t_report"));
 //		this.txJson.put("Tables", new JSONArray());
-		this.txJson.put("Tables", getTableArray("t_report_tablename_xxx_xxx"));
+		this.mTxJson.put("Tables", getTableArray("t_report_tablename_xxx_xxx"));
 		return this;
 	}
 	/**
@@ -461,6 +632,9 @@ public class Chainsql extends Submit {
 		try{
 			JSONObject serverInfo = getServerInfo();		
 			String ledger_range = serverInfo.getJSONObject("info").getString("complete_ledgers");
+			if(ledger_range.equals("empty")){
+				return obj;
+			}
 			int startIndex = ledger_range.indexOf(',') == -1 ? 0 : ledger_range.lastIndexOf(',') + 1;
 			int endIndex = ledger_range.lastIndexOf('-');
 			int startLedger = Integer.parseInt(ledger_range.substring(startIndex,endIndex));
@@ -509,23 +683,23 @@ public class Chainsql extends Submit {
 			option.put("ledger_index",  ledger_index);
 		}
 		
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getLedger(option,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("ledger")){
-			return retJson;
+		if(mRetJson.has("ledger")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -558,23 +732,23 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject getLedgerVersion(){
 		
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getLedgerVersion(new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("ledger_current_index")){
-			return retJson;
+		if(mRetJson.has("ledger_current_index")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -595,23 +769,23 @@ public class Chainsql extends Submit {
 	 * @return Result.
 	 */
 	public JSONObject getTransactions(String address,int limit){
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getTransactions(address,limit,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("transactions")){
-			return retJson;
+		if(mRetJson.has("transactions")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -627,23 +801,23 @@ public class Chainsql extends Submit {
 		if(hash == null){
 			return Util.errorObject("hash cannot be null");
 		}
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getCrossChainTxs(hash, limit,include,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("transactions")){
-			return retJson;
+		if(mRetJson.has("transactions")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -679,23 +853,23 @@ public class Chainsql extends Submit {
 	 * @return Transaction information.
 	 */
 	public JSONObject getTransaction(String hash){
-		retJson = null;
+		mRetJson = null;
 		this.connection.client.getTransaction(hash,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 				if(data == null){
-					retJson = new JSONObject();
+					mRetJson = new JSONObject();
 				}else{
-					retJson = (JSONObject) data;
+					mRetJson = (JSONObject) data;
 				}
 			}			
 		});
-		while(retJson == null){
+		while(mRetJson == null){
 			Util.waiting();
 		}
 		
-		if(retJson.has("ledger_index")){
-			return retJson;
+		if(mRetJson.has("ledger_index")){
+			return mRetJson;
 		}else{
 			return null;
 		}
@@ -718,8 +892,21 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
-		Seed seed = Seed.randomSeed();
+		Seed seed = Seed.randomSeed();		
+		return generateAddress(seed);
+	}
+	
+	public JSONObject generateAddress(String secret){
+		Security.addProvider(new BouncyCastleProvider());
+		Seed seed = Seed.fromBase58(secret);
 		
+		return generateAddress(seed);
+	}
+	
+	private JSONObject generateAddress(Seed seed){
+		if(Config.isUseGM()){
+			seed.setGM();
+		}
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;
@@ -740,7 +927,9 @@ public class Chainsql extends Submit {
 		String address = getB58IdentiferCodecs().encodeAddress(o);
 		
 		JSONObject obj = new JSONObject();
-		obj.put("secret", secretKey);
+		if(!Config.isUseGM()){
+			obj.put("secret", secretKey);
+		}
 		obj.put("account_id", address);
 		obj.put("public_key", publicKey);
 		return obj;
@@ -829,7 +1018,7 @@ public class Chainsql extends Submit {
 		json.put( "Account", this.connection.address);
 		json.put("Statements", statements);
 		json.put("NeedVerify",this.needVerify);
-		this.txJson = json;
+		this.mTxJson = json;
 		
 		try {
 			if(commitType instanceof SyncCond ){

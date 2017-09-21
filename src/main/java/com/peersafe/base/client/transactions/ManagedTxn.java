@@ -184,6 +184,10 @@ public class ManagedTxn extends SignedTransaction {
     public ManagedTxn(Transaction txn) {
         this.txn = txn;
     }
+    
+    public ManagedTxn(SignedTransaction txn){
+    	super(txn);
+    }
     private final Publisher<events> publisher = new Publisher<events>();
 //    private final MyTransaction publisher = new MyTransaction();
     private boolean finalized = false;

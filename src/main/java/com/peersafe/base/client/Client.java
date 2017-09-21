@@ -238,7 +238,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     // ### Getters
 
     private int reconnectDelay() {
-        return 1000;
+        return 2000;
     }
 
     /**
@@ -306,6 +306,22 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
         return this;
     }
+    
+    public Client connect(final String uri,final String serverCertPath,final String storePass){
+        manuallyDisconnected = false;
+
+        schedule(50, new Runnable() {
+            @Override
+            public void run() {
+                try {
+					doConnect(uri,serverCertPath,storePass);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        });
+        return this;
+    }
 
     /**
      * Connect.
@@ -317,6 +333,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         ws.connect(URI.create(uri));
     }
 
+    public void doConnect(String uri,String serverCertPath,String storePass) throws Exception {
+        log(Level.INFO, "Connecting to " + uri);
+        previousUri = uri;
+        ws.connectSSL(URI.create(uri),serverCertPath,storePass);
+    }
     /**
      * Disconnect from websocket-url
      */
@@ -673,17 +694,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
     }
     private void doOnDisconnected() {
-    	log(Level.INFO, getClass().getName() + "doOnDisconnected");
-        connected = false;
+    	log(Level.INFO, getClass().getName() + ": doOnDisconnected");
+    	if(connected)
+    		connected = false;
+    	else
+    		return;
         emitOnDisconnected();
 
         if (!manuallyDisconnected) {
-            schedule(reconnectDelay(), new Runnable() {
-                @Override
-                public void run() {
-                    connect(previousUri);
-                }
-            });
+        	reconnect();
         } else {
         	log(Level.INFO, "Currently disconnecting, so will not reconnect");
         }
@@ -1151,27 +1170,20 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-    public  Request select(AccountID account,AccountID owner,JSONObject[] tabarr,String raw,final Callback<Response> cb){
-	   	 Request request = newRequest(Command.r_get);
-	   	 JSONObject txjson = new JSONObject();
-	   	 txjson.put("Account", account);
-	   	 txjson.put("Owner", owner);
-	   	 txjson.put("Tables", tabarr);
-	   	 txjson.put("Raw", raw);
-	   	 txjson.put("OpType", 7);
-	   	 request.json("tx_json", txjson);
-	   	 request.once(Request.OnResponse.class, new Request.OnResponse() {
-	            public  void called(Response response) {
-	                if (response.succeeded) {
-	                	//System.out.println("response:" + response.message.toString());
-	                	cb.called(response);
-	                   //Integer Sequence = (Integer) response.result.optJSONObject("account_data").get("Sequence");
-	                }
-	            }
-	        });
-        request.request();
-        waiting(request);
-   	 	return request;	
+	public Request select(AccountID account, AccountID owner, String name, String raw) {
+		String tablestr = "{\"Table\":{\"TableName\":\"" + name+ "\"}}";
+		JSONArray tableArray =  Util.strToJSONArray(tablestr);
+		Request request = newRequest(Command.r_get);
+		JSONObject txjson = new JSONObject();
+		txjson.put("Account", account);
+		txjson.put("Owner", owner);
+		txjson.put("Tables", tableArray);
+		txjson.put("Raw", raw);
+		txjson.put("OpType", 7);
+		request.json("tx_json", txjson);
+		request.request();
+		waiting(request);
+		return request;
 	}
     
     /**
@@ -1377,7 +1389,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param txjson tx_json with fields and value a transaction needed.
      * @return Prepared tx_json.
      */
-    public Request getTxJson(JSONObject txjson){
+    public Request tablePrepare(JSONObject txjson){
     	Request request = newRequest(Command.t_prepare);
 	   	request.json("tx_json", txjson);
 	    request.request();

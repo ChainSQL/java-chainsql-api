@@ -235,6 +235,9 @@ public class Util {
 		if(tx.has("Statements")){
 			tx.put("Statements", fromHexString(tx.getString("Statements")));
 		}
+		if(tx.has("OperationRule")){
+			tx.put("OperationRule", fromHexString(tx.getString("OperationRule")));
+		}
 	}
 	/**
 	 * Wait for 50 milliseconds.

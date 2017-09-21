@@ -1,7 +1,14 @@
 package com.peersafe.base.client.transport.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.security.KeyStore;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
@@ -112,6 +119,42 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         curHandler.onConnecting(1);
         client.connect();
     }
+    
+	@Override
+	public void connectSSL(URI uri, String serverCertPath, String storePass) throws Exception{
+        TransportEventHandler curHandler = handler.get();
+        if (curHandler == null) {
+            throw new RuntimeException("must call setEventHandler() before connect(...)");
+        }
+        disconnect();
+        client = new WS(uri);
+
+        client.setEventHandler(curHandler);
+        curHandler.onConnecting(1);
+        
+        String STORETYPE = "JKS";
+//		String KEYSTORE = "foxclienttrust.keystore";
+//		String STOREPASSWORD = "foxclienttrustks";
+		String KEYSTORE = serverCertPath;
+		String STOREPASSWORD = storePass;
+
+		KeyStore ks = KeyStore.getInstance( STORETYPE );
+		File kf = new File( KEYSTORE );
+		ks.load( new FileInputStream( kf ), STOREPASSWORD.toCharArray() );
+
+//		KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
+//		kmf.init( ks, KEYPASSWORD.toCharArray() );
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
+		tmf.init( ks );
+
+		SSLContext sslContext = null;
+		sslContext = SSLContext.getInstance( "TLS" );
+		sslContext.init( null, tmf.getTrustManagers(), null );
+		SSLSocketFactory factory = sslContext.getSocketFactory();
+
+		client.setSocket( factory.createSocket() );
+		client.connectBlocking();			
+	}
 
     @Override
     public void disconnect() {

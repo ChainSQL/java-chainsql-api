@@ -1,21 +1,20 @@
 package com.peersafe.chainsql.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
-import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.client.responses.Response;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
-import com.peersafe.chainsql.crypto.Aes;
-import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
@@ -141,13 +140,13 @@ public class Table extends Submit{
 		this.exec = "t_assert";
 		if (!this.transaction)
 			try {
-				throw new Exception("you must begin the transaction first");
+				System.out.println("Exception: you must begin the transaction first");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		if (this.name==null)
 			try {
-				throw new Exception("you must appoint the table name");
+				System.out.println("Exception: you must appoint the table name");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -173,11 +172,11 @@ public class Table extends Submit{
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table order(List<String> orgs){
-		List<JSONObject> orderarr = new ArrayList<JSONObject>();
+		JSONArray orderarr = new JSONArray();
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
 				JSONObject json = Util.StrToJson(s);
-				orderarr.add(json);
+				orderarr.put(json);
 			}
 		}
 		JSONObject json = new JSONObject();
@@ -208,7 +207,7 @@ public class Table extends Submit{
 		if(token.equals("")){
 			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
 			if(res.get("status").equals("error")){
-				//throw new Exception(res.getString("error_message"));
+				System.out.println("Exception: "+res.getString("error_message"));
 			}else{
 				token = res.getString("token");
 			}
@@ -222,11 +221,16 @@ public class Table extends Submit{
 				this.needVerify = 0;
 			}
 			try {
-				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
-				if(password == null){
-					throw new Exception("decrypt token failed");
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
 				}
-				strRaw = Aes.aesEncrypt(password, strRaw);
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
+				if(password == null){
+					System.out.println("Exception: decrypt token failed");
+				}
+				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password);
+				strRaw = Util.bytesToHex(rawBytes);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -256,7 +260,7 @@ public class Table extends Submit{
 			crossChainArgs = null;
 		}
 		
-		JSONObject result = Validate.getTxJson(this.connection.client, txjson);
+		JSONObject result = Validate.tablePrepare(this.connection.client, txjson);
 		if(result.getString("status").equals("error")){
 			return result;
 		}
@@ -264,7 +268,7 @@ public class Table extends Submit{
 		Transaction payment;
 		
 		try {
-			payment = toPayment(tx_json,TransactionType.SQLStatement);
+			payment = toTransaction(tx_json,TransactionType.SQLStatement);
 	        signed = payment.sign(connection.secret);
 	        return Util.successObject();
 		} catch (Exception e) {
@@ -293,19 +297,7 @@ public class Table extends Submit{
 		}
 		AccountID account = AccountID.fromAddress(connection.address);
 		AccountID owner = AccountID.fromAddress(connection.scope);
-		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
-		JSONObject tabjson = new JSONObject(tables);
-		JSONObject[] tabarr ={tabjson};
-		Request req = connection.client.select(account,owner,tabarr,query.toString(),new Callback<Response>(){
-
-			@Override
-			public void called(Response response) {
-				if(cb != null){
-					cb.called(getSelectRes(response));
-				}
-			}
-			
-		});
+		Request req = connection.client.select(account,owner,name,query.toString());
 		
 		return getSelectRes(req.response);
 	}

@@ -1,9 +1,14 @@
 package com.peersafe.base.core.types.known.tx;
 
+import java.util.EnumMap;
+
+import org.json.JSONObject;
+
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.coretypes.Blob;
 import com.peersafe.base.core.coretypes.STObject;
+import com.peersafe.base.core.coretypes.STObject.FieldFilter;
 import com.peersafe.base.core.coretypes.hash.HalfSha512;
 import com.peersafe.base.core.coretypes.hash.Hash256;
 import com.peersafe.base.core.coretypes.hash.prefixes.HashPrefix;
@@ -12,6 +17,7 @@ import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.enums.TransactionFlag;
 import com.peersafe.base.core.fields.Field;
 import com.peersafe.base.core.formats.TxFormat;
+import com.peersafe.base.core.formats.Format.Requirement;
 import com.peersafe.base.core.serialized.BytesList;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
@@ -39,7 +45,25 @@ public class Transaction extends STObject {
         signed.sign(keyPair);
         return signed;
     }
+    
+    public SignedTransaction multiSign(String secret){
+        SignedTransaction signed = SignedTransaction.fromTx(this);
+        
+        signed.multiSign(secret);
+        return signed;
+    }
 
+    public void parseFromJson(JSONObject obj) throws Exception{
+    	EnumMap<Field, Requirement> fieldMap = this.format.requirements();
+    	for(Field field : fieldMap.keySet()){
+    		String fieldName = field.name();
+    		
+    		if(obj.has(fieldName)){
+    			this.putTranslated(field, obj.get(fieldName));
+    		}
+    	}
+    }
+    
     public TransactionType transactionType() {
         return transactionType(this);
     }
@@ -65,6 +89,19 @@ public class Transaction extends STObject {
             }
         });
         return bl.bytes();
+    }
+    
+    public byte[] multiSigningData(AccountID account) {
+    	BytesList bl = new BytesList();
+    	bl.add(HashPrefix.txMultiSign.bytes);
+    	toBytesSink(bl, new FieldFilter() {
+    		@Override
+    		public boolean evaluate(Field a) {
+    			return a.isSigningField();
+    		}
+    	});
+    	bl.add(account.toBytes());
+    	return bl.bytes();
     }
 
     public void setCanonicalSignatureFlag() {

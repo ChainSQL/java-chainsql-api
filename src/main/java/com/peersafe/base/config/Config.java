@@ -1,10 +1,14 @@
 package com.peersafe.base.config;
 
-import com.peersafe.base.encodings.B58IdentiferCodecs;
-import com.peersafe.base.encodings.base58.B58;
+import java.security.Security;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.security.Security;
+import cn.com.sansec.key.SWJAPI;
+
+import com.peersafe.base.crypto.sm.SMDevice;
+import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.encodings.base58.B58;
 
 // Somewhat of a global registry, dependency injection ala guice would be nicer, but trying to KISS
 public class Config {
@@ -13,6 +17,9 @@ public class Config {
     private static B58IdentiferCodecs b58IdentiferCodecs;
     private static double feeCushion;
     private static B58 b58;
+    //set if we use guomi encrypt
+    private static boolean useSM_=false;
+    private static boolean newKeyPair_ = false;
 
     /**
      * Set alphabet.
@@ -21,7 +28,7 @@ public class Config {
     public static void setAlphabet(String alphabet) {
         b58 = new B58(alphabet);
         b58IdentiferCodecs = new B58IdentiferCodecs(b58);
-    }
+    }	
 
     /**
      * getB58IdentiferCodecs
@@ -73,4 +80,32 @@ public class Config {
     public static void setFeeCushion(double fee_cushion) {
         feeCushion = fee_cushion;
     }
+
+	public static boolean isUseGM() {
+		return useSM_;
+	}
+
+	public static boolean isNewKeyPair() {
+		return newKeyPair_;
+	}
+
+	public static void setNewKeyPair(boolean newKeyPair_) {
+		Config.newKeyPair_ = newKeyPair_;
+	}
+
+	public static boolean setUseGM(boolean useGM,boolean bNewKeyPair,String pin){
+		if(useGM){
+			newKeyPair_ = bNewKeyPair;
+			boolean bRet = SMDevice.openDevice();
+			if(!bRet)
+				return false;
+			bRet = SMDevice.verifyPin(pin);
+			if(bRet)
+				useSM_ = useGM;
+			return bRet;
+		}else{
+			useSM_ = useGM;
+			return true;
+		}
+	}
 }

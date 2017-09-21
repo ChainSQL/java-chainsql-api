@@ -21,7 +21,13 @@ public class SMKeyPair implements IKeyPair {
 
     public SMKeyPair() throws Exception{
     	this.sdkey = SMDevice.sdkey;
-    	if(!isContainerExist()){
+    	if(Config.isNewKeyPair()){
+    		boolean bRet = genEccKeyPair();
+    		if(!bRet){
+    			throw new Exception("GenEccKeyPair failed");
+    		}
+    		Config.setNewKeyPair(false);
+    	}else if(!isContainerExist()){
     		boolean bRet = genEccKeyPair();
     		if(!bRet){
     			throw new Exception("GenEccKeyPair failed");

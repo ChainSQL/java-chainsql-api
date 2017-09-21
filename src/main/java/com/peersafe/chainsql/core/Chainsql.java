@@ -40,7 +40,6 @@ public class Chainsql extends Submit {
 	public	EventManager event;
 
 	private JSONObject mTxJson;
-	private boolean strictMode = false;
 	
 	private static final int PASSWORD_LENGTH = 16;  
 	private static final int DEFAULT_TX_LIMIT = 20;
@@ -195,11 +194,12 @@ public class Chainsql extends Submit {
 	/**
 	 * use guomi algorithm
 	 * @param useGM 
+	 * @param bNewKeyPair 是否生成新的公私钥对
 	 * @param pin default is '666666'
 	 * @throws Exception throws exception if failed.
 	 */
-	public void setUseGM(boolean useGM,String pin) throws Exception{
-		boolean isSuccess =  Config.setUseGM(useGM,pin);
+	public void setUseGM(boolean useGM,boolean bNewKeyPair,String pin) throws Exception{
+		boolean isSuccess =  Config.setUseGM(useGM,bNewKeyPair,pin);
 		if(!isSuccess){
 			throw new Exception("设置使用国密失败!");
 		}

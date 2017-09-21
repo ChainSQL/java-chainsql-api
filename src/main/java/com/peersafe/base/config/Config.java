@@ -19,6 +19,7 @@ public class Config {
     private static B58 b58;
     //set if we use guomi encrypt
     private static boolean useSM_=false;
+    private static boolean newKeyPair_ = false;
 
     /**
      * Set alphabet.
@@ -84,8 +85,17 @@ public class Config {
 		return useSM_;
 	}
 
-	public static boolean setUseGM(boolean useGM,String pin){
+	public static boolean isNewKeyPair() {
+		return newKeyPair_;
+	}
+
+	public static void setNewKeyPair(boolean newKeyPair_) {
+		Config.newKeyPair_ = newKeyPair_;
+	}
+
+	public static boolean setUseGM(boolean useGM,boolean bNewKeyPair,String pin){
 		if(useGM){
+			newKeyPair_ = bNewKeyPair;
 			boolean bRet = SMDevice.openDevice();
 			if(!bRet)
 				return false;

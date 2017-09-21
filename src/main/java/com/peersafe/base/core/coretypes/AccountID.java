@@ -293,6 +293,7 @@ public class AccountID extends Hash160 {
     static public AccountIDField Target = accountField(Field.Target);
     static public AccountIDField RegularKey = accountField(Field.RegularKey);
     static public AccountIDField User = accountField(Field.User);
+    static public AccountIDField OriginalAddress = accountField(Field.OriginalAddress);
 
     // Exceptions
     public static class UnknownAlias extends RuntimeException {

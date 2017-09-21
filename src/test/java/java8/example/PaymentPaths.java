@@ -1,8 +1,8 @@
 package java8.example;
 
 import static com.peersafe.base.core.coretypes.AccountID.fromAddress;
-import static java8.utils.Print.print;
-import static java8.utils.Print.printErr;
+import static java8.example.Print.print;
+import static java8.example.Print.printErr;
 
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;

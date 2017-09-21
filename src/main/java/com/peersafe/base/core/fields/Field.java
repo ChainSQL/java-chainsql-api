@@ -91,6 +91,8 @@ public enum Field {
     TxCheckHash(52,Type.Hash256),     
     CreatedLedgerHash(53,Type.Hash256),
     CreatedTxnHash(54,Type.Hash256),
+    CurTxHash(55,Type.Hash256),
+    FutureTxHash(56,Type.Hash256),
 
 
     
@@ -140,6 +142,7 @@ public enum Field {
     TableNewName(53,Type.Blob),	
     AutoFillField(54,Type.Blob),	
     Statements(55,Type.Blob),
+    OperationRule(56,Type.Blob),
  
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),
@@ -148,6 +151,7 @@ public enum Field {
     Target(7, Type.AccountID),
     RegularKey(8, Type.AccountID),
     User(50, Type.AccountID),
+    OriginalAddress(51,Type.AccountID),
 
     ObjectEndMarker(1, Type.STObject),
     TransactionMetaData(2, Type.STObject),

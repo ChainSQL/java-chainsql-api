@@ -278,7 +278,12 @@ public class STObject implements SerializedType, Iterable<Field> {
 
         for (Field field : this) {
             if (p.evaluate(field)) {
+//            	System.out.println("Field:" + field.name());
                 SerializedType value = fields.get(field);
+//                byte[] bytes = value.toBytes();
+//                for(int i=0; i<bytes.length ; i++)
+//                	System.out.print(bytes[i] + ",");
+//                System.out.println();
                 serializer.add(field, value);
             }
         }

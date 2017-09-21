@@ -42,24 +42,24 @@ public class Ecies {
 	final static String ALGORITHM = "secp256k1";
 
 
-	/**
-	 * 非对称加密
-	 * @param plainText 要加密的内容
-	 * @param publicKey base58格式的publicKey
-	 * @return return value.
-	 */
-	public static String eciesEncrypt (String plainText,String publicKey)
-	{
-		byte [] dataPubB = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-		return eciesEncrypt(plainText.getBytes(),dataPubB);
-	}
+//	/**
+//	 * 非对称加密
+//	 * @param plainText 要加密的内容
+//	 * @param publicKey base58格式的publicKey
+//	 * @return return value.
+//	 */
+//	public static String eciesEncrypt (String plainText,String publicKey)
+//	{
+//		byte [] dataPubB = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+//		return eciesEncrypt(plainText.getBytes(),dataPubB);
+//	}
 	/**
 	 * 
 	 * @param plainBytes bytes to be encrypted.
 	 * @param publicKey publickey bytes.
 	 * @return return value.
 	 */
-	public static String eciesEncrypt(byte[] plainBytes,byte[] publicKey){
+	public static byte[] eciesEncrypt(byte[] plainBytes,byte[] publicKey){
 		Security.addProvider(new BouncyCastleProvider());
 
 		//random key-pair
@@ -107,7 +107,7 @@ public class Ecies {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return finalHex;
+		return Util.hexToBytes( finalHex);
 	}
 	/**
 	 * 
@@ -118,8 +118,12 @@ public class Ecies {
 	 */
 	public static byte[] eciesDecrypt (String cipherHex,String privateKey) throws Exception
 	{
+	    return eciesDecrypt(Util.hexToBytes(cipherHex),getB58IdentiferCodecs().decodeFamilySeed(privateKey));
+	}
+	
+	public static byte[] eciesDecrypt (byte[] cipherText,byte[] privateKey) throws Exception{
 		Security.addProvider(new BouncyCastleProvider());
-		byte[] ciphertext = Util.hexToBytes(cipherHex);
+		byte[] ciphertext = cipherText;
 	    int level = 256;
 	    int Rb_len = 33;
 	    int D_len = level >> 3;
@@ -134,7 +138,7 @@ public class Ecies {
 	    System.arraycopy(ciphertext, Rb_len, iv, 0, IVLength);
 	    System.arraycopy(ciphertext, Rb_len + IVLength, cipherBytes, 0, ciphertext.length - Rb_len - IVLength);
 
-	    byte [] seedSelf = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+	    byte [] seedSelf = privateKey;
 	    IKeyPair pair = Seed.getKeyPair(seedSelf);
 	    try{
 			byte[] secret = doECDH(pair.priv().toByteArray(), publicOther);
@@ -170,8 +174,8 @@ public class Ecies {
 	        return plainText;
 		}catch(Exception e){
 			e.printStackTrace();
-		}	 
-	    return null;
+		}
+		return null;
 	}
 	
 	private static byte[] hMac(byte[] hmacKey,byte[] plainText){

@@ -1,10 +1,18 @@
 package com.peersafe.base.client.transport.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.security.KeyStore;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
@@ -14,14 +22,13 @@ import com.peersafe.base.client.transport.WebSocketTransport;
 class WS extends WebSocketClient {
 
     WeakReference<TransportEventHandler> h;
-
+    String frameData = "";
     /**
      * WS constructor.
      * @param serverURI
      */
     public WS(URI serverURI) {
-        super(serverURI, new Draft_17());
- //       super(serverURI);
+        super(serverURI);
     }
 
     /**
@@ -46,10 +53,18 @@ class WS extends WebSocketClient {
             handler.onConnected();
         }
     }
-
+    //数据量大时按段返回
+    public void onFragment( Framedata frame ) {
+        frameData += new String( frame.getPayloadData().array() );
+        if(frame.isFin()){
+          onMessage(frameData);
+          frameData = "";
+        }
+      }
+    
     @Override
     public void onMessage(String message) {
-//    	System.out.println(message);
+    	//System.out.println(message);
         TransportEventHandler handler = h.get();
         if (handler != null) {
             handler.onMessage(new JSONObject(message));
@@ -104,6 +119,42 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         curHandler.onConnecting(1);
         client.connect();
     }
+    
+	@Override
+	public void connectSSL(URI uri, String serverCertPath, String storePass) throws Exception{
+        TransportEventHandler curHandler = handler.get();
+        if (curHandler == null) {
+            throw new RuntimeException("must call setEventHandler() before connect(...)");
+        }
+        disconnect();
+        client = new WS(uri);
+
+        client.setEventHandler(curHandler);
+        curHandler.onConnecting(1);
+        
+        String STORETYPE = "JKS";
+//		String KEYSTORE = "foxclienttrust.keystore";
+//		String STOREPASSWORD = "foxclienttrustks";
+		String KEYSTORE = serverCertPath;
+		String STOREPASSWORD = storePass;
+
+		KeyStore ks = KeyStore.getInstance( STORETYPE );
+		File kf = new File( KEYSTORE );
+		ks.load( new FileInputStream( kf ), STOREPASSWORD.toCharArray() );
+
+//		KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
+//		kmf.init( ks, KEYPASSWORD.toCharArray() );
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
+		tmf.init( ks );
+
+		SSLContext sslContext = null;
+		sslContext = SSLContext.getInstance( "TLS" );
+		sslContext.init( null, tmf.getTrustManagers(), null );
+		SSLSocketFactory factory = sslContext.getSocketFactory();
+
+		client.setSocket( factory.createSocket() );
+		client.connectBlocking();			
+	}
 
     @Override
     public void disconnect() {

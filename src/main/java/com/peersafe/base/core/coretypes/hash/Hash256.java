@@ -179,6 +179,8 @@ public class Hash256 extends Hash<Hash256> {
     static public Hash256Field Amendment = hash256Field(Field.Amendment);
     static public Hash256Field TicketID = hash256Field(Field.TicketID);
     static public Hash256Field TxCheckHash = hash256Field(Field.TxCheckHash);
+    static public Hash256Field CurTxHash = hash256Field(Field.CurTxHash);
+    static public Hash256Field FutureTxHash = hash256Field(Field.FutureTxHash);
 
     static public Hash256Field hash = hash256Field(Field.hash);
     static public Hash256Field index = hash256Field(Field.index);

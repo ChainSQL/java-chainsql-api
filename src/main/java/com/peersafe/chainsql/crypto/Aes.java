@@ -24,18 +24,32 @@ public class Aes {
 	 * @param password password bytes.
 	 * @param content content.
 	 * @return return value.
+	 * @throws UnsupportedEncodingException 
 	 */
 	public static String aesEncrypt(byte[] password,String content){
-		return encrypt(password,content);
+		try{
+			byte[] ret = encrypt(password,content.getBytes("utf-8"));
+			return ret == null ? "" :new String(ret);
+		}catch(Exception e){
+			e.printStackTrace();
+			return "";
+		}
 	}
 	/**
-	 * AES encrypting.
+	 * AES encrypting.	
 	 * @param password Password.
 	 * @param content Content.
 	 * @return Return value.
+	 * @throws UnsupportedEncodingException 
 	 */
 	public static String aesEncrypt(String password,String content){
-		return encrypt(password.getBytes(),content);
+		try{
+			byte[] ret = encrypt(password.getBytes(),content.getBytes("utf-8"));
+			return ret == null ? "" :new String(ret);
+		}catch(Exception e){
+			e.printStackTrace();
+			return "";
+		}
 	}
 	
 	/**
@@ -69,15 +83,15 @@ public class Aes {
 	 * @param password  加密密码 
 	 * @return 
 	 */  
-	private static String encrypt(byte[] password,String content) {  
+	public static byte[] encrypt(byte[] password,byte[] byteContent) {  
         try {             
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// 创建密码器  
-            byte[] byteContent = content.getBytes("utf-8"); 
+            password = paddingPass(password);
             Key key = convertToKey(password);
             AlgorithmParameters algo = generateIV(password);
             cipher.init(Cipher.ENCRYPT_MODE, key, algo);// 初始化  
             byte[] result = cipher.doFinal(byteContent);  
-            return Util.bytesToHex(result); // 加密  
+            return result; // 加密  
         } catch (NoSuchAlgorithmException e) {  
                 e.printStackTrace();  
         } catch (NoSuchPaddingException e) {  
@@ -94,7 +108,7 @@ public class Aes {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}  
-        return "";  
+        return null;  
 	}
 
     
@@ -103,8 +117,9 @@ public class Aes {
 	 * @param password 解密密钥 
 	 * @return 
 	 */  
-	private static byte[] decrypt(byte[] content, byte[] password) {  
-        try {              
+	public static byte[] decrypt(byte[] content, byte[] password) {  
+        try {
+            password = paddingPass(password);              
             Key key = convertToKey(password);
             AlgorithmParameters algo = generateIV(password);
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// 创建密码器  
@@ -126,5 +141,21 @@ public class Aes {
 			e.printStackTrace();
 		}  
         return null;  
-	}  
+	}
+	
+	private static byte[] paddingPass(byte[] password){
+		if(password.length < 16){
+			byte[] retByte = new byte[16];
+			byte byteToPad = (byte) (16 - password.length);
+			for(int i=0; i<16; i++){
+				if(i<password.length)
+					retByte[i] = password[i];
+				else
+					retByte[i] = byteToPad;
+			}
+			return retByte;
+		}else{
+			return password;
+		}
+	}
 }

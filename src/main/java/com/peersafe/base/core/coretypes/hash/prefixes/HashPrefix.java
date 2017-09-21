@@ -14,6 +14,8 @@ public enum HashPrefix implements Prefix {
     ledgerMaster(0x4C575200L),
     // inner transaction to sign
     txSign(0x53545800L),
+    // multi_sign
+    txMultiSign(0x534D5400L),
     // validation for signing
     validation(0x56414C00L),
     // proposal for signing

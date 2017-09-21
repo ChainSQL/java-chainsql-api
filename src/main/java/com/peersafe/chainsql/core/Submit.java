@@ -1,6 +1,8 @@
 package com.peersafe.chainsql.core;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -15,16 +17,13 @@ import com.peersafe.base.client.transactions.ManagedTxn.OnSubmitSuccess;
 import com.peersafe.base.client.transactions.TransactionManager;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
-import com.peersafe.base.core.coretypes.Blob;
-import com.peersafe.base.core.coretypes.STArray;
-import com.peersafe.base.core.coretypes.hash.Hash256;
-import com.peersafe.base.core.coretypes.uint.UInt16;
 import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
@@ -33,12 +32,23 @@ public abstract class Submit {
 	protected Callback<JSONObject> cb;
 	private SubmitState submit_state;
 	private SyncState sync_state;
-	
 	private JSONObject submitRes;
 	private JSONObject syncRes;
 	
 	private boolean sync = false;
 	protected SyncCond condition;
+	protected SignedTransaction signed;
+	
+	protected CrossChainArgs crossChainArgs = null;
+	
+	//事务相关
+	protected List<JSONObject> cache = new ArrayList<JSONObject>();	
+	protected Map<GenericPair<String,String>,String> mapToken = 
+			new HashMap<GenericPair<String,String>,String>();
+	protected boolean transaction = false;
+	protected Integer needVerify = 1;
+	//严格模式
+	protected boolean strictMode = false;
 	
 	public enum SyncCond {
         validate_success,	
@@ -56,32 +66,30 @@ public abstract class Submit {
 		sync_response,
 	}
 	
-	public enum EPaymentType{
-		Account,
-		Destination,
-		Amount,
-		Tables,
-		OpType,
-		User,
-		Raw,
-		Sequence,
-		Fee,
-		TransactionType,
-	    TableNewName,
-	    Owner,
-	    Flags,
-	    AutoFillField,
-	    Token,
-	    StrictMode,
-	    NeedVerify,
-	    Statements,
-	    TxCheckHash
+	public class CrossChainArgs{
+		public String originalAddress;
+		public int 	  txnLedgerSeq;
+		public String curTxHash;
+		public String futureHash;
+	}
+	private static final int wait_milli = 50;
+	private static final int submit_wait = 10000;
+	private static final int sync_maxtime = 200000;
+	
+	/**
+	 * Set restrict mode.
+	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
+	 * to a table and some other user interrupts this by making an operation to this identical table.  
+	 * @param falg True to enable restrict mode and false to disable restrict mode.
+	 */
+	public void setRestrict(boolean falg) {
+		this.strictMode = falg;
+	}
+	
+	public void setNeedVerify(boolean flag){
+		this.needVerify = flag ? 1 : 0;
 	}
 
-	private static final int wait_milli = 50; 
-	private static final int account_wait = 5000;
-	private static final int submit_wait = 5000;
-	private static final int sync_maxtime = 200000;
 	/**
 	 * asynchronous,callback trigger with all possible status
 	 * @param cb Callback.
@@ -105,15 +113,33 @@ public abstract class Submit {
 		return doSubmit();
 	}
 
+
 	/**
 	 * submit a transaction,return immediately
 	 * @return submit result
 	 */
 	public JSONObject submit(){
+		sync = false;
+		cb = null;
 		return doSubmit();
 	}
 	
-	abstract JSONObject doSubmit();
+	public void setCrossChainArgs(String originalAddress,int txnLedgerSeq,String curTxHash,String futureHash){
+		crossChainArgs = new CrossChainArgs();
+		crossChainArgs.originalAddress = originalAddress;
+		crossChainArgs.txnLedgerSeq = txnLedgerSeq;
+		crossChainArgs.curTxHash = curTxHash;
+		crossChainArgs.futureHash = futureHash;
+	}
+	
+	public void setCrossChainArgs(CrossChainArgs args){
+		this.crossChainArgs = args;
+	}
+	public boolean isCrossChainArgsSet(){
+		return this.crossChainArgs != null;
+	}
+	
+	abstract JSONObject prepareSigned();
 
 	private JSONObject getError(String err){
 		JSONObject obj = new JSONObject();
@@ -121,8 +147,15 @@ public abstract class Submit {
 		obj.put("error_message", err);
 		return obj;
 	}
-
-	protected JSONObject doSubmit(SignedTransaction signed){
+	protected JSONObject doSubmit(){
+		JSONObject obj = prepareSigned();
+		if(obj.getString("status").equals("error") || obj.has("final_result")){
+			return obj;
+		}		
+		return doSubmitNoPrepare();
+	}
+	
+	protected JSONObject doSubmitNoPrepare(){
 		if(signed == null){
 			return getError("Signing failed,maybe ripple node error");
 		}
@@ -132,18 +165,9 @@ public abstract class Submit {
         
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
-        ManagedTxn tx = tm.manage(signed.txn);
-        int count = account_wait/wait_milli;
-        while(!account.getAccountRoot().primed()){
-        	Util.waiting();
-        	if(--count <= 0){
-        		break;
-        	}
-        }
-//        tm.queue(tx.onSubmitSuccess(this::onSubmitSuccess)
-//                   .onError(this::onSubmitError));
+	    ManagedTxn tx = new ManagedTxn(signed);
         
-        tm.queue(tx.onSubmitSuccess(new OnSubmitSuccess(){
+        tm.submitSigned(tx.onSubmitSuccess(new OnSubmitSuccess(){
 			@Override
 			public void called(Response args) {
 				onSubmitSuccess(args);
@@ -164,7 +188,7 @@ public abstract class Submit {
         }
         
         //wait until submit return
-        count = submit_wait / wait_milli;
+        int count = submit_wait / wait_milli;
         while(submit_state == SubmitState.waiting_submit){
         	Util.waiting();
         	if(--count <= 0){
@@ -211,7 +235,7 @@ public abstract class Submit {
 	    				res.put("status", "success");
 	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
 	    				res.put("status", "success");
-	    			}else if(!obj.get("status").equals("validate_success")){
+	    			}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
 	    				res.put("status", "error");
 	    				if(res.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
@@ -243,6 +267,9 @@ public abstract class Submit {
         obj.put("status", "error");
         if(res.result.has("engine_result_message"))
         	obj.put("error_message", res.result.getString("engine_result_message"));
+        if(res.result.has("engine_result_code")){
+        	obj.put("error_code", res.result.getInt("engine_result_code"));
+        }
         if(res.result.has("")){
         	JSONObject tx_json = (JSONObject) res.result.get("tx_json");
         	obj.put("tx_hash", tx_json.getString("hash"));
@@ -264,6 +291,7 @@ public abstract class Submit {
 	    	return false;
 	    }
 	}
+	
 	/**
 	 * Translate to transaction type.
 	 * @param json tx_json.
@@ -271,83 +299,26 @@ public abstract class Submit {
 	 * @return Transaction object.
 	 * @throws Exception Exception to be throws.
 	 */
-	public Transaction toPayment(JSONObject json,TransactionType type) throws Exception{
-    	Transaction payment = new Transaction(type);
-    	 try {  
-             Iterator<String> it = json.keys();  
-             while (it.hasNext()) {  
-                 String key = (String) it.next();  
-                 Object value = json.get(key);  
-                 enumPayment(payment,key,value);
-             }
-         } catch (JSONException e) {  
-             e.printStackTrace();  
-         }  
-     	String fee = this.connection.client.serverInfo.fee_ref + "";
+	protected Transaction toTransaction(JSONObject json,TransactionType type) throws Exception{
+    	Transaction tx = new Transaction(type);
+    	Amount fee;
+    	if(connection.client.serverInfo.primed())
+     		fee = connection.client.serverInfo.transactionFee(tx);
+    	else
+    		fee = Amount.fromString("50");
   		AccountID account = AccountID.fromAddress(this.connection.address);
  		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
  		if(mapError(map)){
  			throw new Exception((String)map.get("error_message"));
  		}else{
- 	 		enumPayment(payment,"Sequence",map.get("Sequence"));
- 	 		enumPayment(payment,"Fee",fee);
- 	    	return payment;
+ 			tx.as(Amount.Fee, fee);
+ 			tx.as(UInt32.Sequence, map.get("Sequence"));
  		}
-    }
-	
-	private void enumPayment(Transaction payment,String strType,Object value){
-		EPaymentType type = EPaymentType.valueOf(strType);
-        switch (type) {
-            case Account:
-            	payment.as(AccountID.Account, value);
-                break;
-            case Destination:
-            	payment.as(AccountID.Destination, value);
-            	break;
-            case Amount:
-            	payment.as(Amount.Amount, value);
-            	break;
-            case Tables:
-            	payment.as(STArray.Tables, Validate.fromJSONArray(((JSONArray)value).get(0).toString()));
-                break;
-            case OpType:
-            	payment.as(UInt16.OpType, value);
-                break;
-            case User:
-            	payment.as(AccountID.User, value);
-                break;
-            case Sequence:
-            	payment.as(UInt32.Sequence, value);
-            	break;
-            case Raw:
-            	payment.as(Blob.Raw,  value);
-            	break;
-            case Fee:
-            	payment.as(Amount.Fee, value);
-            	break;
-            case NeedVerify:
-            	payment.as(UInt32.NeedVerify,value);
-            	break;
-            case Statements:
-            	payment.as(Blob.Statements,Util.toHexString(value.toString()));
-            	break;
-            case Owner:
-            	payment.as(AccountID.Owner, value);
-                break;
-            case Flags:
-            	payment.as(UInt32.Flags,value);
-                break;
-            case AutoFillField:
-            	break;
-            case TxCheckHash:
-            	payment.as(Hash256.TxCheckHash, value);
-            	break;
-            case Token:
-            	payment.as(Blob.Token, value);
-            	break;
-            default:
-                break;
-        } 
-	}
-	
+		try {  
+		   tx.parseFromJson(json);
+		} catch (JSONException e) {  
+		   e.printStackTrace();  
+		}  
+	  	return tx;
+    }	
 }

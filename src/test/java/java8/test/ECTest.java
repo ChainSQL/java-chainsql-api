@@ -1,8 +1,11 @@
 package java8.test;
 import java.security.Security;
+import java.util.Arrays;
+import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.Util;  
 
 public class ECTest {  
@@ -56,6 +59,14 @@ public class ECTest {
 //    	String aesEnc = Aes.aesEncrypt("hello12345123456", "test");
 //    	byte[] aesDec = Aes.aesDecrypt("hello12345123456", aesEnc);
 //    	System.out.println(new String(aesDec));
+    	
+    	List<String> listPub = Arrays.asList("aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs", "aBP8EvA6tSMzCRbfsLwiFj51vDjE4jPv9Wfkta6oNXEn8TovcxaT");
+    	byte[] ret = Ecies.encryptText("02F039E54B3A0D209D348F1B2C93BE3689F2A7595DDBFB1530499D03264B87A61F", listPub);
+    	System.out.println("ret.length:" + ret.length);
+    	String plainGet = Ecies.decryptText(ret, "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
+    	System.out.println("plainGet:" + plainGet);
+    	plainGet = Ecies.decryptText(ret, "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+    	System.out.println("plainGet:" + plainGet);
     }
     
   

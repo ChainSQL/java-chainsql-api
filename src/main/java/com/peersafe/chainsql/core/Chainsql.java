@@ -28,6 +28,7 @@ import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
@@ -1049,5 +1050,25 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject commit(Callback<?> cb){
 		return doCommit(cb);
+	}
+	
+	/**
+	 * 加密接口
+	 * @param plainText 明文
+	 * @param listPublicKey 公钥数组
+	 * @return 密文
+	 */
+	public byte[] encrypt(String plainText,List<String> listPublicKey) {
+		return Ecies.encryptText(plainText,listPublicKey);
+	}
+	
+	/**
+	 * 解密接口
+	 * @param cipher 密文
+	 * @param secret 私钥
+	 * @return 明文，解密失败返回""
+	 */
+	public String decrypt(byte[] cipher,String secret) {
+		return Ecies.decryptText(cipher, secret);
 	}
 }

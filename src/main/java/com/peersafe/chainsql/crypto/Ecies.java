@@ -7,7 +7,9 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import javax.crypto.KeyAgreement;
@@ -26,11 +28,16 @@ import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 
-import com.peersafe.chainsql.util.Util;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.utils.HashUtils;
 import com.peersafe.base.utils.Sha512;
+import com.peersafe.chainsql.crypto.EncryptMsg.MultiEncrypt.HashToken;
+import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.util.ZLibUtils;
 
 public class Ecies {
 	public static final int AESKeyLength = 32;
@@ -41,18 +48,201 @@ public class Ecies {
     
 	final static String ALGORITHM = "secp256k1";
 
+	/**
+	 * encrypt text with a publickey list,the cipher can be decrypted 
+	 * by every secret whose publickey is in this list.
+	 * @param plainText
+	 * @param listPublicKey
+	 * @return byte array
+	 */
+	public static byte[] encryptText(String plainText,List<String> listPublicKey) {
+		Security.addProvider(new BouncyCastleProvider());
+		//check size
+		if(listPublicKey.size() == 0)
+			return null;
+		
+		//random key-pair
+    	IKeyPair pair = Seed.randomKeyPair();
+		byte [] dataPrvA = pair.priv().toByteArray();
+		byte [] dataPubA = pair.pub().toByteArray();
+		
+		//AES encrypt
+		byte[] password = Util.getRandomBytes(16);
+    	byte[] aesEnc = Aes.encrypt(password, plainText.getBytes());
+    	
+    	//encrypt password
+    	List<byte[]> listPubHash = new ArrayList<byte[]>();
+    	List<byte[]> listPassCipher = new ArrayList<byte[]>();
+    	for(String sPub : listPublicKey) {
+    		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+    		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
+    		byte[] passCipher = simpleEncrypt(password,pubBytes,dataPrvA);
+    		listPubHash.add(pubHash);
+    		listPassCipher.add(passCipher);
+    	}
+//    	int singleLen = listPubHash.get(0).length + listPassCipher.get(0).length;
+//    	int finalLen = 1 + singleLen * listPublicKey.size() + dataPubA.length + aesEnc.length;
+//    	byte[] finalBytes = new byte[finalLen];
+//    	byte[] lenByte = new byte[1];
+//    	lenByte[0] = (byte) (listPublicKey.size() & 0xff);
+//    	System.arraycopy(lenByte, 0, finalBytes, 0, 1);
+//    	System.arraycopy(dataPubA, 0, finalBytes, 1, dataPubA.length);
+//    	int pos = 1 + dataPubA.length;
+//    	for(int i=0; i<listPubHash.size(); i++) {
+//    		byte[] pubHash = listPubHash.get(i);
+//    		byte[] passCipher = listPassCipher.get(i);
+//    		
+//    		System.arraycopy(pubHash, 0, finalBytes, pos, pubHash.length);
+//    		pos += pubHash.length;
+//    		System.arraycopy(passCipher, 0, finalBytes, pos, passCipher.length);
+//    		pos += passCipher.length;
+//    	}
+//    	System.arraycopy(aesEnc, 0, finalBytes, pos, aesEnc.length);
 
-//	/**
-//	 * 非对称加密
-//	 * @param plainText 要加密的内容
-//	 * @param publicKey base58格式的publicKey
-//	 * @return return value.
-//	 */
-//	public static String eciesEncrypt (String plainText,String publicKey)
-//	{
-//		byte [] dataPubB = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-//		return eciesEncrypt(plainText.getBytes(),dataPubB);
-//	}
+//		return finalBytes;
+    	EncryptMsg.MultiEncrypt.Builder builder = EncryptMsg.MultiEncrypt.newBuilder();
+    	builder.setPublicOther(ByteString.copyFrom(dataPubA));
+    	for(int i=0; i<listPubHash.size(); i++) {
+    		EncryptMsg.MultiEncrypt.HashToken.Builder bd = EncryptMsg.MultiEncrypt.HashToken.newBuilder();
+    		bd.setPublicHash(ByteString.copyFrom(listPubHash.get(i)));
+    		bd.setToken(ByteString.copyFrom(listPassCipher.get(i)));
+    		builder.addHashTokenPair(bd);
+    	}
+    	builder.setCipher(ByteString.copyFrom(aesEnc));
+    	
+    	byte[] finalByte =  builder.build().toByteArray();
+    	
+    	return ZLibUtils.compress(finalByte);
+	}
+	
+	public static String decryptText(byte[] cipher,String secret) {
+		IKeyPair pair = Seed.fromBase58(secret).keyPair();
+		byte[] dataPrvA = pair.priv().toByteArray();
+		byte[] dataPubA = pair.pub().toByteArray();
+		
+		byte[] cipherBytes = ZLibUtils.decompress(cipher);
+		try {
+			EncryptMsg.MultiEncrypt msg = EncryptMsg.MultiEncrypt.parseFrom(cipherBytes);
+			byte[] pubOther = msg.getPublicOther().toByteArray();
+			byte[] password = null;
+			byte[] pubHashSelf = HashUtils.quarterSha512(dataPubA);
+			String sPubHash = Arrays.toString(pubHashSelf);
+			List<HashToken> listHashToken = msg.getHashTokenPairList();
+			for(HashToken hashPair : listHashToken) {
+				//byte[] tmp = hashPair.getPublicHash().toByteArray();
+				if(sPubHash.equals(Arrays.toString(hashPair.getPublicHash().toByteArray()))){
+					password = simpleDecrypt(hashPair.getToken().toByteArray(),dataPrvA,pubOther);
+					break;
+				}
+			}
+			if(password != null) {
+				byte[] plain = Aes.decrypt(msg.getCipher().toByteArray(), password);
+				return new String(plain);
+			}
+		}catch(InvalidProtocolBufferException e) {
+			e.printStackTrace();
+		}
+		
+		return "";
+//		//get public-list size
+//		int clength = (int)cipher[0];
+//		
+//		//get random public
+//		byte[] pubOther = new byte[dataPubA.length];
+//		System.arraycopy(cipher, 1, pubOther, 0, pubOther.length);
+//		
+//		//get token
+//		byte[] password = null;
+//		byte[] pubHashSelf = HashUtils.quarterSha512(dataPubA);
+//		String sPubHash = Arrays.toString(pubHashSelf);
+//		int pos = 1 + dataPubA.length;
+//		for(int i=0; i<clength; i++) {
+//			byte[] pubHash = new byte[16];
+//			byte[] passCipher = new byte[48];
+//			System.arraycopy(cipher, pos, pubHash, 0, pubHash.length);
+//			pos += pubHash.length;
+//			System.arraycopy(cipher, pos, passCipher, 0, passCipher.length);
+//			pos += passCipher.length;
+//			if(sPubHash.equals(Arrays.toString(pubHash))) {
+//				//decrypt token
+//				password = simpleDecrypt(passCipher,dataPrvA,pubOther);
+//				break;
+//			}
+//		}
+//		if(password == null)
+//			return "";
+//		//get cipher
+//		int cipherLen = cipher.length - 1 - pubOther.length - clength * (16 + 48);
+//		byte[] cipherBytes = new byte[cipherLen];
+//		System.arraycopy(cipher, cipher.length - cipherLen, cipherBytes, 0, cipherLen);
+//		byte[] plain = Aes.decrypt(cipherBytes, password);
+//		return new String(plain);
+	}
+	
+	private static byte[] simpleEncrypt(byte[] plainBytes,byte[] publicKey,byte[] dataPrvA) {
+		try{
+			byte[] secret = doECDH(dataPrvA, publicKey);
+			Sha512 hash = new Sha512(secret);
+			byte[] kdOutput = hash.finish();
+			//System.out.println("kdOutput:" + Util.bytesToHex(kdOutput));
+			
+	        byte[] aesKey = new byte[AESKeyLength];
+	        System.arraycopy(kdOutput, 0, aesKey, 0, AESKeyLength);
+	        
+	        //generate random iv
+	        byte[] iv = new byte[IVLength];
+	        Random r = new Random();
+	        r.nextBytes(iv);
+	        //System.out.println(Util.bytesToHex(iv));
+	        //aes-256-cbc
+	        ParametersWithIV keyWithIv = new ParametersWithIV(new KeyParameter(aesKey), iv);
+	        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
+	        cipher.init(true, keyWithIv);        
+	        byte[] encryptedBytes = new byte[cipher.getOutputSize(plainBytes.length)];
+	        int length1 = cipher.processBytes(plainBytes, 0, plainBytes.length, encryptedBytes, 0);	        
+	        cipher.doFinal(encryptedBytes, length1);
+	        //System.out.println("cipher:" + Util.bytesToHex(encryptedBytes));
+	       
+	        byte[] finalBytes = new byte[iv.length + encryptedBytes.length];
+	        System.arraycopy(iv, 0, finalBytes, 0, iv.length);
+	        System.arraycopy(encryptedBytes, 0, finalBytes, iv.length, encryptedBytes.length);
+	        return finalBytes;
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static byte[] simpleDecrypt(byte[] cipherText,byte[] priv,byte[] dataPubA) {
+		try{
+			byte[] secret = doECDH(priv, dataPubA);
+			Sha512 hash = new Sha512(secret);
+			byte[] kdOutput = hash.finish();
+			
+	        byte[] aesKey = new byte[AESKeyLength];
+	        System.arraycopy(kdOutput, 0, aesKey, 0, AESKeyLength);
+	        
+	        byte[] iv = new byte[IVLength];
+	        byte[] cipherBytes = new byte[cipherText.length - IVLength];
+	        System.arraycopy(cipherText, 0, iv, 0, IVLength);
+	        System.arraycopy(cipherText, IVLength, cipherBytes, 0, cipherBytes.length);
+	        
+	        //aes-256-cbc
+	        ParametersWithIV keyWithIv = new ParametersWithIV(new KeyParameter(aesKey), iv);
+	        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
+	        cipher.init(false, keyWithIv);        
+	        byte[] decryptedBytes  = new byte[cipher.getOutputSize(cipherBytes.length)];
+	        int length1 = cipher.processBytes(cipherBytes, 0, cipherBytes.length, decryptedBytes , 0);	        
+	        int length2 = cipher.doFinal(decryptedBytes , length1);
+	        byte[] finalBytes = new byte[length1 + length2];
+	        System.arraycopy(decryptedBytes, 0, finalBytes, 0, finalBytes.length);
+	        
+	        return finalBytes;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
 	/**
 	 * 
 	 * @param plainBytes bytes to be encrypted.

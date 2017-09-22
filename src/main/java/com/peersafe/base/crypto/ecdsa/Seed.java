@@ -13,6 +13,7 @@ import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.encodings.base58.B58;
 import com.peersafe.base.utils.Sha512;
 import com.peersafe.base.utils.Utils;
+import com.peersafe.chainsql.util.Util;
 
 public class Seed {
     public static byte[] VER_K256 = new byte[]{(byte) B58IdentiferCodecs.VER_FAMILY_SEED};
@@ -139,16 +140,12 @@ public class Seed {
     }
 
     public static Seed randomSeed(){
-    	Random r = new Random();
-    	byte[] seedBytes = new byte[16];
-    	r.nextBytes(seedBytes);
+    	byte[] seedBytes = Util.getRandomBytes(16);
     	return new Seed(seedBytes);
     }
 
     public static IKeyPair randomKeyPair(){
-    	Random r = new Random();
-    	byte[] seedBytes = new byte[16];
-    	r.nextBytes(seedBytes);
+    	byte[] seedBytes = Util.getRandomBytes(16);
     	return createKeyPair(seedBytes, 0);
     }
 }

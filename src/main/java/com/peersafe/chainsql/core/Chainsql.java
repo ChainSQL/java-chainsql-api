@@ -252,7 +252,7 @@ public class Chainsql extends Submit {
 	    "hash":""
 	 }
 	 */
-	public JSONObject sign_for(JSONObject tx,String secret){
+	public JSONObject signFor(JSONObject tx,String secret){
 		if(!tx.has("secret")){
 			return Util.errorObject("no secret supplied");
 		}
@@ -605,6 +605,7 @@ public class Chainsql extends Submit {
 	public void endTran(){
 		this.transaction = false;
 		this.mapToken.clear();
+		this.cache.clear();
 	}
 	/**
 	 * Commit a sql-transaction type operation.

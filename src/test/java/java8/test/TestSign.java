@@ -8,12 +8,12 @@ import com.peersafe.chainsql.core.Chainsql;
 public class TestSign {
 	public static final Chainsql c = Chainsql.c;
 	public static void main(String[] args) {
-//		testSignPayment();
-//		testSignTrustSet();
-//		testSignAccountSet();
-//		testSignForPayment();
-//		testSignForTrustSet();
-//		testSignSignerListSet();
+		testSignPayment();
+		testSignTrustSet();
+		testSignAccountSet();
+		testSignForPayment();
+		testSignForTrustSet();
+		testSignSignerListSet();
 		testSignPathset();
 	}
 	
@@ -125,7 +125,7 @@ public class TestSign {
 		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		JSONObject res = c.signFor(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		System.out.println("sign_for payment signer:" + res);
 	}
 	
@@ -147,7 +147,7 @@ public class TestSign {
 		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		JSONObject res = c.signFor(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		System.out.println("sign_for trustset signer:" + res);
 	}
 	

@@ -333,6 +333,8 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		}
 
 		txn.prepare(keyPair, fee, sequence, lastLedgerSequence);
+		//txn.prepare(keyPair, fee, sequence, null);
+		//System.out.println("hash:" + txn.hash);
 		
 		return submitSigned(txn);
 	}

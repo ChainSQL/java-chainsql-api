@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.Util;  
 
@@ -56,12 +57,14 @@ public class ECTest {
 //    	byte[] dec = Ecies.eciesDecrypt(res, secret);
 //    	System.out.println(new String(dec));
 //    	
+    	String aes = Aes.aesEncrypt("123", "test");
+    	System.out.println(Util.toHexString(aes));
 //    	String aesEnc = Aes.aesEncrypt("hello12345123456", "test");
 //    	byte[] aesDec = Aes.aesDecrypt("hello12345123456", aesEnc);
 //    	System.out.println(new String(aesDec));
-    	
+    	//字段级加密测试
     	List<String> listPub = Arrays.asList("aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs", "aBP8EvA6tSMzCRbfsLwiFj51vDjE4jPv9Wfkta6oNXEn8TovcxaT");
-    	byte[] ret = Ecies.encryptText("02F039E54B3A0D209D348F1B2C93BE3689F2A7595DDBFB1530499D03264B87A61F", listPub);
+    	byte[] ret = Ecies.encryptText("testField", listPub);
     	System.out.println("ret.length:" + ret.length);
     	String plainGet = Ecies.decryptText(ret, "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
     	System.out.println("plainGet:" + plainGet);

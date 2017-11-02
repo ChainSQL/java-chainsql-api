@@ -30,6 +30,7 @@ import org.bouncycastle.jce.spec.ECPublicKeySpec;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.peersafe.base.config.Config;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
@@ -61,11 +62,6 @@ public class Ecies {
 		if(listPublicKey.size() == 0)
 			return null;
 		
-		//random key-pair
-    	IKeyPair pair = Seed.randomKeyPair();
-		byte [] dataPrvA = pair.priv().toByteArray();
-		byte [] dataPubA = pair.pub().toByteArray();
-		
 		//AES encrypt
 		byte[] password = Util.getRandomBytes(16);
     	byte[] aesEnc = Aes.encrypt(password, plainText.getBytes());
@@ -73,13 +69,31 @@ public class Ecies {
     	//encrypt password
     	List<byte[]> listPubHash = new ArrayList<byte[]>();
     	List<byte[]> listPassCipher = new ArrayList<byte[]>();
-    	for(String sPub : listPublicKey) {
-    		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-    		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
-    		byte[] passCipher = simpleEncrypt(password,pubBytes,dataPrvA);
-    		listPubHash.add(pubHash);
-    		listPassCipher.add(passCipher);
+    	byte[] dataPubA = {0};
+    	//如果使用国密
+    	if(Config.isUseGM()) {
+        	for(String sPub : listPublicKey) {
+        		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+        		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
+        		byte[] passCipher = EncryptCommon.asymEncrypt(password, pubBytes);;
+        		listPubHash.add(pubHash);
+        		listPassCipher.add(passCipher);
+        	}
+    	}else {
+    		//random key-pair
+        	IKeyPair pair = Seed.randomKeyPair();
+    		byte [] dataPrvA = pair.priv().toByteArray();
+    		dataPubA = pair.pub().toByteArray();
+
+        	for(String sPub : listPublicKey) {
+        		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+        		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
+        		byte[] passCipher = simpleEncrypt(password,pubBytes,dataPrvA);
+        		listPubHash.add(pubHash);
+        		listPassCipher.add(passCipher);
+        	}
     	}
+
 //    	int singleLen = listPubHash.get(0).length + listPassCipher.get(0).length;
 //    	int finalLen = 1 + singleLen * listPublicKey.size() + dataPubA.length + aesEnc.length;
 //    	byte[] finalBytes = new byte[finalLen];
@@ -116,29 +130,54 @@ public class Ecies {
 	}
 	
 	public static String decryptText(byte[] cipher,String secret) {
-		IKeyPair pair = Seed.fromBase58(secret).keyPair();
-		byte[] dataPrvA = pair.priv().toByteArray();
-		byte[] dataPubA = pair.pub().toByteArray();
 		
 		byte[] cipherBytes = ZLibUtils.decompress(cipher);
 		try {
 			EncryptMsg.MultiEncrypt msg = EncryptMsg.MultiEncrypt.parseFrom(cipherBytes);
-			byte[] pubOther = msg.getPublicOther().toByteArray();
 			byte[] password = null;
-			byte[] pubHashSelf = HashUtils.quarterSha512(dataPubA);
-			String sPubHash = Arrays.toString(pubHashSelf);
-			List<HashToken> listHashToken = msg.getHashTokenPairList();
-			for(HashToken hashPair : listHashToken) {
-				//byte[] tmp = hashPair.getPublicHash().toByteArray();
-				if(sPubHash.equals(Arrays.toString(hashPair.getPublicHash().toByteArray()))){
-					password = simpleDecrypt(hashPair.getToken().toByteArray(),dataPrvA,pubOther);
-					break;
+
+			//如果使用国密
+	    	if(Config.isUseGM()) {
+	    		Seed seed = Seed.randomSeed();
+	    		seed.setGM();
+	    		IKeyPair keyPair = seed.keyPair();
+	    		byte[] pubBytes = keyPair.canonicalPubBytes();
+	    		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
+	    		String sPubHash = Arrays.toString(pubHash);
+	    		
+	    		List<HashToken> listHashToken = msg.getHashTokenPairList();
+				for(HashToken hashPair : listHashToken) {
+					//byte[] tmp = hashPair.getPublicHash().toByteArray();
+					if(sPubHash.equals(Arrays.toString(hashPair.getPublicHash().toByteArray()))){
+						password = EncryptCommon.asymDecrypt(hashPair.getToken().toByteArray(), null);	;
+						break;
+					}
 				}
-			}
-			if(password != null) {
-				byte[] plain = Aes.decrypt(msg.getCipher().toByteArray(), password);
-				return new String(plain);
-			}
+				if(password != null) {
+					byte[] plain = Aes.decrypt(msg.getCipher().toByteArray(), password);
+					return new String(plain);
+				}
+	    	}else {
+	    		IKeyPair pair = Seed.fromBase58(secret).keyPair();
+	    		byte[] dataPrvA = pair.priv().toByteArray();
+	    		byte[] dataPubA = pair.pub().toByteArray();
+				byte[] pubHashSelf = HashUtils.quarterSha512(dataPubA);
+				String sPubHash = Arrays.toString(pubHashSelf);
+				
+				byte[] pubOther = msg.getPublicOther().toByteArray();
+				List<HashToken> listHashToken = msg.getHashTokenPairList();
+				for(HashToken hashPair : listHashToken) {
+					//byte[] tmp = hashPair.getPublicHash().toByteArray();
+					if(sPubHash.equals(Arrays.toString(hashPair.getPublicHash().toByteArray()))){
+						password = simpleDecrypt(hashPair.getToken().toByteArray(),dataPrvA,pubOther);
+						break;
+					}
+				}
+				if(password != null) {
+					byte[] plain = Aes.decrypt(msg.getCipher().toByteArray(), password);
+					return new String(plain);
+				}
+	    	}
 		}catch(InvalidProtocolBufferException e) {
 			e.printStackTrace();
 		}

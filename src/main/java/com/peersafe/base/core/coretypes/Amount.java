@@ -627,7 +627,7 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     }
 
     public String nativeText() {
-        return String.format("%s/XRP", valueText());
+        return String.format("%s/ZXC", valueText());
     }
 
     @Override
@@ -671,7 +671,7 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     }
 
     private static PrecisionError getOutOfBoundsError(BigDecimal abs, String sized, BigDecimal bound) {
-        return new PrecisionError(abs.toPlainString() + " absolute XRP is " + sized + bound);
+        return new PrecisionError(abs.toPlainString() + " absolute ZXC is " + sized + bound);
     }
 
     public void checkXRPBounds() {

@@ -137,7 +137,7 @@ public class Currency extends Hash160 {
         public Currency fromString(String value) {
             if (value.length() == 40 /* byteWidth() * 2 */) {
                 return newInstance(B16.decode(value));
-            } else if (value.equals("XRP")) {
+            } else if (value.equals("ZXC")) {
                 return XRP;
             } else {
                 if (!(value.length() == 3)) {
@@ -158,11 +158,11 @@ public class Currency extends Hash160 {
         switch (type) {
             case ISO:
                 String code = getCurrencyCodeFromTLCBytes(bytes());
-                if (code.equals("XRP")) {
+                if (code.equals("ZXC")) {
                     // HEX of the bytes
                     return super.toString();
                 } else if (code.equals("\0\0\0")) {
-                    return "XRP";
+                    return "ZXC";
                 } else {
                     // the 3 letter isoCode
                     return code;

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  */
 public class Issue implements Comparable<Issue> {
 
-    public static final Issue XRP = fromString("XRP");
+    public static final Issue XRP = fromString("ZXC");
     final Currency currency;
     final AccountID issuer;
 
@@ -27,10 +27,10 @@ public class Issue implements Comparable<Issue> {
     private static Issue fromStringPair(String[] split) {
         if (split.length == 2) {
             return new Issue(Currency.fromString(split[0]), AccountID.fromString(split[1]));
-        } else if (split[0].equals("XRP")) {
+        } else if (split[0].equals("ZXC")) {
             return new Issue(Currency.XRP, AccountID.XRP_ISSUER);
         } else {
-            throw new RuntimeException("Issue string must be XRP or $currency/$issuer");
+            throw new RuntimeException("Issue string must be ZXC or $currency/$issuer");
         }
     }
 
@@ -61,7 +61,7 @@ public class Issue implements Comparable<Issue> {
     @Override
     public String toString() {
         if (isNative()) {
-            return "XRP";
+            return "ZXC";
         } else {
             return String.format("%s/%s", currency, issuer);
         }

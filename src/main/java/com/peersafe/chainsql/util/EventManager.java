@@ -1,5 +1,7 @@
 package com.peersafe.chainsql.util;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 import java.util.HashMap;
 
 import org.json.JSONObject;
@@ -7,12 +9,15 @@ import org.json.JSONObject;
 import com.peersafe.base.client.Client.OnTBMessage;
 import com.peersafe.base.client.Client.OnTXMessage;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
 
 public class EventManager {
 	public Connection connection;
 	public boolean onMessage;
 	private HashMap<String,Callback> mapCache;
+	private HashMap<String,byte[]> mapPass;
 	public JSONObject result;
 
 	/**
@@ -23,6 +28,7 @@ public class EventManager {
 		super();
 		this.connection = connection;
 		this.mapCache = new HashMap<String,Callback>();
+		mapPass = new HashMap<String,byte[]>();
 		this.onMessage = false;
 	}
 	
@@ -105,7 +111,9 @@ public class EventManager {
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
 	
-		this.mapCache.remove(name + owner);
+		String key = name + owner;
+		this.mapCache.remove(key);
+		this.mapPass.remove(key);
 	}
 
 	/**
@@ -123,26 +131,98 @@ public class EventManager {
 
 	}
 
+	private void onChainsqlMessage(final JSONObject data,final String key,final String owner,final String name) {
+		final JSONObject tx = data.getJSONObject("transaction");
+		if(mapPass.containsKey(key)) {
+   	 		Util.decryptData(mapPass.get(key), tx);
+   	 		makeCallback(key,data);
+   	 	}else {
+   	 		connection.client.getUserToken(owner,connection.address,name,new Callback<JSONObject>(){
+   				@Override
+   				public void called(JSONObject res) {
+   					if(res.get("status").equals("error")){
+   						System.out.println(res.getString("error_message"));
+   					}else {
+   						String token = res.getString("token");
+   						if(token.length() != 0){
+   							try {
+   								byte[] seedBytes = null;
+   								if(!connection.secret.isEmpty()){
+   									seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
+   								}
+   								byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes);
+   								mapPass.put(key, password);
+   								Util.decryptData(mapPass.get(key), tx);
+   								makeCallback(key,data);
+   							} catch (Exception e) {
+   								e.printStackTrace();
+   							}
+   						}else {
+   							mapPass.put(key, null);
+							Util.decryptData(mapPass.get(key), tx);
+							makeCallback(key,data);
+   						}
+   					}
+   				}
+   			});
+   	 	}
+	}
 	/**
 	 * Table transaction trigger.
 	 * @param data Table message data.
 	 */
 	private void onTBMessage(JSONObject data){
-		String key = data.getString("tablename") + data.getString("owner");
-		makeCallback(key,data);
+		String owner = data.getString("owner");
+		String name = data.getString("tablename");
+   	 	String key = name + owner;
+   	 	onChainsqlMessage(data,key,owner,name);
 	}
 	
 	private void onTXMessage(JSONObject data){
 		String key = ((JSONObject) data.get("transaction")).getString("hash");
-		makeCallback(key,data);
-        if ( !"validate_success".equals(data.getString("status"))) {
+		//解密
+//		if(isChainsqlType(data)) {
+//			JSONObject tx = data.getJSONObject("transaction");
+//			String name = "";
+//			String owner = "";
+//			if(tx.has("Tables")){
+//				JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
+//				table = table.getJSONObject("Table");
+//				name = Util.fromHexString(table.getString("TableName"));
+//			}
+//			if(tx.has("Owner")) {
+//				owner = tx.getString("Owner");
+//			}else {
+//				owner = tx.getString("Account");
+//			}
+//			if(!name.isEmpty() && !owner.isEmpty()) {
+//				onChainsqlMessage(data,key,owner,name);
+//			}else {
+//				makeCallback(key,data);	
+//			}
+//		}else {
+//			makeCallback(key,data);	
+//		}
+		makeCallback(key,data);	
+        if ("db_success".equals(data.getString("status")) || 
+        		("validate_success".equals(data.getString("status"))) && !isChainsqlType(data)) {
         	mapCache.remove(key);
         }
 	}
 	
+	private boolean isChainsqlType(JSONObject data) {
+		JSONObject tx = data.getJSONObject("transaction");
+		int type = tx.getInt("TransactionType");
+		if(type == TransactionType.TableListSet.asInteger() || 
+		   type == TransactionType.SQLStatement.asInteger() || 
+		   type == TransactionType.SQLTransaction.asInteger()) {
+			return true;
+		}
+		return false;
+	}
+	
 	private void makeCallback(String key,JSONObject data){
 		if (mapCache.containsKey(key)) {
-	    	 Util.unHexData(data.getJSONObject("transaction"));
 	    	 mapCache.get(key).called(data);
 	     }
 	}

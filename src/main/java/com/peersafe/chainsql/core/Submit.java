@@ -232,15 +232,13 @@ public abstract class Submit {
 	    			res.put("tx_hash", tx.get("hash").toString());
 	    			
 	    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
-	    				res.put("status", "success");
+	    				res.put("status", "validate_success");
 	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
-	    				res.put("status", "success");
+	    				res.put("status", "db_success");
 	    			}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
-	    				res.put("status", "error");
-	    				if(res.has("error_message"))
+	    				res.put("status", obj.get("status"));
+	    				if(obj.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
-	    				else
-	    					res.put("error_message", obj.get("status"));
 	    			}
 	    			if(!res.isNull("status")){
 	        			syncRes = res;

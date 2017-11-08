@@ -1381,7 +1381,36 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
          request.request();
          waiting(request);
+
 	   	 return request;	
+    }
+    
+    public void getUserToken(final String owner,final String user,final String name,final Callback<JSONObject> cb) {
+       	makeManagedRequest(Command.g_userToken, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+	       	   	 JSONObject txjson = new JSONObject();
+	    	   	 txjson.put("Owner", owner);
+	    	   	 txjson.put("User", user);
+	    	   	 txjson.put("TableName", name);
+	    	   	 request.json("tx_json", txjson);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
     }
     
     /**

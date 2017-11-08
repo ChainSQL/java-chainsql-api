@@ -1,6 +1,7 @@
 package com.peersafe.chainsql.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -62,5 +63,71 @@ public class Validate {
 			map.put("error_message", request.response.message.getString("error_message"));
 		}
 		return map;
+	}
+	
+    /**
+     * Check fields
+     * @param strraw Raw data list.
+     * @throws Exception Throws when exception occur.
+     */
+	public static void checkCreate(List<JSONObject> strraw,String name) throws Exception{
+		if(name.isEmpty()) {
+			throw new Exception("Table name can not be empty.");
+		}
+//		boolean isHavePk = false;
+		for (int i = 0; i < strraw.size(); i++) {	
+			JSONObject json = strraw.get(i);
+			String field, type;
+	    	try {
+				field =json.getString("field");
+				type = json.getString("type");
+			} catch (Exception e) {
+				throw new Exception("Raw must have  field and type");
+				// TODO: handle exception
+			}
+
+    		if (field==null || type==null) {
+    			throw new Exception("field and type cannot be empty");
+    		}
+    		
+            if("int".equals(type)){
+
+            }else if("float".equals(type)){
+
+            }else if("double".equals(type)){
+
+            }else if("decimal".equals(type)){
+
+            }else if("varchar".equals(type)){
+            	try {
+    				int length = (int) json.getInt("length");
+    				if(length == 0){
+    					throw new Exception(" The type varchar must have length");
+    				}
+    			} catch (Exception e) {
+    				throw new Exception(" The type varchar must have length");
+    			}
+            }else if("blob".equals(type)){
+
+            }else if("text".equals(type)){
+
+            }else if("datetime".equals(type) || "date".equals(type)){
+
+            }else{
+            	throw new Exception("invalid type "+type);
+            }
+//            try {
+//            	int PK =(int) json.getInt("PK");
+//            	if(PK == 1){
+//            		if (isHavePk) {
+//            			throw new Exception("the table only have a PK");
+//            		}
+//            		isHavePk = true;
+//            	}
+//			} catch (Exception e) {
+//				//throw new Exception("Raw must have  field and type");
+//				//e.printStackTrace();
+//			}
+		}
 	}
 }

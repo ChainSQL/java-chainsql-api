@@ -194,7 +194,7 @@ public class TestChainsql {
 //		 JSONObject obj = c.table(sTableName).get(Util.array("{id:1}")).withFields("[]").submit();
 		
 		//查询所有数据
-		 JSONObject obj = c.table(sTableName).get(null).submit();
+		 JSONObject obj = c.table(sTableName).get().submit();
 		 System.out.println("get result:" + obj);
 	}
 

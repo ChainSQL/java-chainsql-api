@@ -109,9 +109,28 @@ public class Table extends Submit{
 		
 	    this.exec = "r_get";
 		return this;
+	}
+	
+	/**
+	 * Select data from a table.
+	 * @param arg Select parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table get(String arg){
+		if(!"".equals(arg) && arg !=null){
+			String json = Util.StrToJsonStr(arg);
+			this.query.add(json);
+		}
+		
+	    this.exec = "r_get";
+		return this;
 		
 	}
-
+	
+	public Table get(){		
+	    this.exec = "r_get";
+		return this;
+	}
 	/**
 	 * Filter conditions when select.
 	 * @param orgs Select conditions.

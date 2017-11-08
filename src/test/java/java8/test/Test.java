@@ -1,15 +1,15 @@
 package java8.test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.base.client.Account;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
+import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.util.Util;
 
 public class Test {
@@ -18,36 +18,74 @@ public class Test {
 	public static String sNewAccountId,sNewSecret;
 	public static void main(String[] args) {
 		// c.connect("ws://192.168.0.152:6006");
-		//c.connect("ws://192.168.0.148:5008");
-		c.connect("ws://139.198.11.189:6006");
-		// c.connect("ws://192.168.0.112:6007");
+		c.connect("ws://192.168.0.110:6007");
+//		c.connect("ws://139.198.11.189:6006");
+//		c.connect("wss://s1.ripple.com:443");
+		// c.connect("ws://192.168.0.110:6007");
 		 
 		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
 		
-		sTableName = "Invoice";
-		sTableName2 = "boy2";
+		sTableName = "boy5";
+		sTableName2 = "boy3";
 		sReName = "boy1";
 
 		//设置日志级别
 		//c.connection.client.logger.setLevel(Level.SEVERE);
 				
-		//c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-		c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
+		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		//c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
 		//c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
 
 
-//		testSubscribe();
+		testSubscribe();
 //		testRippleAPI();
 //
 //		testAccount();
 		testChainSql();
+		
+//		testEncrypt();
 
 	//	c.disconnect();
 	}
+	
+	private static void testEncrypt() {
+		String tableName = "testEncrypt";
+		//建表，注意name字段定义成text 类型，以防止varchar长度不够大插入失败
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+				"{'field':'name','type':'text'}", "{'field':'age','type':'int'}");
+		JSONObject obj;
+		obj = c.createTable(tableName,args,false).submit(SyncCond.db_success);
+		System.out.println("create result:" + obj);
+		
+		//给加密加密
+		String name = "shazhu";
+    	List<String> listPub = Arrays.asList("aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs", "aBP8EvA6tSMzCRbfsLwiFj51vDjE4jPv9Wfkta6oNXEn8TovcxaT");
+    	String cipher = c.encrypt(name, listPub);
+    	System.out.println("encrypt result:" + cipher);
+    	
+    	//插入数据
+		args = Util.array("{'age': 256,'name':'" + cipher + "'}");
+		obj = c.table(tableName).insert(args).submit(SyncCond.db_success);
+		System.out.println("insert result:" + obj);
+		
+		//查询刚刚插入的数据
+		obj = c.table(tableName).get("{age:256}").submit();
+		System.out.println(obj);
+		//获取加密字段的值
+		JSONArray lines = obj.getJSONArray("lines");
+		JSONObject line = lines.getJSONObject(0);
+		String nameCipher = line.getString("name");
+		
+		//解密加密字段的值
+    	String plainGet = c.decrypt(nameCipher, "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
+    	System.out.println("账户1解密结果:" + plainGet);
+    	plainGet = c.decrypt(nameCipher, "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+    	System.out.println("账户2解密结果:" + plainGet);
+	}
 
 	private static void testSubscribe() {
-		c.event.subTable("hijack", "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", (data) -> {
-			System.out.println(data);
+		c.event.subTable(sTableName, "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data) -> {
+			System.out.println("subscribe return:" + data);
 		});
 		c.onReconnecting((data) -> {
 			System.out.println("Reconnecting started");
@@ -63,18 +101,18 @@ public class Test {
 //		test.getLedgerVersion();
 //		test.getLedger();
 		
-		test.getUnlList();
+//		test.getUnlList();
 //
 //		test.getTransactions();
-//		test.getTransaction();
+		test.getTransaction();
 //
 //		test.getServerInfo();
 	}
 
 	private static void testChainSql() {
 		Test test = new Test();
-		// test.testRecreateTable();
-//		test.testCreateTable();
+//		// test.testRecreateTable();
+		test.testCreateTable();
 //		test.testCreateTable1();
 //		test.testinsert();
 //		test.testUpdateTable();
@@ -84,19 +122,19 @@ public class Test {
 //		test.testdrop();
 //		test.grant();
 //		test.insertAfterGrant();
-		test.testts();
-		
+//		test.testts();
+//		
+//		//底层现在不允许执行这种操作了
 ////		test.testdeleteAll();
 //		test.getCrossChainTxs();
 //		test.getChainInfo();
-//		test.testget();
 //		test.testOperationRule();
 	}
 
 	private static void testAccount() {
 		Test test = new Test();
-		test.generateAccount();
-		test.activateAccount(sNewAccountId);
+//		test.generateAccount();
+//		test.activateAccount(sNewAccountId);
 		
 		try {
 			Thread.sleep(2000);
@@ -173,10 +211,10 @@ public class Test {
 		// c.table(sTableName).insert(Util.array("{'age':
 		// 23,'name':'adsf','balance':'124'}","{'age':
 		// 33,'name':'小sr','balance':'300'}"));
-//		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
-//		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
-//		c.table(sTableName).get(Util.array("{'id': 2}")).update("{'age':222}");
-		c.table(sTableName).get(Util.array("{'DOCID': 'INV101'}")).update("{'STATE':3}");
+		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
+		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
+		c.table(sTableName).get(Util.array("{'id': 3}")).update("{'age':244}");
+//		c.table(sTableName).get(Util.array("{'DOCID': 'INV101'}")).update("{'STATE':3}");
 		// c.table(sTableName).get(Util.array("{'id':
 		// 2}")).sqlAssert(c.array("{'age':200}"));
 //		JSONObject obj = c.commit((data) -> {
@@ -214,7 +252,7 @@ public class Test {
 	}
 
 	public void getTransaction() {
-		String hash = "2D3EBDCE852864DF57A48A9E2ED361B67DD5059F3A3EC79134855C1C59026C27";
+		String hash = "9DC9254B81E1A9208A913803D41C3A6E5047CC30042E0B13741CE3502B47CB7C";
 		JSONObject obj = c.getTransaction(hash);
 		System.out.println("getTransaction------" + obj);
 		// c.getTransaction(hash, (data)->{
@@ -285,37 +323,94 @@ public class Test {
 		System.out.println("insert result:" + obj);
 	}
 
+	/*
 	public void testOperationRule(){
-		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
-									   "{'field':'name','type':'varchar','length':50,'default':null}", 
-									   "{'field':'age','type':'int'}",
-									   "{'field':'account','type':'varchar','length':64}");
-		String operationRule = "{" +
-			"'Insert':{" +
-			"	'Condition':{'account':'$account'},"+
-			"	'Count':{'AccountField':'account','CountLimit':5}" +
-			"},"+
-			"'Update':{"+
-			"	'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},"+
-			"	'Fields':['age']" +
-			"},"+
-			"'Delete':{"+
-			"	'Condition':{'age':'$lt18'}"+
-			"},"+
-			"'Get':{"+
-			"	'Condition':{'id':{'$ge':3}}"+
-			"}"+
-		"}";
-							
-		JSONObject obj;
-//		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
-//		System.out.println("create result:" + obj);
+//		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+//									   "{'field':'name','type':'varchar','length':50,'default':null}", 
+//									   "{'field':'age','type':'int'}",
+//									   "{'field':'account','type':'varchar','length':64}");
+//		String operationRule = "{" +
+//			"'Insert':{" +
+//			"	'Condition':{'account':'$account'},"+
+//			"	'Count':{'AccountField':'account','CountLimit':5}" +
+//			"},"+
+//			"'Update':{"+
+//			"	'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},"+
+//			"	'Fields':['age']" +
+//			"},"+
+//			"'Delete':{"+
+//			"	'Condition':{'age':'$lt18'}"+
+//			"},"+
+//			"'Get':{"+
+//			"	'Condition':{'id':{'$ge':3}}"+
+//			"}"+
+//		"}";
+//							
+//		JSONObject obj;
+////		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
+////		System.out.println("create result:" + obj);
+//		
+//		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+//		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//		System.out.println("insert result:" + obj);
 		
-		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+				   "{'field':'name','type':'varchar','length':50,'default':null}", 
+				   "{'field':'age','type':'int'}",
+				   "{'field':'account','type':'varchar','length':64}");
+		String operationRule = "{" +
+		"'Insert':{" +
+		"	'Condition':{'account':'$account'},"+
+		"	'Count':{'AccountField':'account','CountLimit':5}" +
+		"},"+
+		"'Update':{"+
+		"	'Condition':{'$or':[{'age':{'$le':28}},{'id':2}]},"+
+		"	'Fields':['age']" +
+		"},"+
+		"'Delete':{"+
+		"	'Condition':{'$and':[{'age':'$lt18'},{'account':'$account'}]}"+
+		"},"+
+		"'Get':{"+
+		"	'Condition':{'id':{'$ge':3}}"+
+		"}"+
+		"}";
+		
+		JSONObject obj;
+		obj = c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);
+		System.out.println("create result:" + obj);
+		
+	
+		List<String> orgs =Util.array("{'id':'6','name':'dd','age':30 }");
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert result:" + obj);
 		
+		obj = c.table(sTableName).get().order(Util.array("{id:-1}")).withFields("[]").submit();
+		System.out.println("get result:" + obj);
+	}*/
+	
+	public void testOperationRule(){
+//		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}","{'field':'name','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}","{'field':'account','type':'varchar','length':64}");
+//		String operationRule = "{" +
+//			"'Insert':{" +
+//			"	'Condition':{'account':'$account'},"+
+//			"},"+
+//			"'Update':{" +
+//			"	'Condition':{'$or':[{'age':{'$le':28}},	{'id':2}]},"+
+//			"	'Fields':['age']"+
+//			"},"+
+//			"'Get':{"+
+//			"	'Condition':{'id':{'$ge':3}}"+
+//			"}"+
+//		"}";
+//		JSONObject obj;obj=c.createTable(sTableName,args,Util.StrToJson(operationRule)).submit(SyncCond.db_success);System.out.println("create result:"+obj);
+//		
+//		List<String> orgs = Util.array("{'id':'2','name':'dd','age':30 }");
+//		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//		System.out.println("insert result:" + obj);
 		
+//		JSONObject obj = c.table(sTableName).get().limit("{index:0,total:1}").withFields("[]").submit();
+		JSONObject obj = c.table(sTableName).get().withFields("[]").submit();
+		System.out.println(obj);
 	}
 	
 	public void insertAfterGrant(){
@@ -339,7 +434,7 @@ public class Test {
 		// obj = c.table(sTableName).get(arr1).update(arr2).submit();
 		// System.out.println(obj);
 		//
-		obj = c.table(sTableName).get(arr1).update("{'age':200}").submit(SyncCond.db_success);
+		obj = c.table(sTableName).get().update("{'age':200}").submit(SyncCond.db_success);
 		System.out.println("update result:" + obj);
 	}
 
@@ -398,12 +493,11 @@ public class Test {
 		 * array("{age:-1}")).filterWith("[]").submit();
 		 */
 
-		 JSONObject obj =
-		 c.table(sTableName).get(Util.array("{id:1}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
-		 System.out.println("testget------"+data);
-		 });
-
-		//JSONObject obj = c.table(sTableName).get(null).submit();
+//		 JSONObject obj =
+//		 c.table(sTableName).get(Util.array("{id:1}")).order(Util.array("{age:-1}")).withFields("[]").submit((data)->{
+//		 System.out.println("testget------"+data);
+//		 });
+		JSONObject obj = c.table(sTableName).get().submit();
 
 		System.out.println("get result:" + obj.toString());
 	}
@@ -437,7 +531,7 @@ public class Test {
 	}
 
 	public void activateAccount(String account) {
-		JSONObject ret = c.pay(account, "20");
+		JSONObject ret = c.pay(account, "200");
 		System.out.println("pay result:" + ret);
 	}
 

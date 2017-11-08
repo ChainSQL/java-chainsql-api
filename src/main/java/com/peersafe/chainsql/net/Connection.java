@@ -29,7 +29,6 @@ public class Connection implements Closeable {
 		return this;  
 	}
 	
-	
 	/**
 	 * Disconnect from websocket connection.
 	 */

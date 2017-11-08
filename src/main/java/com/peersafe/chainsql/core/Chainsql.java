@@ -304,6 +304,9 @@ public class Chainsql extends Submit {
 	@Override
 	JSONObject prepareSigned() {
 		try {
+			if(mTxJson.toString().equals("{}")) {
+				return Util.errorObject("Exception occured");
+			}
 			mTxJson.put("Account",this.connection.address);
 
 			//for cross chain
@@ -391,9 +394,11 @@ public class Chainsql extends Submit {
 	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
-			Util.checkinsert(listRaw);
+			Validate.checkCreate(listRaw,name);
 		} catch (Exception e) {
+			this.mTxJson = new JSONObject();
 			System.out.println("Exception:" + e.getLocalizedMessage());
+			return this;
 		}
 		
 		JSONObject json = new JSONObject();
@@ -482,6 +487,11 @@ public class Chainsql extends Submit {
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql renameTable(String oldName, String newName) {
+		if(newName == null || newName.isEmpty()) {
+			System.out.println("new table name can not be empty");
+			mTxJson = new JSONObject();
+			return this;
+		}
 		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(oldName) + "\",\"TableNewName\":\"" + Util.toHexString(newName) + "\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
@@ -1059,8 +1069,9 @@ public class Chainsql extends Submit {
 	 * @param listPublicKey 公钥数组
 	 * @return 密文
 	 */
-	public byte[] encrypt(String plainText,List<String> listPublicKey) {
-		return Ecies.encryptText(plainText,listPublicKey);
+	public String encrypt(String plainText,List<String> listPublicKey) {
+		byte[] cipher = Ecies.encryptText(plainText,listPublicKey);
+		return Util.bytesToHex(cipher);
 	}
 	
 	/**
@@ -1069,7 +1080,8 @@ public class Chainsql extends Submit {
 	 * @param secret 私钥
 	 * @return 明文，解密失败返回""
 	 */
-	public String decrypt(byte[] cipher,String secret) {
-		return Ecies.decryptText(cipher, secret);
+	public String decrypt(String cipher,String secret) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		return Ecies.decryptText(cipherBytes, secret);
 	}
 }

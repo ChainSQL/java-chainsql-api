@@ -29,7 +29,7 @@ public class Aes {
 	public static String aesEncrypt(byte[] password,String content){
 		try{
 			byte[] ret = encrypt(password,content.getBytes("utf-8"));
-			return ret == null ? "" :new String(ret);
+			return ret == null ? "" :Util.bytesToHex(ret);
 		}catch(Exception e){
 			e.printStackTrace();
 			return "";
@@ -45,7 +45,7 @@ public class Aes {
 	public static String aesEncrypt(String password,String content){
 		try{
 			byte[] ret = encrypt(password.getBytes(),content.getBytes("utf-8"));
-			return ret == null ? "" :new String(ret);
+			return ret == null ? "" :Util.bytesToHex(ret);
 		}catch(Exception e){
 			e.printStackTrace();
 			return "";

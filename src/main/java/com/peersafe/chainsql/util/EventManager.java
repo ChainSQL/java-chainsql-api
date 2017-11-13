@@ -142,6 +142,9 @@ public class EventManager {
    				public void called(JSONObject res) {
    					if(res.get("status").equals("error")){
    						System.out.println(res.getString("error_message"));
+						mapPass.put(key, null);
+						Util.decryptData(mapPass.get(key), tx);
+						makeCallback(key,data);
    					}else {
    						String token = res.getString("token");
    						if(token.length() != 0){
@@ -204,18 +207,21 @@ public class EventManager {
 //			makeCallback(key,data);	
 //		}
 		makeCallback(key,data);	
-        if ("db_success".equals(data.getString("status")) || 
-        		("validate_success".equals(data.getString("status"))) && !isChainsqlType(data)) {
-        	mapCache.remove(key);
-        }
+		if(isChainsqlType(data)) {
+			if(!("validate_success".equals(data.getString("status")))){
+				mapCache.remove(key);
+			}
+		}else {
+			mapCache.remove(key);
+		}
 	}
 	
 	private boolean isChainsqlType(JSONObject data) {
 		JSONObject tx = data.getJSONObject("transaction");
-		int type = tx.getInt("TransactionType");
-		if(type == TransactionType.TableListSet.asInteger() || 
-		   type == TransactionType.SQLStatement.asInteger() || 
-		   type == TransactionType.SQLTransaction.asInteger()) {
+		String type = tx.getString("TransactionType");
+		if(type.equals(TransactionType.TableListSet.toString()) || 
+		   type.equals(TransactionType.SQLStatement.toString()) || 
+		   type.equals(TransactionType.SQLTransaction.toString())) {
 			return true;
 		}
 		return false;

@@ -180,7 +180,6 @@ public class Util {
 			}
 		}
 		if(tx.has("Raw")){
-			System.out.println("before decrypt:" + tx.getString("Raw"));
 			String sRaw = fromHexString(tx.getString("Raw"));		
 			tx.put("Raw", sRaw);
 		}

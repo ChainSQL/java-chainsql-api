@@ -222,7 +222,6 @@ public abstract class Submit {
     	manager.subTx(txId,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
-	    		//System.out.println(data);
 	    		if(cb != null){
 	    			cb.called((JSONObject)data);
 	    		}else if(sync){

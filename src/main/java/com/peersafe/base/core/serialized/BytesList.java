@@ -25,6 +25,27 @@ public class BytesList implements BytesSink {
         buffer.add(bytes);
     }
 
+    public int get8(int offset) {
+    	if(offset + 1 > len) {
+        	return -1;
+    	}
+    	return bytes()[offset] & 0xff;
+    }
+    
+    public int getInteger(int offset) {
+    	if(offset + Integer.BYTES > len) {
+    		return -1;
+    	}
+    	int number = 0;
+    	byte[] bts = bytes();
+    	for(int i=0; i<Integer.BYTES; i++) {
+    		if(i != 0) {
+    			number <<= 8;
+    		}
+    		number |= bts[offset + i]; 
+    	}
+    	return number;
+    }
     public byte[] bytes() {
         int n = bytesLength();
         byte[] bytes = new byte[n];

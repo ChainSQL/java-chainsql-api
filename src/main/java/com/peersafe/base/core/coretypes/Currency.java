@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Currency extends Hash160 {
     public static final Currency NEUTRAL = new Currency(BigInteger.ONE.toByteArray());
-    public static final Currency XRP = new Currency(BigInteger.ZERO.toByteArray());
+    public static final Currency ZXC = new Currency(BigInteger.ZERO.toByteArray());
 
     @Override
     public Object toJSON() {
@@ -43,7 +43,7 @@ public class Currency extends Hash160 {
     }
 
     public boolean isNative() {
-        return this == Currency.XRP || equals(Currency.XRP);
+        return this == Currency.ZXC || equals(Currency.ZXC);
     }
 
     public boolean isIOU() {
@@ -138,7 +138,7 @@ public class Currency extends Hash160 {
             if (value.length() == 40 /* byteWidth() * 2 */) {
                 return newInstance(B16.decode(value));
             } else if (value.equals("ZXC")) {
-                return XRP;
+                return ZXC;
             } else {
                 if (!(value.length() == 3)) {
 //                if (!value.matches("[A-Z0-9]{3}")) {
@@ -205,7 +205,7 @@ public class Currency extends Hash160 {
 
     /*
     * The following are static methods, legacy from when there was no
-    * usage of Currency objects, just String with "XRP" ambiguity.
+    * usage of Currency objects, just String with "ZXC" ambiguity.
     * */
     public static byte[] encodeCurrency(String currencyCode) {
         byte[] currencyBytes = new byte[20];

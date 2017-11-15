@@ -176,15 +176,15 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
         if (tooLittleInfoForPathFindRequest()) {
             return;
         }
-        if (destAmountCurrency.equals(Currency.XRP)) {
+        if (destAmountCurrency.equals(Currency.ZXC)) {
             // TODO: some way of ...
-            destinationAmount = Issue.XRP.amount(destAmountValue);
+            destinationAmount = Issue.ZXC.amount(destAmountValue);
         } else {
             destinationAmount = new Amount(destAmountValue, destAmountCurrency, dest);
         }
 
         if (destinationAmount.isNative()) {
-            // TODO, check if destination has no XRP flag set ;)
+            // TODO, check if destination has no ZXC flag set ;)
             Alternatives alts = constructInitialAlternatives();
             if (!alts.isEmpty()) {
                 emit(OnAlternatives.class, alts);
@@ -308,7 +308,7 @@ public class PaymentFlow extends Publisher<PaymentFlow.events> {
             // A payment with an empty, but specified paths is invalid
             payment.paths(alternative.paths);
         }
-        // If we are sending XRP directly it's pointless to specify SendMax
+        // If we are sending ZXC directly it's pointless to specify SendMax
         if (!alternative.directXRP()) {
             payment.sendMax(sourceAmount.multiply(sendMaxMultiplier));
         }

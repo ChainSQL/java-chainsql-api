@@ -221,7 +221,6 @@ public class Test {
 //			System.out.println("sqlTrans------" + data);
 //		});
 		JSONObject obj = c.commit(SyncCond.db_success);
-		c.endTran();
 		System.out.println("transaction result:" + obj);
 	}
 

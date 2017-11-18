@@ -62,6 +62,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public static interface OnSubscribed extends events<ServerInfo> {}
     public static interface OnMessage extends events<JSONObject> {}
     public static interface OnTBMessage extends events<JSONObject> {}
+    public static interface OnChainsqlSubRet extends events<JSONObject> {}
     public static interface OnTXMessage extends events<JSONObject> {}
     public static interface OnSendMessage extends events<JSONObject> {}
     public static interface OnStateChange extends events<Client> {}
@@ -99,6 +100,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         on(OnTBMessage.class, cb);
         return this;
     }
+	
+	public Client OnSubChainsqlRet(OnChainsqlSubRet cb) {
+		on(OnChainsqlSubRet.class,cb);
+		return this;
+	}
 	/**
 	 * Trigger when a subscribed  transaction validate_success or db_success.
 	 * @param cb  Callback
@@ -876,11 +882,32 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.on(Request.OnSuccess.class, new Request.OnSuccess() {
             @Override
             public void called(Response response) {
-                // TODO ... make sure this isn't just an account subscription
-                serverInfo.update(response.result);
-                emit(OnSubscribed.class, serverInfo);
+            	JSONObject req = response.request.json();
+            	if(req.has("streams")) {
+                    serverInfo.update(response.result);
+                    emit(OnSubscribed.class, serverInfo);	
+            	}
             }
         });
+        request.on(Request.OnResponse.class,new Request.OnResponse() {
+			@Override
+			public void called(Response response) {
+				JSONObject req = response.request.json();
+            	if(req.has("transaction") || (req.has("owner") && req.has("tablename"))) {
+            		JSONObject obj = new JSONObject();
+            		if(req.has("transaction"))
+            			obj.put("transaction", req.getString("transaction"));
+            		if(req.has("owner")) {
+            			obj.put("owner", req.getString("owner"));
+            		}
+            		if(req.has("tablename")) {
+            			obj.put("tablename", req.getString("tablename"));
+            		}
+            		obj.put("result", response.message);
+            		emit(OnChainsqlSubRet.class,obj);
+            	}
+			}
+		});
         request.request();
     }
 

@@ -66,67 +66,72 @@ public class Ecies {
 		byte[] password = Util.getRandomBytes(16);
     	byte[] aesEnc = Aes.encrypt(password, plainText.getBytes());
     	
-    	//encrypt password
-    	List<byte[]> listPubHash = new ArrayList<byte[]>();
-    	List<byte[]> listPassCipher = new ArrayList<byte[]>();
-    	byte[] dataPubA = {0};
-    	//如果使用国密
-    	if(Config.isUseGM()) {
-        	for(String sPub : listPublicKey) {
-        		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-        		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
-        		byte[] passCipher = EncryptCommon.asymEncrypt(password, pubBytes);;
-        		listPubHash.add(pubHash);
-        		listPassCipher.add(passCipher);
+    	try {
+    	   	//encrypt password
+        	List<byte[]> listPubHash = new ArrayList<byte[]>();
+        	List<byte[]> listPassCipher = new ArrayList<byte[]>();
+        	byte[] dataPubA = {0};
+        	//如果使用国密
+        	if(Config.isUseGM()) {
+            	for(String sPub : listPublicKey) {
+            		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+            		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
+            		byte[] passCipher = EncryptCommon.asymEncrypt(password, pubBytes);;
+            		listPubHash.add(pubHash);
+            		listPassCipher.add(passCipher);
+            	}
+        	}else {
+        		//random key-pair
+            	IKeyPair pair = Seed.randomKeyPair();
+        		byte [] dataPrvA = pair.priv().toByteArray();
+        		dataPubA = pair.pub().toByteArray();
+
+            	for(String sPub : listPublicKey) {
+            		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+            		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
+            		byte[] passCipher = simpleEncrypt(password,pubBytes,dataPrvA);
+            		listPubHash.add(pubHash);
+            		listPassCipher.add(passCipher);
+            	}
         	}
-    	}else {
-    		//random key-pair
-        	IKeyPair pair = Seed.randomKeyPair();
-    		byte [] dataPrvA = pair.priv().toByteArray();
-    		dataPubA = pair.pub().toByteArray();
 
-        	for(String sPub : listPublicKey) {
-        		byte[] pubBytes = getB58IdentiferCodecs().decode(sPub, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-        		byte[] pubHash = HashUtils.quarterSha512(pubBytes);
-        		byte[] passCipher = simpleEncrypt(password,pubBytes,dataPrvA);
-        		listPubHash.add(pubHash);
-        		listPassCipher.add(passCipher);
+//        	int singleLen = listPubHash.get(0).length + listPassCipher.get(0).length;
+//        	int finalLen = 1 + singleLen * listPublicKey.size() + dataPubA.length + aesEnc.length;
+//        	byte[] finalBytes = new byte[finalLen];
+//        	byte[] lenByte = new byte[1];
+//        	lenByte[0] = (byte) (listPublicKey.size() & 0xff);
+//        	System.arraycopy(lenByte, 0, finalBytes, 0, 1);
+//        	System.arraycopy(dataPubA, 0, finalBytes, 1, dataPubA.length);
+//        	int pos = 1 + dataPubA.length;
+//        	for(int i=0; i<listPubHash.size(); i++) {
+//        		byte[] pubHash = listPubHash.get(i);
+//        		byte[] passCipher = listPassCipher.get(i);
+//        		
+//        		System.arraycopy(pubHash, 0, finalBytes, pos, pubHash.length);
+//        		pos += pubHash.length;
+//        		System.arraycopy(passCipher, 0, finalBytes, pos, passCipher.length);
+//        		pos += passCipher.length;
+//        	}
+//        	System.arraycopy(aesEnc, 0, finalBytes, pos, aesEnc.length);
+
+//    		return finalBytes;
+        	EncryptMsg.MultiEncrypt.Builder builder = EncryptMsg.MultiEncrypt.newBuilder();
+        	builder.setPublicOther(ByteString.copyFrom(dataPubA));
+        	for(int i=0; i<listPubHash.size(); i++) {
+        		EncryptMsg.MultiEncrypt.HashToken.Builder bd = EncryptMsg.MultiEncrypt.HashToken.newBuilder();
+        		bd.setPublicHash(ByteString.copyFrom(listPubHash.get(i)));
+        		bd.setToken(ByteString.copyFrom(listPassCipher.get(i)));
+        		builder.addHashTokenPair(bd);
         	}
+        	builder.setCipher(ByteString.copyFrom(aesEnc));
+        	
+        	byte[] finalByte =  builder.build().toByteArray();
+        	
+        	return ZLibUtils.compress(finalByte);	
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    		return null;
     	}
-
-//    	int singleLen = listPubHash.get(0).length + listPassCipher.get(0).length;
-//    	int finalLen = 1 + singleLen * listPublicKey.size() + dataPubA.length + aesEnc.length;
-//    	byte[] finalBytes = new byte[finalLen];
-//    	byte[] lenByte = new byte[1];
-//    	lenByte[0] = (byte) (listPublicKey.size() & 0xff);
-//    	System.arraycopy(lenByte, 0, finalBytes, 0, 1);
-//    	System.arraycopy(dataPubA, 0, finalBytes, 1, dataPubA.length);
-//    	int pos = 1 + dataPubA.length;
-//    	for(int i=0; i<listPubHash.size(); i++) {
-//    		byte[] pubHash = listPubHash.get(i);
-//    		byte[] passCipher = listPassCipher.get(i);
-//    		
-//    		System.arraycopy(pubHash, 0, finalBytes, pos, pubHash.length);
-//    		pos += pubHash.length;
-//    		System.arraycopy(passCipher, 0, finalBytes, pos, passCipher.length);
-//    		pos += passCipher.length;
-//    	}
-//    	System.arraycopy(aesEnc, 0, finalBytes, pos, aesEnc.length);
-
-//		return finalBytes;
-    	EncryptMsg.MultiEncrypt.Builder builder = EncryptMsg.MultiEncrypt.newBuilder();
-    	builder.setPublicOther(ByteString.copyFrom(dataPubA));
-    	for(int i=0; i<listPubHash.size(); i++) {
-    		EncryptMsg.MultiEncrypt.HashToken.Builder bd = EncryptMsg.MultiEncrypt.HashToken.newBuilder();
-    		bd.setPublicHash(ByteString.copyFrom(listPubHash.get(i)));
-    		bd.setToken(ByteString.copyFrom(listPassCipher.get(i)));
-    		builder.addHashTokenPair(bd);
-    	}
-    	builder.setCipher(ByteString.copyFrom(aesEnc));
-    	
-    	byte[] finalByte =  builder.build().toByteArray();
-    	
-    	return ZLibUtils.compress(finalByte);
 	}
 	
 	public static String decryptText(byte[] cipher,String secret) {

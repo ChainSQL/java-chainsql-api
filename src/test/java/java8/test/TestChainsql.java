@@ -139,7 +139,6 @@ public class TestChainsql {
 		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
 		c.table(sTableName).get(Util.array("{'id': 1}")).update("{'age':244}");
 		JSONObject obj = c.commit(SyncCond.db_success);
-		c.endTran();
 		System.out.println("transaction result:" + obj);
 	}
 

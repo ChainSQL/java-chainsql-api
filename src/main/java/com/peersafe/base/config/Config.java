@@ -12,8 +12,9 @@ import com.peersafe.base.encodings.base58.B58;
 
 // Somewhat of a global registry, dependency injection ala guice would be nicer, but trying to KISS
 public class Config {
-    public  static final String DEFAULT_ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz";
-
+    //public  static final String DEFAULT_ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz";
+    public  static final String DEFAULT_ALPHABET = "zpxhncf39wBUDNEGHJKLM4PQRST7VWXYZ2badeCg65jkm8oFqi1tuvAsyr";
+    
     private static B58IdentiferCodecs b58IdentiferCodecs;
     private static double feeCushion;
     private static B58 b58;

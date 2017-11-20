@@ -523,7 +523,7 @@ public class Chainsql extends Submit {
 		JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
 		if(res.get("status").equals("error")){
 			System.out.println(res.getString("error_message"));
-			return null;
+			return this;
 		}
 		String token = res.getString("token");
 		String newToken = "";

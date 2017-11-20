@@ -139,11 +139,17 @@ public class EventManager {
 		String key = name + owner;
 		this.mapCache.remove(key);
 		this.mapPass.remove(key);
-		
+
 		JSONObject obj = new JSONObject();
-		obj.put("status", "success");
-		obj.put("result", "unsubscribe table success");
-		obj.put("type", "response");
+		if(this.mapCache.containsKey(key)) {
+			obj.put("status", "success");
+			obj.put("result", "unsubscribe table success");
+			obj.put("type", "response");
+		}else {
+			obj.put("status", "error");
+			obj.put("result", "have not subscribe the table:" + name);
+			obj.put("type", "response");
+		}
 		
 		cb.called(obj);
 	}
@@ -162,9 +168,16 @@ public class EventManager {
 		this.mapCache.remove(id);
 		
 		JSONObject obj = new JSONObject();
-		obj.put("status", "success");
-		obj.put("result", "unsubscribe transaction success");
-		obj.put("type", "response");
+		if(this.mapCache.containsKey(id)) {
+			obj.put("status", "success");
+			obj.put("result", "unsubscribe transaction success");
+			obj.put("type", "response");
+		}else {
+			obj.put("status", "error");
+			obj.put("result", "have not subscribe the tx:" + id);
+			obj.put("type", "response");
+		}
+
 		
 		cb.called(obj);
 	}

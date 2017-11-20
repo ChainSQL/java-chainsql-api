@@ -223,7 +223,8 @@ public abstract class Submit {
 			@Override
 			public void called(JSONObject data) {
 	    		if(cb != null){
-	    			cb.called((JSONObject)data);
+	    			if(!data.getString("status").equals("success"))
+	    				cb.called((JSONObject)data);
 	    		}else if(sync){
 	    			JSONObject obj = (JSONObject)data;
 	    			JSONObject res = new JSONObject();

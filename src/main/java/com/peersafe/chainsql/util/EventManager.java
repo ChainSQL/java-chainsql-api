@@ -258,7 +258,9 @@ public class EventManager {
 //			makeCallback(key,data);	
 //		}
 		makeCallback(key,data);	
-		if(isChainsqlType(data)) {
+		JSONObject tx = data.getJSONObject("transaction");
+		TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
+		if(Util.isChainsqlType(type)) {
 			if(!("validate_success".equals(data.getString("status")))){
 				mapCache.remove(key);
 			}
@@ -267,16 +269,7 @@ public class EventManager {
 		}
 	}
 	
-	private boolean isChainsqlType(JSONObject data) {
-		JSONObject tx = data.getJSONObject("transaction");
-		String type = tx.getString("TransactionType");
-		if(type.equals(TransactionType.TableListSet.toString()) || 
-		   type.equals(TransactionType.SQLStatement.toString()) || 
-		   type.equals(TransactionType.SQLTransaction.toString())) {
-			return true;
-		}
-		return false;
-	}
+
 	
 	private void makeCallback(String key,JSONObject data){
 		if (mapCache.containsKey(key)) {

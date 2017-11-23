@@ -114,16 +114,16 @@ public class Test {
 	private static void testChainSql() {
 		Test test = new Test();
 //		// test.testRecreateTable();
-		test.testCreateTable();
-		test.testCreateTable1();
-		test.testinsert();
-		test.testUpdateTable();
-		test.testdelete();
-		test.testrename();
-		test.testget();
-		test.testdrop();
-		test.grant();
-		test.insertAfterGrant();
+//		test.testCreateTable();
+//		test.testCreateTable1();
+//		test.testinsert();
+//		test.testUpdateTable();
+//		test.testdelete();
+//		test.testrename();
+//		test.testget();
+//		test.testdrop();
+//		test.grant();
+//		test.insertAfterGrant();
 		test.testts();
 //		
 //		//底层现在不允许执行这种操作了
@@ -212,9 +212,9 @@ public class Test {
 		// c.table(sTableName).insert(Util.array("{'age':
 		// 23,'name':'adsf','balance':'124'}","{'age':
 		// 33,'name':'小sr','balance':'300'}"));
-		c.table(sTableName).insert(Util.array("{'id':3,'age': 22}", "{'age': 33}"));
+		c.table(sTableName).insert(Util.array("{'id':11,'age': 22}", "{'age': 33}"));
 		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
-		c.table(sTableName).get(Util.array("{'id': 3}")).update("{'age':244}");
+		c.table(sTableName).get(Util.array("{'id': 1}")).update("{'age':244}");
 //		c.table(sTableName).get(Util.array("{'DOCID': 'INV101'}")).update("{'STATE':3}");
 		// c.table(sTableName).get(Util.array("{'id':
 		// 2}")).sqlAssert(c.array("{'age':200}"));

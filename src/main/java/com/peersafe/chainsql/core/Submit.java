@@ -312,6 +312,10 @@ public abstract class Submit {
         		String rawHex = json.getString("Raw");
         		int rawSize = rawHex.length()/2;
         		multiplier += rawSize / 1024.0;
+    		}else if(json.has("Statements")) {
+    			String statementsHex = json.getString("Statements");
+    			int stateSize = statementsHex.length()/2;
+    			multiplier += stateSize / 1024.0;
     		}
     		Amount extraFee = Amount.fromString(String.valueOf((int)(multiplier * zxcDrops)));
     		fee = fee.add(extraFee);

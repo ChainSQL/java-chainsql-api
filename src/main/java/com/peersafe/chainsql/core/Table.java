@@ -226,7 +226,8 @@ public class Table extends Submit{
 		if(token.equals("")){
 			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
 			if(res.get("status").equals("error")){
-				System.out.println("Exception: "+res.getString("error_message"));
+				if(!this.transaction)
+					System.out.println("Exception: "+res.getString("error_message"));
 			}else{
 				token = res.getString("token");
 			}

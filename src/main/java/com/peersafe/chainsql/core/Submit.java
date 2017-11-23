@@ -223,7 +223,8 @@ public abstract class Submit {
 			@Override
 			public void called(JSONObject data) {
 	    		if(cb != null){
-	    			cb.called((JSONObject)data);
+	    			if(!data.getString("status").equals("success"))
+	    				cb.called((JSONObject)data);
 	    		}else if(sync){
 	    			JSONObject obj = (JSONObject)data;
 	    			JSONObject res = new JSONObject();
@@ -303,12 +304,25 @@ public abstract class Submit {
      		fee = connection.client.serverInfo.transactionFee(tx);
     	else
     		fee = Amount.fromString("50");
+    	//chainsql tx needs more zxc
+    	if(Util.isChainsqlType(type)) {
+    		int zxcDrops = 1000000;
+    		double multiplier = 0.001;
+    		if(json.has("Raw")) {
+        		String rawHex = json.getString("Raw");
+        		int rawSize = rawHex.length()/2;
+        		multiplier += rawSize / 1024.0;
+    		}
+    		Amount extraFee = Amount.fromString(String.valueOf((int)(multiplier * zxcDrops)));
+    		fee = fee.add(extraFee);
+    	}
+		tx.as(Amount.Fee, fee);
+		
   		AccountID account = AccountID.fromAddress(this.connection.address);
  		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
  		if(mapError(map)){
  			throw new Exception((String)map.get("error_message"));
  		}else{
- 			tx.as(Amount.Fee, fee);
  			tx.as(UInt32.Sequence, map.get("Sequence"));
  		}
 		try {  

@@ -16,6 +16,9 @@ public class Test {
 	public static final Chainsql c = Chainsql.c;
 	public static String sTableName,sTableName2,sReName;
 	public static String sNewAccountId,sNewSecret;
+	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
+	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
+	
 	public static void main(String[] args) {
 		// c.connect("ws://192.168.0.152:6006");
 		c.connect("ws://192.168.0.110:6007");
@@ -25,22 +28,21 @@ public class Test {
 		 
 		//c.connect("wss://192.168.0.194:5005", "server.jks", "changeit");
 		
-		sTableName = "boy5";
+		sTableName = "boy4";
 		sTableName2 = "boy3";
 		sReName = "boy1";
 
 		//设置日志级别
 		//c.connection.client.logger.setLevel(Level.SEVERE);
 				
-		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
-		//c.as("rfVLQugNwsn4ToSBksFiQKTJphw2fU9W6Y", "snrnF2RiZWC7DRXQPykXdDHi1RgAb");
-		//c.as("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q", "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+		c.as(rootAddress,rootSecret);
+		//c.as("z9VF7yQPLcKgUoHwMbzmQBjvPsyMy19ubs", "xxWFBu6veVgMnAqNf6YFRV2UENRd3");
 
 
-		testSubscribe();
+//		testSubscribe();
 //		testRippleAPI();
 //
-//		testAccount();
+		testAccount();
 		testChainSql();
 		
 //		testEncrypt();
@@ -59,7 +61,7 @@ public class Test {
 		
 		//给加密加密
 		String name = "shazhu";
-    	List<String> listPub = Arrays.asList("aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs", "aBP8EvA6tSMzCRbfsLwiFj51vDjE4jPv9Wfkta6oNXEn8TovcxaT");
+    	List<String> listPub = Arrays.asList("cBRmXRujuiBPuK46AGpMM5EcJuDtxpxJ8J2mCmgkZnPC1u8wqkUn", "cBQG8RQArjx1eTKFEAQXz2gS4utaDiEC9wmi7pfUPTi27VCchwgw");
     	String cipher = c.encrypt(name, listPub);
     	System.out.println("encrypt result:" + cipher);
     	
@@ -77,14 +79,14 @@ public class Test {
 		String nameCipher = line.getString("name");
 		
 		//解密加密字段的值
-    	String plainGet = c.decrypt(nameCipher, "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
+    	String plainGet = c.decrypt(nameCipher, "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
     	System.out.println("账户1解密结果:" + plainGet);
-    	plainGet = c.decrypt(nameCipher, "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
+    	plainGet = c.decrypt(nameCipher, "xxWFBu6veVgMnAqNf6YFRV2UENRd3");
     	System.out.println("账户2解密结果:" + plainGet);
 	}
 
 	private static void testSubscribe() {
-		c.event.subTable(sTableName, "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", (data) -> {
+		c.event.subTable(sTableName, rootAddress, (data) -> {
 			System.out.println("subscribe return:" + data);
 		});
 		c.onReconnecting((data) -> {
@@ -113,16 +115,16 @@ public class Test {
 		Test test = new Test();
 //		// test.testRecreateTable();
 		test.testCreateTable();
-//		test.testCreateTable1();
-//		test.testinsert();
-//		test.testUpdateTable();
-//		test.testdelete();
-//		test.testrename();
-//		test.testget();
-//		test.testdrop();
-//		test.grant();
-//		test.insertAfterGrant();
-//		test.testts();
+		test.testCreateTable1();
+		test.testinsert();
+		test.testUpdateTable();
+		test.testdelete();
+		test.testrename();
+		test.testget();
+		test.testdrop();
+		test.grant();
+		test.insertAfterGrant();
+		test.testts();
 //		
 //		//底层现在不允许执行这种操作了
 ////		test.testdeleteAll();
@@ -133,8 +135,8 @@ public class Test {
 
 	private static void testAccount() {
 		Test test = new Test();
-//		test.generateAccount();
-//		test.activateAccount(sNewAccountId);
+		test.generateAccount();
+		test.activateAccount(sNewAccountId);
 		
 		try {
 			Thread.sleep(2000);
@@ -144,7 +146,6 @@ public class Test {
 	}
 
 	public boolean activateAccount(JSONObject account) {
-		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		JSONObject ret = c.pay(account.getString("account_id"), "20");
 		if (!ret.getString("status").equals("success")) {
 			System.out.println(ret.toString());
@@ -221,7 +222,6 @@ public class Test {
 //			System.out.println("sqlTrans------" + data);
 //		});
 		JSONObject obj = c.commit(SyncCond.db_success);
-		c.endTran();
 		System.out.println("transaction result:" + obj);
 	}
 
@@ -245,7 +245,7 @@ public class Test {
 		// System.out.println("creat------"+data);
 		// });
 
-		JSONObject obj = c.getTransactions("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+		JSONObject obj = c.getTransactions(rootAddress);
 		// JSONObject obj =
 		// c.getTransactions("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
 		System.out.println("getTransactions------" + obj);
@@ -419,7 +419,7 @@ public class Test {
 		JSONObject obj;
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert after grant result:" + obj);
-		c.as("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		c.as(rootAddress,rootSecret);
 	}
 	public void testUpdateTable() {
 		List<String> arr1 = Util.array("{'id': 2}");
@@ -548,20 +548,4 @@ public class Test {
 		 obj = c.dropTable(sReName).submit(SyncCond.db_success);
 		 System.out.println("drop result:" + obj);
 	}
-
-	public ArrayList<String> select(String tableName, String filterWith, String whereCond) {
-		ArrayList<String> cond = new ArrayList<String>();
-		cond.add(whereCond);
-		JSONObject json = c.table(tableName).withFields(filterWith).get(cond).submit((data) -> {
-			System.out.println("creat------" + data);
-		});
-		if (json == null) {
-			System.out.println("鏌ヨ缁撴灉闆嗕负绌�");
-			return null;
-		}
-		System.out.println("json:" + json.toString());
-		// TODO 鍥炶皟鏈哄埗鏈夊緟琛ュ厖
-		return null;
-	}
-
 }

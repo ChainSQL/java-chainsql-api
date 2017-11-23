@@ -58,10 +58,10 @@ public class DirectoryNode extends LedgerEntry {
 
     public void setExchangeDefaults() {
         if (takerGetsCurrency() == null) {
-            takerGetsCurrency(Currency.XRP);
+            takerGetsCurrency(Currency.ZXC);
             takerGetsIssuer(AccountID.XRP_ISSUER);
         } else if (takerPaysCurrency() == null) {
-            takerPaysCurrency(Currency.XRP);
+            takerPaysCurrency(Currency.ZXC);
             takerPaysIssuer(AccountID.XRP_ISSUER);
         }
     }

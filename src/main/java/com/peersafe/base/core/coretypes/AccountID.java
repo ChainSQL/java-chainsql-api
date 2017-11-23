@@ -65,7 +65,7 @@ public class AccountID extends Hash160 {
         if (value.length() == 160 / 4) {
             return fromAddressBytes(B16.decode(value));
         } else {
-            if (value.startsWith("r") && value.length() >= 26) {
+            if (value.startsWith("z") && value.length() >= 26) {
                 return fromAddress(value);
             }
             AccountID accountID = accountForAlias(value);

@@ -11,6 +11,7 @@ import java.util.Random;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
@@ -287,4 +288,13 @@ public class Util {
 	            | ((src[3] & 0xFF)<<24));  
 	    return value;  
 	} 
+	
+	public static boolean isChainsqlType(TransactionType type) {
+		if(type == TransactionType.TableListSet || 
+		   type == TransactionType.SQLStatement || 
+		   type == TransactionType.SQLTransaction) {
+			return true;
+		}
+		return false;
+	}
 }

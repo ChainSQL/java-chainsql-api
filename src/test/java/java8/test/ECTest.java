@@ -66,7 +66,8 @@ public class ECTest {
     	List<String> listPub = Arrays.asList("aBP8JEiNXr3a9nnBFDNKKzAoGNezoXzsa1N8kQAoLU5F5HrQbFvs", "aBP8EvA6tSMzCRbfsLwiFj51vDjE4jPv9Wfkta6oNXEn8TovcxaT");
     	byte[] ret = Ecies.encryptText("testField", listPub);
     	System.out.println("ret.length:" + ret.length);
-    	String plainGet = Ecies.decryptText(ret, "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
+//    	String plainGet = Ecies.decryptText(ret, "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
+    	String plainGet = Ecies.decryptText("hello".getBytes(), "snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
     	System.out.println("plainGet:" + plainGet);
     	plainGet = Ecies.decryptText(ret, "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz");
     	System.out.println("plainGet:" + plainGet);

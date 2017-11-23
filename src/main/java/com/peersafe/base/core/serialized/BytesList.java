@@ -33,12 +33,12 @@ public class BytesList implements BytesSink {
     }
     
     public int getInteger(int offset) {
-    	if(offset + Integer.BYTES > len) {
+    	if(offset + Integer.SIZE/8 > len) {
     		return -1;
     	}
     	int number = 0;
     	byte[] bts = bytes();
-    	for(int i=0; i<Integer.BYTES; i++) {
+    	for(int i=0; i<Integer.SIZE/8; i++) {
     		if(i != 0) {
     			number <<= 8;
     		}

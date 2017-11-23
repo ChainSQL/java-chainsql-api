@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.json.JSONObject;
 
+import com.peersafe.base.client.Client;
 import com.peersafe.base.client.Client.OnTBMessage;
 import com.peersafe.base.client.Client.OnTXMessage;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
@@ -16,6 +17,7 @@ import com.peersafe.chainsql.net.Connection;
 public class EventManager {
 	public Connection connection;
 	public boolean onMessage;
+	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
 	public JSONObject result;
@@ -30,6 +32,7 @@ public class EventManager {
 		this.mapCache = new HashMap<String,Callback>();
 		mapPass = new HashMap<String,byte[]>();
 		this.onMessage = false;
+		this.onSubRet = false;
 	}
 	
 	/**
@@ -49,7 +52,21 @@ public class EventManager {
 			this.connection.client.subscriptions.addMessage(messageTx);
 		}
 	}
-	
+	private void onChainsqlSubRet() {
+		this.connection.client.OnSubChainsqlRet(new Client.OnChainsqlSubRet() {
+			@Override
+			public void called(JSONObject args) {
+				if(args.has("owner") && args.has("tablename")) {
+					String key = args.getString("tablename") + args.getString("owner");
+					makeCallback(key,args.getJSONObject("result"));
+				}
+				if(args.has("transaction")) {
+					String key = args.getString("transaction");
+					makeCallback(key,args.getJSONObject("result"));
+				}
+			}				
+		});
+	}
 	/**
 	 * Subscribe for a table.
 	 * @param name Table name.
@@ -72,6 +89,10 @@ public class EventManager {
 				}
 			});
 			this.onMessage = true;
+		}
+		if(!this.onSubRet) {
+			onChainsqlSubRet();
+			this.onSubRet = true;
 		}
 		this.mapCache.put(name + owner,cb);
 	}
@@ -96,6 +117,10 @@ public class EventManager {
 			});
 			this.onMessage = true;
 		}
+		if(!this.onSubRet) {
+			onChainsqlSubRet();
+			this.onSubRet = true;
+		}
 		this.mapCache.put(id, cb);
 	}
 
@@ -104,7 +129,7 @@ public class EventManager {
 	 * @param name Table name.
 	 * @param owner Table owner address.
 	 */
-	public void unsubTable(String name, String owner) {
+	public void unsubTable(String name, String owner,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("owner", owner);
@@ -114,13 +139,26 @@ public class EventManager {
 		String key = name + owner;
 		this.mapCache.remove(key);
 		this.mapPass.remove(key);
+
+		JSONObject obj = new JSONObject();
+		if(this.mapCache.containsKey(key)) {
+			obj.put("status", "success");
+			obj.put("result", "unsubscribe table success");
+			obj.put("type", "response");
+		}else {
+			obj.put("status", "error");
+			obj.put("result", "have not subscribe the table:" + name);
+			obj.put("type", "response");
+		}
+		
+		cb.called(obj);
 	}
 
 	/**
 	 * Un-subscribe a transaction.
 	 * @param id Transaction hash.
 	 */
-	public void unsubTx(String id) {
+	public void unsubTx(String id,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("transaction", id);
@@ -128,7 +166,20 @@ public class EventManager {
 		this.connection.client.subscriptions.addMessage(messageTx);
 		
 		this.mapCache.remove(id);
+		
+		JSONObject obj = new JSONObject();
+		if(this.mapCache.containsKey(id)) {
+			obj.put("status", "success");
+			obj.put("result", "unsubscribe transaction success");
+			obj.put("type", "response");
+		}else {
+			obj.put("status", "error");
+			obj.put("result", "have not subscribe the tx:" + id);
+			obj.put("type", "response");
+		}
 
+		
+		cb.called(obj);
 	}
 
 	private void onChainsqlMessage(final JSONObject data,final String key,final String owner,final String name) {
@@ -207,7 +258,9 @@ public class EventManager {
 //			makeCallback(key,data);	
 //		}
 		makeCallback(key,data);	
-		if(isChainsqlType(data)) {
+		JSONObject tx = data.getJSONObject("transaction");
+		TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
+		if(Util.isChainsqlType(type)) {
 			if(!("validate_success".equals(data.getString("status")))){
 				mapCache.remove(key);
 			}
@@ -216,16 +269,7 @@ public class EventManager {
 		}
 	}
 	
-	private boolean isChainsqlType(JSONObject data) {
-		JSONObject tx = data.getJSONObject("transaction");
-		String type = tx.getString("TransactionType");
-		if(type.equals(TransactionType.TableListSet.toString()) || 
-		   type.equals(TransactionType.SQLStatement.toString()) || 
-		   type.equals(TransactionType.SQLTransaction.toString())) {
-			return true;
-		}
-		return false;
-	}
+
 	
 	private void makeCallback(String key,JSONObject data){
 		if (mapCache.containsKey(key)) {

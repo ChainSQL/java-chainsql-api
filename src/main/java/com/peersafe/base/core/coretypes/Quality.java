@@ -21,7 +21,7 @@ public class Quality  {
         byte[] mantissa  = bookDirectory.slice(-7);
         // Most significant byte has the exponent packed
         int exponent = ( bookDirectory.get(-8) & 0xFF) - 100;
-        // Return the value in XRP scale, rather than drops, as stored.
+        // Return the value in ZXC scale, rather than drops, as stored.
         int scale = -(payIsNative ? exponent - 6 :
                       getIsNative ? exponent + 6 : exponent);
         BigInteger unsignedBig = new BigInteger(1, mantissa);

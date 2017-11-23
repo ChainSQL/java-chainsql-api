@@ -16,7 +16,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
- * In ripple, amounts are either XRP, the native currency, or an IOU of
+ * In ripple, amounts are either ZXC, the native currency, or an IOU of
  * a given currency as issued by a designated account.
  */
 public class Amount extends Number implements SerializedType, Comparable<Amount>
@@ -46,7 +46,7 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     public static final MathContext MATH_CONTEXT = new MathContext(16, RoundingMode.HALF_UP);
     // The maximum amount of digits in mantissa of an IOU amount
     public static final int MAXIMUM_IOU_PRECISION = 16;
-    // The smallest quantity of an XRP is a drop, 1 millionth of an XRP
+    // The smallest quantity of an ZXC is a drop, 1 millionth of an ZXC
     public static final int MAXIMUM_NATIVE_SCALE = 6;
     // Defines bounds for native amounts
     public static final BigDecimal MAX_NATIVE_VALUE = parseDecimal("100,000,000,000.0");
@@ -58,11 +58,11 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
 
     public static final Amount ONE_XRP = fromString("1.0");
 
-    // The quantity of XRP or Issue(currency/issuer pairing)
-    // When native, the value unit is XRP, not drops.
+    // The quantity of ZXC or Issue(currency/issuer pairing)
+    // When native, the value unit is ZXC, not drops.
     private BigDecimal value;
     private Currency currency;
-    // If the currency is XRP
+    // If the currency is ZXC
     private boolean isNative;
     // Normally, in the constructor of an Amount the value is checked
     // that it's scale/precision and quantity are correctly bounded.
@@ -100,7 +100,7 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
      */
     public Amount(BigDecimal value) {
         isNative = true;
-        currency = Currency.XRP;
+        currency = Currency.ZXC;
         this.setAndCheckValue(value);
     }
 
@@ -390,8 +390,8 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     }
     /**
      * @return Amount
-     * The real native unit is a drop, one million of which are an XRP.
-     * We want `one` unit at XRP scale (1e6 drops), or if it's an IOU,
+     * The real native unit is a drop, one million of which are an ZXC.
+     * We want `one` unit at ZXC scale (1e6 drops), or if it's an IOU,
      * just `one`.
      */
     public Amount one() {
@@ -644,7 +644,7 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     }
 
     /**
-     * @return A String containing the value as a decimal number (in XRP scale)
+     * @return A String containing the value as a decimal number (in ZXC scale)
      */
     public String valueText() {
         return value.signum() == 0 ? "0" : value().toPlainString();

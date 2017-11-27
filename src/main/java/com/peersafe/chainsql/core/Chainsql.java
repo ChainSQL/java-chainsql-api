@@ -432,6 +432,8 @@ public class Chainsql extends Submit {
 			if(confidential){
 				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),token);
 				this.needVerify = 0;
+			}else {
+				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),"");
 			}
 			this.cache.add(json);
 			return null;
@@ -520,12 +522,19 @@ public class Chainsql extends Submit {
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql grant(String name, String user,String userPublicKey,String flag){
-		JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
-		if(res.get("status").equals("error")){
-			System.out.println(res.getString("error_message"));
-			return this;
+		String token = "";
+		GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+		if(mapToken.containsKey(pair)){
+			token = mapToken.get(pair);
+		}else {
+			JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
+			if(res.get("status").equals("error")){
+				System.out.println(res.getString("error_message"));
+				return this;
+			}
+			token = res.getString("token");
 		}
-		String token = res.getString("token");
+
 		String newToken = "";
 		if(token.length() != 0){
 			try {

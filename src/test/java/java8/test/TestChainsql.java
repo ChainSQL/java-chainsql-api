@@ -12,9 +12,9 @@ public class TestChainsql {
 	public static final Chainsql c = Chainsql.c;
 	public static String sTableName,sTableName2,sReName;
 	public static String sNewAccountId,sNewSecret;
-	
-	public static String rootAddress = "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q";
-	public static String rootSecret = "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz";
+
+	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
+	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 	
 	public static void main(String[] args) {
 		c.connect("ws://139.198.11.189:6006");
@@ -86,7 +86,7 @@ public class TestChainsql {
 	}
 	
 	public void getAccountBalance() {
-		String balance = c.getAccountBalance("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
+		String balance = c.getAccountBalance(rootAddress);
 		System.out.println(balance);
 	}
 	

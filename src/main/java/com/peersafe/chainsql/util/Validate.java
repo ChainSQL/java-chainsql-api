@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.peersafe.base.client.Client;
+import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.coretypes.STArray;
+import com.peersafe.base.core.coretypes.STObject;
+import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
-import com.ripple.client.Client;
-import com.ripple.client.requests.Request;
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.STObject;
 
 public class Validate {
 	public Object create(String obj) {
@@ -18,56 +22,112 @@ public class Validate {
 		return result;
 	}
 
-	public static Integer assign(List flag) {
-/*		String [] flag = flags.split(","); */
-		Map map = Constant.permission;
-		Integer flags = 0;
-		for(int i=0;i<flag.size();i++){
-			String a = flag.get(i).toString();
-			flags = flags|(Integer) map.get(a);
-		}
-		return flags;
-	}
 	public static Integer toOpType(String  opType) {
-		Constant ps = new Constant();
-		Map map = ps.opType;
+		Map<String,Integer> map = Constant.opType;
 		Integer result = (Integer) map.get(opType);
 
 		return result;
 	}
 	
-	
-	public static STArray fromJSONArray(String str) {
-		STObject obj1 = new STObject();
-		obj1 = STObject.fromJSON(str);
-		STArray arr = new STArray();
-		arr.add(obj1);
-        return arr;
-    }
-	
-	public static Map rippleRes(Client client,AccountID account ,String name){
-		HashMap<String,Object> map = new HashMap<String,Object>();
-		Request sequence = client.accountInfo(account);
-		if(sequence.response.result!=null){
-			Integer Sequence = (Integer)sequence.response.result.optJSONObject("account_data").get("Sequence");
-			map.put("Sequence", Sequence);
-		}else{
-			// System.out.println("error_message :This result is null");
-		}
-		Request nameindb = client.getNameInDB(name, account);
-		if(nameindb.response.result!=null){
-			String NameInDB =  (String)nameindb.response.result.get("nameInDB");
-			map.put("NameInDB", NameInDB);
-		}else{
-			 //System.out.println("error_message :This result is null");
+	public static STArray fromJSONArray(JSONArray arr) {
+		STArray stArr = new STArray();
+		if(arr.length() > 0){
+			STObject obj1 = new STObject();
+			for(int i=0; i<arr.length(); i++){
+				obj1 = STObject.fromJSON(arr.get(i).toString());
+				stArr.add(obj1);
+			}
 		}
 		
-		/*Request fee = client.getNameInDB(name, account);
-		String Fee = (String) client.accountInfo(account).response.result.optJSONObject("account_data").get("Sequence");
-		map.put("Fee", Fee);*/
-		return map;
+        return stArr;
+    }
+	
+	public static JSONObject getUserToken(Connection connection,String owner, String name) {
+		Request request = connection.client.getUserToken(owner,connection.address,name);
+		return request.response.result;
+	}
+	
+	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
+		Request request = client.tablePrepare(tx_json);
+		return request.response.result;
+		
 	}
 
+	public static Map<String,Object> rippleRes(Client client,AccountID account){
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		Request request = client.accountInfo(account);
+		if(request.response.result!=null){
+			Integer sequence = (Integer)request.response.result.optJSONObject("account_data").get("Sequence");
+			map.put("Sequence", sequence);
+		}else if(request.response.message.has("error")){
+			map.put("error_message", request.response.message.getString("error_message"));
+		}
+		return map;
+	}
+	
+    /**
+     * Check fields
+     * @param strraw Raw data list.
+     * @throws Exception Throws when exception occur.
+     */
+	public static void checkCreate(List<JSONObject> strraw,String name) throws Exception{
+		if(name.isEmpty()) {
+			throw new Exception("Table name can not be empty.");
+		}
+//		boolean isHavePk = false;
+		for (int i = 0; i < strraw.size(); i++) {	
+			JSONObject json = strraw.get(i);
+			String field, type;
+	    	try {
+				field =json.getString("field");
+				type = json.getString("type");
+			} catch (Exception e) {
+				throw new Exception("Raw must have  field and type");
+				// TODO: handle exception
+			}
 
+    		if (field==null || type==null) {
+    			throw new Exception("field and type cannot be empty");
+    		}
+    		
+            if("int".equals(type)){
 
+            }else if("float".equals(type)){
+
+            }else if("double".equals(type)){
+
+            }else if("decimal".equals(type)){
+
+            }else if("varchar".equals(type)){
+            	try {
+    				int length = (int) json.getInt("length");
+    				if(length == 0){
+    					throw new Exception(" The type varchar must have length");
+    				}
+    			} catch (Exception e) {
+    				throw new Exception(" The type varchar must have length");
+    			}
+            }else if("blob".equals(type)){
+
+            }else if("text".equals(type)){
+
+            }else if("datetime".equals(type) || "date".equals(type)){
+
+            }else{
+            	throw new Exception("invalid type "+type);
+            }
+//            try {
+//            	int PK =(int) json.getInt("PK");
+//            	if(PK == 1){
+//            		if (isHavePk) {
+//            			throw new Exception("the table only have a PK");
+//            		}
+//            		isHavePk = true;
+//            	}
+//			} catch (Exception e) {
+//				//throw new Exception("Raw must have  field and type");
+//				//e.printStackTrace();
+//			}
+		}
+	}
 }

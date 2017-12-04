@@ -1,0 +1,16 @@
+option java_outer_classname = "EncryptMsg";
+
+message MultiEncrypt {  
+    message HashToken{
+		required bytes public_hash = 1;
+		required bytes token = 2;
+	}
+    //DH 随机产生的公钥
+    required bytes public_other = 1;  
+    
+    //公钥哈希与Token数组
+    repeated HashToken hash_token_pair = 2;  
+	
+	//字符串的密文
+	required bytes cipher = 3;
+}

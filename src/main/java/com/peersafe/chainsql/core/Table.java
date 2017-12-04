@@ -1,78 +1,138 @@
 package com.peersafe.chainsql.core;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.util.JSONUtil;
+import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.client.responses.Response;
+import com.peersafe.base.core.coretypes.AccountID;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.core.types.known.tx.Transaction;
+import com.peersafe.chainsql.crypto.EncryptCommon;
+import com.peersafe.chainsql.util.GenericPair;
+import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
-import com.ripple.client.requests.Request;
-import com.ripple.client.responses.Response;
-import com.ripple.core.coretypes.AccountID;
-import com.ripple.core.coretypes.Amount;
-import com.ripple.core.coretypes.Blob;
-import com.ripple.core.coretypes.STArray;
-import com.ripple.core.coretypes.uint.UInt16;
-import com.ripple.core.coretypes.uint.UInt32;
-import com.ripple.core.types.known.tx.signed.SignedTransaction;
-import com.ripple.core.types.known.tx.txns.SQLStatement;
 
 public class Table extends Submit{
 	private String name;
-	private String owner;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-	private Object data;
-	public String message;
 
+	/**
+	 * Constructor for Table.
+	 * @param name Tablename.
+	 */
+	public Table(String name) {
+		super();
+		this.name = name;
+	}
+/*
+	public Table() {
+		super();
+	}
+*/
+	/**
+	 * Insert data to a table.
+	 * @param orgs Insert parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table insert(List<String> orgs){
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
+				String json = Util.StrToJsonStr(s);
 				this.query.add(json);
 			}
 		}
 	    this.exec = "r_insert";
-		return this;
+	    return dealWithTransaction();
 		
 	}
 	
-	public Table update(List<String> orgs) {
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
-				this.query.add(0, json);
-			}
-			
-		}
+	/**
+	 * Update table data.
+	 * @param orgs Update parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table update(String orgs) {
+		String json = Util.StrToJsonStr(orgs);
+		this.query.add(0, json);
+
 	    this.exec = "r_update";
-		return this;
+	    return dealWithTransaction();
 		
 	}
-	
+	/**
+	 * Delete data from a table.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table delete() {
 		this.exec = "r_delete";
-		return this;
+		return dealWithTransaction();
 		
 	}
-	public Table get(List<String> orgs){
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = JSONUtil.StrToJsonStr(s);
-				this.query.add(json);
+	
+	private Table dealWithTransaction(){
+		if(this.transaction){
+			JSONObject json;
+			try {
+				json = txJson();
+				this.cache.add(json);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			
+		}
+		return this;
+	}
+	/**
+	 * Select data from a table.
+	 * @param orgs Select parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table get(List<String> args){
+		if(args != null){
+			for(String s: args){
+				if(!"".equals(s)&&s!=null){
+					String json = Util.StrToJsonStr(s);
+					this.query.add(json);
+				}
+			}
+		}
+		
+	    this.exec = "r_get";
+		return this;
+	}
+	
+	/**
+	 * Select data from a table.
+	 * @param arg Select parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table get(String arg){
+		if(!"".equals(arg) && arg !=null){
+			String json = Util.StrToJsonStr(arg);
+			this.query.add(json);
 		}
 		
 	    this.exec = "r_get";
 		return this;
 		
 	}
-
+	
+	public Table get(){		
+	    this.exec = "r_get";
+		return this;
+	}
+	/**
+	 * Filter conditions when select.
+	 * @param orgs Select conditions.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table withFields(String  orgs){
 		if(!"".equals(orgs)&&orgs!=null){
 			String ss = orgs.replace("\'", "\"");
@@ -81,36 +141,50 @@ public class Table extends Submit{
 		return this;
 		
 	}
-	/*public Table sqlAssert(String orgs){
-		String ss = "";
-		if(!"".equals(orgs)&&orgs!=null){
-			 ss= orgs.replace("\'", "\"");
+	
+	/**
+	 * Assertion when sql-transaction begins.
+	 */
+	public Table sqlAssert(List<String> orgs){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
 			
-		}	
-		JSONObject json = new JSONObject();
-		json.put("$limit", ss);
-		this.query.add(json.toString());
-		return this;
+		}
+		this.exec = "t_assert";
+		if (!this.transaction)
+			System.out.println("Exception: you must begin the transaction first");
+		if (this.name==null)
+			System.out.println("Exception: you must appoint the table name");
+
+		return dealWithTransaction();
 	}
-	*/
+	
+	/**
+	 * Filter condition for select result.
+	 * @param orgs parameters.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table limit(String orgs){
-		String ss = "";
-		if(!"".equals(orgs)&&orgs!=null){
-			 ss= orgs.replace("\'", "\"");
-			
-		}	
 		JSONObject json = new JSONObject();
-		json.put("$limit", ss);
-		this.query.add(json.toString());
+	    json.put("$limit", Util.StrToJson(orgs));
+	    this.query.add(json.toString());
 		return this;
 	}
 
+	/**
+	 * Sort for a select result.
+	 * @param orgs Sort conditions.
+	 * @return Table object,can be used to operate Table continually.
+	 */
 	public Table order(List<String> orgs){
-		List<JSONObject> orderarr = new ArrayList<JSONObject>();
+		JSONArray orderarr = new JSONArray();
 		for(String s: orgs){
 			if(!"".equals(s)&&s!=null){
-				JSONObject json = JSONUtil.StrToJson(s);
-				orderarr.add(json);
+				JSONObject json = Util.StrToJson(s);
+				orderarr.put(json);
 			}
 		}
 		JSONObject json = new JSONObject();
@@ -118,61 +192,123 @@ public class Table extends Submit{
 		this.query.add(json.toString());
     	return this;
 	}
+	
+	private JSONObject txJson() throws Exception{
+		//System.out.println(this.query.toString());
+		JSONObject json = new JSONObject();
+		json.put("Tables", getTableArray(name));
+		json.put("Owner",  connection.scope);
+		json.put("Raw", tryEncryptRaw(this.query.toString()));
+		json.put("OpType",Validate.toOpType(this.exec));
+		json.put("StrictMode", this.strictMode);
+		return json;
+	}
+	
+	private String tryEncryptRaw(String strRaw) throws Exception{
+		String token = "";
+		boolean bFound = false;
+		if(this.transaction){
+			GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+			if(mapToken.containsKey(pair)){
+				token = mapToken.get(pair);
+				bFound = true;
+			}
+		}
+		if(token.equals("") && !bFound){
+			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
+			if(res.get("status").equals("error")){
+				if(!this.transaction)
+					System.out.println("Exception: "+res.getString("error_message"));
+			}else{
+				token = res.getString("token");
+			}
+		}
 
-	private SignedTransaction prepareTransaction(){
-	    AccountID account = AccountID.fromAddress(connection.scope);
-	    Map map = Validate.rippleRes(connection.client, account, name);
-	    
-	    if(map.get("Sequence") == null || map.get("NameInDB") == null){
-	    	return null;
-	    }
-	    
-        return prepareSQLStatement(map);
+		if(token.equals("")){
+			strRaw = Util.toHexString(strRaw);
+		}else{
+			//有加密则不验证
+			if(this.transaction){
+				this.needVerify = 0;
+			}
+			try {
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+				}
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
+				if(password == null){
+					System.out.println("Exception: decrypt token failed");
+				}
+				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password);
+				strRaw = Util.bytesToHex(rawBytes);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}	
+
+
+		return strRaw;
+	}
+	
+	private JSONObject prepareSQLStatement() {
+		JSONObject txjson;
+		try {
+			txjson = txJson();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Util.errorObject(e.getMessage());
+		}
+		
+		txjson.put("Account", this.connection.address);
+		
+		//for cross chain
+		if(crossChainArgs != null){
+			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+			txjson.put("OriginalAddress", crossChainArgs.originalAddress);
+			txjson.put("CurTxHash", crossChainArgs.curTxHash);
+			txjson.put("FutureTxHash", crossChainArgs.futureHash);
+			crossChainArgs = null;
+		}
+		
+		JSONObject result = Validate.tablePrepare(this.connection.client, txjson);
+		if(result.getString("status").equals("error")){
+			return result;
+		}
+		JSONObject tx_json = result.getJSONObject("tx_json");
+		Transaction payment;
+		
+		try {
+			payment = toTransaction(tx_json,TransactionType.SQLStatement);
+	        signed = payment.sign(connection.secret);
+	        return Util.successObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Util.errorObject(e.getMessage());
+		}   
 	}
 
-	public SignedTransaction prepareSQLStatement(Map map) {
-		String str ="{\"Table\":{\"TableName\":\""+JSONUtil.toHexString(name)+"\",\"NameInDB\":\""+map.get("NameInDB")+"\"}}";
-		STArray arr = Validate.fromJSONArray(str);
-		String fee = connection.client.serverInfo.fee_ref+"";
-		SQLStatement payment = new SQLStatement();
-        payment.as(AccountID.Owner,      connection.scope);
-        payment.as(AccountID.Account, connection.address);
-        payment.as(STArray.Tables, arr);
-        payment.as(UInt16.OpType, Validate.toOpType(exec));
-        payment.as(Blob.Raw, JSONUtil.toHexString(query.toString()));
-        payment.as(UInt32.Sequence, map.get("Sequence"));
-        payment.as(Amount.Fee, fee);
-        SignedTransaction signed = payment.sign(connection.secret);
-        
-        return signed;
-	};
-
 	@Override
-	JSONObject doSubmit() {
+	JSONObject prepareSigned() {
 		if(this.exec == "r_get"){
 			return select();
 		}else{
-			return doSubmit(prepareTransaction());
+			try {
+				return prepareSQLStatement();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return new JSONObject(e.getLocalizedMessage());
+			}
 		}
 	}
 
 	private JSONObject select(){
-		if(query.size()==0||!query.get(0).substring(0, 1).contains("[")){
+		if(query.size()==0 || !query.get(0).substring(0, 1).contains("[")){
 			query.add(0, "[]");
-			
 		}
-		AccountID account = AccountID.fromAddress(connection.scope);
-		String tables ="{\"Table\":{\"TableName\":\""+ name + "\"}}";
-		JSONObject tabjson = new JSONObject(tables);
-
-		JSONObject[] tabarr ={tabjson};
-		//System.out.println(query.toString());
-		Request req = connection.client.select(account,tabarr,query.toString(),(data)->{
-			if(cb != null){
-				Response response = (Response) data;
-				cb.called(getSelectRes(response));
-			}
-		});
+		AccountID account = AccountID.fromAddress(connection.address);
+		AccountID owner = AccountID.fromAddress(connection.scope);
+		Request req = connection.client.select(account,owner,name,query.toString());
 		
 		return getSelectRes(req.response);
 	}
@@ -181,65 +317,12 @@ public class Table extends Submit{
 		JSONObject obj = new JSONObject();
 		obj.put("status", response.status);
 		if( !"error".equals(response.status)){
-			this.data = response.result.get("lines");
+			//this.data = response.result.get("lines");
+			obj.put("final_result", true);
 			obj.put("lines", response.result.get("lines"));
 		}else{
 			obj.put("error_message", response.error);
 		}
 		return obj;
 	}
-	
-	public Table(String name) {
-		super();
-		this.name = name;
-	}
-
-	public Table() {
-		super();
-	
-	}
-
-
-	public String getOwner() {
-		return owner;
-	}
-	public void setOwner(String owner) {
-		this.owner = owner;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public void setQuery(List<String> query) {
-		this.query = query;
-	}
-	public List getQuery() {
-		return query;
-	}
-	public Connection getConnection() {
-		return connection;
-	}
-	public void setConnection(Connection connection) {
-		this.connection = connection;
-	}
-	public Object getData() {
-		return data;
-	}
-	public void setData(Object data) {
-		this.data = data;
-	}
-	public String getMessage() {
-		return message;
-	}
-	public void setMessage(String message) {
-		this.message = message;
-	}
-	public String getExec() {
-		return exec;
-	}
-	public void setExec(String exec) {
-		this.exec = exec;
-	}	
 }

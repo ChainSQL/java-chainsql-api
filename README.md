@@ -1,2 +1,2 @@
-# java-chainsql-api
-chainsql java api
+# java-chainsql
+ChainSQL API for JAVA

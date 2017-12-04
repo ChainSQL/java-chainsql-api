@@ -74,7 +74,7 @@ public abstract class Submit {
 	}
 	private static final int wait_milli = 50;
 	private static final int submit_wait = 10000;
-	private static final int sync_maxtime = 200000;
+	private static final int sync_maxtime = 30000;
 	
 	/**
 	 * Set restrict mode.
@@ -218,12 +218,11 @@ public abstract class Submit {
 	}
 	
 	private void subscribeTx(String txId){
-    	EventManager manager = new EventManager(connection);
-    	manager.subTx(txId,new Callback<JSONObject>(){
+    	EventManager.instance().subTx(txId,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 	    		if(cb != null){
-	    			if(!data.getString("status").equals("success"))
+//	    			if(!data.getString("status").equals("success"))
 	    				cb.called((JSONObject)data);
 	    		}else if(sync){
 	    			JSONObject obj = (JSONObject)data;
@@ -304,22 +303,11 @@ public abstract class Submit {
      		fee = connection.client.serverInfo.transactionFee(tx);
     	else
     		fee = Amount.fromString("50");
-    	//chainsql tx needs more zxc
-    	if(Util.isChainsqlType(type)) {
-    		int zxcDrops = 1000000;
-    		double multiplier = 0.001;
-    		if(json.has("Raw")) {
-        		String rawHex = json.getString("Raw");
-        		int rawSize = rawHex.length()/2;
-        		multiplier += rawSize / 1024.0;
-    		}else if(json.has("Statements")) {
-    			String statementsHex = json.getString("Statements");
-    			int stateSize = statementsHex.length()/2;
-    			multiplier += stateSize / 1024.0;
-    		}
-    		Amount extraFee = Amount.fromString(String.valueOf((int)(multiplier * zxcDrops)));
-    		fee = fee.add(extraFee);
-    	}
+    	
+    	//chainsql type tx needs higher fee
+    	Amount extraFee = Util.getExtraFee(json,type);
+    	fee = fee.add(extraFee);
+    	
 		tx.as(Amount.Fee, fee);
 		
   		AccountID account = AccountID.fromAddress(this.connection.address);

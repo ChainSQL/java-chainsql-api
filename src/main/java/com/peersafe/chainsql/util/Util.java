@@ -1,7 +1,5 @@
 package com.peersafe.chainsql.util;
 
-import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,10 +9,9 @@ import java.util.Random;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.serialized.enums.TransactionType;
-import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.chainsql.crypto.EncryptCommon;
-import com.peersafe.chainsql.net.Connection;
 
 
 public class Util {
@@ -296,5 +293,24 @@ public class Util {
 			return true;
 		}
 		return false;
+	}
+	
+	public static Amount getExtraFee(JSONObject json,TransactionType type) {
+	   	if(isChainsqlType(type)) {
+    		int zxcDrops = 1000000;
+    		double multiplier = 0.001;
+    		if(json.has("Raw")) {
+        		String rawHex = json.getString("Raw");
+        		int rawSize = rawHex.length()/2;
+        		multiplier += rawSize / 1024.0;
+    		}else if(json.has("Statements")) {
+    			String statementsHex = json.getString("Statements");
+    			int stateSize = statementsHex.length()/2;
+    			multiplier += stateSize / 1024.0;
+    		}
+    		return Amount.fromString(String.valueOf((int)(multiplier * zxcDrops)));
+    	}else {
+    		return Amount.fromString("0");
+    	}
 	}
 }

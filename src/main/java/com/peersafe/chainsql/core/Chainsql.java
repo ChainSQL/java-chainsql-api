@@ -38,7 +38,6 @@ import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
 public class Chainsql extends Submit {
-	public	EventManager event;
 
 	private JSONObject mTxJson;
 	
@@ -49,6 +48,8 @@ public class Chainsql extends Submit {
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
+	
+	public static EventManager event = EventManager.instance();
 	
 	/**
 	 * Assigning the operating user.
@@ -107,7 +108,7 @@ public class Chainsql extends Submit {
 			}
 		}
 		System.out.println("connect success");
-		this.event = new EventManager(this.connection);
+		EventManager.instance().init(this.connection);
 		//jdk1.8
 //		this.connection.client.onReconnecting(this::onReconnecting);
 //		this.connection.client.onReconnected(this::onReconnected);
@@ -163,7 +164,7 @@ public class Chainsql extends Submit {
 		if(reconnectedCB != null){
 			reconnectedCB.called(cb);
 		}
-		event.reSubscribe();
+		EventManager.instance().reSubscribe();
 	}
 	/**
 	 * Disconnect the websocket connection.
@@ -186,7 +187,6 @@ public class Chainsql extends Submit {
 		    tab.mapToken = this.mapToken;
 		}
 		tab.strictMode = this.strictMode;
-		tab.event = this.event;
 		tab.connection = this.connection;
 		tab.setCrossChainArgs(this.crossChainArgs);
 		return tab;

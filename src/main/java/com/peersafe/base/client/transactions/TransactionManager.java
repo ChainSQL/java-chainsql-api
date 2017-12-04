@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.json.JSONObject;
+
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.enums.Command;
 import com.peersafe.base.client.pubsub.CallbackContext;
@@ -19,11 +21,12 @@ import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.coretypes.hash.Hash256;
 import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.serialized.enums.EngineResult;
+import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.result.TransactionResult;
-import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.core.types.known.tx.txns.AccountSet;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.chainsql.util.Util;
 
 public class TransactionManager extends Publisher<TransactionManager.events> {
 	public static interface events<T> extends Publisher.Callback<T> {
@@ -322,7 +325,11 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		Amount fee = client.serverInfo.transactionFee(txn.txn);
 		// Inside prepare we check if Fee and Sequence are the same, and if so
 		// we don't recreate tx_blob, or resign ;)
-
+		
+		JSONObject txJson = new JSONObject(txn.txn.prettyJSON());
+		Amount extraFee = Util.getExtraFee(txJson, TransactionType.fromNumber(txJson.getInt("TransactionType")));
+		fee = fee.add(extraFee);
+		
 		long currentLedgerIndex = client.serverInfo.ledger_index;
 		UInt32 lastLedgerSequence = new UInt32(currentLedgerIndex + 8);
 		Submission submission = txn.lastSubmission();

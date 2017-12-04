@@ -21,13 +21,20 @@ public class EventManager {
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
 	public JSONObject result;
-
+	
+	private static EventManager single = new EventManager();
+	
+	private EventManager() {
+	}
+	
+	public static EventManager instance() {
+		return single;
+	}
 	/**
 	 * Constructor
 	 * @param connection connection object.
 	 */
-	public EventManager(Connection connection) {
-		super();
+	public void init(Connection connection) {
 		this.connection = connection;
 		this.mapCache = new HashMap<String,Callback>();
 		mapPass = new HashMap<String,byte[]>();
@@ -52,21 +59,21 @@ public class EventManager {
 			this.connection.client.subscriptions.addMessage(messageTx);
 		}
 	}
-	private void onChainsqlSubRet() {
-		this.connection.client.OnSubChainsqlRet(new Client.OnChainsqlSubRet() {
-			@Override
-			public void called(JSONObject args) {
-				if(args.has("owner") && args.has("tablename")) {
-					String key = args.getString("tablename") + args.getString("owner");
-					makeCallback(key,args.getJSONObject("result"));
-				}
-				if(args.has("transaction")) {
-					String key = args.getString("transaction");
-					makeCallback(key,args.getJSONObject("result"));
-				}
-			}				
-		});
-	}
+//	private void onChainsqlSubRet() {
+//		this.connection.client.OnSubChainsqlRet(new Client.OnChainsqlSubRet() {
+//			@Override
+//			public void called(JSONObject args) {
+//				if(args.has("owner") && args.has("tablename")) {
+//					String key = args.getString("tablename") + args.getString("owner");
+//					makeCallback(key,args.getJSONObject("result"));
+//				}
+//				if(args.has("transaction")) {
+//					String key = args.getString("transaction");
+//					makeCallback(key,args.getJSONObject("result"));
+//				}
+//			}				
+//		});
+//	}
 	/**
 	 * Subscribe for a table.
 	 * @param name Table name.
@@ -90,10 +97,10 @@ public class EventManager {
 			});
 			this.onMessage = true;
 		}
-		if(!this.onSubRet) {
-			onChainsqlSubRet();
-			this.onSubRet = true;
-		}
+//		if(!this.onSubRet) {
+//			onChainsqlSubRet();
+//			this.onSubRet = true;
+//		}
 		this.mapCache.put(name + owner,cb);
 	}
 
@@ -117,10 +124,10 @@ public class EventManager {
 			});
 			this.onMessage = true;
 		}
-		if(!this.onSubRet) {
-			onChainsqlSubRet();
-			this.onSubRet = true;
-		}
+//		if(!this.onSubRet) {
+//			onChainsqlSubRet();
+//			this.onSubRet = true;
+//		}
 		this.mapCache.put(id, cb);
 	}
 
@@ -143,7 +150,6 @@ public class EventManager {
 			obj.put("status", "success");
 			obj.put("result", "unsubscribe table success");
 			obj.put("type", "response");
-			
 			this.mapCache.remove(key);
 			this.mapPass.remove(key);
 		}else {

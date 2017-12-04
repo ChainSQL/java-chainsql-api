@@ -15,7 +15,6 @@ import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.crypto.EncryptCommon;
-import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
@@ -24,8 +23,6 @@ public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-
-	public	EventManager event;
 
 	/**
 	 * Constructor for Table.

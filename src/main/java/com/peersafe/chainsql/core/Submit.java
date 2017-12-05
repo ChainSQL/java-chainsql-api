@@ -299,10 +299,18 @@ public abstract class Submit {
 	protected Transaction toTransaction(JSONObject json,TransactionType type) throws Exception{
     	Transaction tx = new Transaction(type);
     	Amount fee;
-    	if(connection.client.serverInfo.primed())
-     		fee = connection.client.serverInfo.transactionFee(tx);
-    	else
+    	if(connection.client.serverInfo.primed()) {
+    		fee = connection.client.serverInfo.transactionFee(tx);
+    		if(!json.has(UInt32.LastLedgerSequence.toString())) {
+    			tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 5));
+    		}
+    	}else {
     		fee = Amount.fromString("50");
+    		JSONObject ledger = connection.client.getLedgerVersion();
+    		if(ledger.has("ledger_current_index")) {
+    			tx.put(UInt32.LastLedgerSequence, new UInt32(ledger.getInt("ledger_current_index") + 5));
+    		}
+    	}    		
     	
     	//chainsql type tx needs higher fee
     	Amount extraFee = Util.getExtraFee(json,type);

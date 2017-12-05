@@ -1359,6 +1359,21 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	}
    	 	}
     }
+    
+    private JSONObject getResult(Response response) {
+    	if(response != null) {
+    		return response.result;
+    	}else {
+    		return new JSONObject();
+    	}
+    }
+    public JSONObject getLedgerVersion() {
+    	Request request = newRequest(Command.ledger_current);
+	    request.request();
+	    waiting(request);
+	    return getResult(request.response);
+    }
+    
     /**
      * Get transaction count on chain.
      * @return Transaction account data.
@@ -1367,7 +1382,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Request request = newRequest(Command.tx_count);
 	    request.request();
 	    waiting(request);
-	   	return request.response.result;	
+	    return getResult(request.response);
     }
     
     /**
@@ -1378,7 +1393,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Request request = newRequest(Command.server_info);
         request.request();
         waiting(request);
-   	 	return request.response.result;
+        return getResult(request.response);
     }
 
     /**
@@ -1389,7 +1404,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Request request = newRequest(Command.unl_list);
         request.request();
         waiting(request);
-   	 	return request.response.result;
+        return getResult(request.response);
     }
     /**
      * Get user_token for table,if token got not null, it is a confidential table.
@@ -1398,7 +1413,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param name	Table name.
      * @return Request object contains response data.
      */
-    public Request getUserToken(String owner,String user,String name){
+    public JSONObject getUserToken(String owner,String user,String name){
     	 Request request = newRequest(Command.g_userToken);
 	   	 JSONObject txjson = new JSONObject();
 	   	 txjson.put("Owner", owner);
@@ -1409,7 +1424,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
          request.request();
          waiting(request);
 
-	   	 return request;	
+         return getResult(request.response);	
     }
     
     public void getUserToken(final String owner,final String user,final String name,final Callback<JSONObject> cb) {

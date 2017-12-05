@@ -42,11 +42,6 @@ public class Validate {
         return stArr;
     }
 	
-	public static JSONObject getUserToken(Connection connection,String owner, String name) {
-		Request request = connection.client.getUserToken(owner,connection.address,name);
-		return request.response.result;
-	}
-	
 	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
 		Request request = client.tablePrepare(tx_json);
 		return request.response.result;

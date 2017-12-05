@@ -527,12 +527,13 @@ public class Chainsql extends Submit {
 		if(mapToken.containsKey(pair)){
 			token = mapToken.get(pair);
 		}else {
-			JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
-			if(res.get("status").equals("error")){
+			JSONObject res = this.connection.client.getUserToken(this.connection.address,connection.address,name);
+			if(res.has("status") && res.get("status").equals("error")){
 				System.out.println(res.getString("error_message"));
 				return this;
 			}
-			token = res.getString("token");
+			if(res.has("token"))
+				token = res.getString("token");
 		}
 
 		String newToken = "";
@@ -756,28 +757,7 @@ public class Chainsql extends Submit {
 	 * @return LedgerVersion data
 	 */
 	public JSONObject getLedgerVersion(){
-		
-		mRetJson = null;
-		this.connection.client.getLedgerVersion(new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
-			}
-		});
-		while(mRetJson == null){
-			Util.waiting();
-		}
-		
-		if(mRetJson.has("ledger_current_index")){
-			return mRetJson;
-		}else{
-			return null;
-		}
-		
+		return this.connection.client.getLedgerVersion();		
 	}
 	/**
 	 * Get newest validated ledger index,asynchronous.

@@ -215,11 +215,11 @@ public class Table extends Submit{
 			}
 		}
 		if(token.equals("") && !bFound){
-			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
-			if(res.get("status").equals("error")){
+			JSONObject res = this.connection.client.getUserToken(this.connection.scope,connection.address,name);
+			if(res.has("status") && res.get("status").equals("error")){
 				if(!this.transaction)
 					System.out.println("Exception: "+res.getString("error_message"));
-			}else{
+			}else if(res.has("token")) {
 				token = res.getString("token");
 			}
 		}

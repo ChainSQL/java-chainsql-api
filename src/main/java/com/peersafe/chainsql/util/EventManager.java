@@ -16,7 +16,8 @@ import com.peersafe.chainsql.net.Connection;
 
 public class EventManager {
 	public Connection connection;
-	public boolean onMessage;
+	public boolean onTbMessage;
+	public boolean onTxMessage;
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
@@ -38,7 +39,8 @@ public class EventManager {
 		this.connection = connection;
 		this.mapCache = new HashMap<String,Callback>();
 		mapPass = new HashMap<String,byte[]>();
-		this.onMessage = false;
+		this.onTbMessage = false;
+		this.onTxMessage = false;
 		this.onSubRet = false;
 	}
 	
@@ -59,21 +61,21 @@ public class EventManager {
 			this.connection.client.subscriptions.addMessage(messageTx);
 		}
 	}
-//	private void onChainsqlSubRet() {
-//		this.connection.client.OnSubChainsqlRet(new Client.OnChainsqlSubRet() {
-//			@Override
-//			public void called(JSONObject args) {
-//				if(args.has("owner") && args.has("tablename")) {
-//					String key = args.getString("tablename") + args.getString("owner");
-//					makeCallback(key,args.getJSONObject("result"));
-//				}
-//				if(args.has("transaction")) {
-//					String key = args.getString("transaction");
-//					makeCallback(key,args.getJSONObject("result"));
-//				}
-//			}				
-//		});
-//	}
+	private void onChainsqlSubRet() {
+		this.connection.client.OnSubChainsqlRet(new Client.OnChainsqlSubRet() {
+			@Override
+			public void called(JSONObject args) {
+				if(args.has("owner") && args.has("tablename")) {
+					String key = args.getString("tablename") + args.getString("owner");
+					makeCallback(key,args.getJSONObject("result"));
+				}
+				if(args.has("transaction")) {
+					String key = args.getString("transaction");
+					makeCallback(key,args.getJSONObject("result"));
+				}
+			}				
+		});
+	}
 	/**
 	 * Subscribe for a table.
 	 * @param name Table name.
@@ -87,7 +89,7 @@ public class EventManager {
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
 		
-		if (!this.onMessage) {
+		if (!this.onTbMessage) {
 			//this.connection.client.OnTBMessage(this::onTBMessage);
 			this.connection.client.OnTBMessage(new OnTBMessage(){
 				@Override
@@ -95,12 +97,12 @@ public class EventManager {
 					onTBMessage(args);
 				}
 			});
-			this.onMessage = true;
+			this.onTbMessage = true;
 		}
-//		if(!this.onSubRet) {
-//			onChainsqlSubRet();
-//			this.onSubRet = true;
-//		}
+		if(!this.onSubRet) {
+			onChainsqlSubRet();
+			this.onSubRet = true;
+		}
 		this.mapCache.put(name + owner,cb);
 	}
 
@@ -114,20 +116,19 @@ public class EventManager {
 		messageTx.put("command", "subscribe");
 		messageTx.put("transaction", id);
 		this.connection.client.subscriptions.addMessage(messageTx);
-		if (!this.onMessage) {
-//			this.connection.client.OnTXMessage(this::onTXMessage);
+		if (!this.onTxMessage) {
 			this.connection.client.OnTXMessage(new OnTXMessage(){
 				@Override
 				public void called(JSONObject args) {
 					onTXMessage(args);
 				}
 			});
-			this.onMessage = true;
+			this.onTxMessage = true;
 		}
-//		if(!this.onSubRet) {
-//			onChainsqlSubRet();
-//			this.onSubRet = true;
-//		}
+		if(!this.onSubRet) {
+			onChainsqlSubRet();
+			this.onSubRet = true;
+		}
 		this.mapCache.put(id, cb);
 	}
 

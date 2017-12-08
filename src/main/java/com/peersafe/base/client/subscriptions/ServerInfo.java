@@ -39,7 +39,16 @@ public class ServerInfo {
         if (!updated) {
             throw new IllegalStateException("No information from the server yet");
         }
-
+        //in case of divide by zero
+        {
+            if(fee_ref == 0)
+               	fee_ref = 10;
+            if(load_base == 0)
+            	load_base = 256;	
+            if(fee_base == 0)
+            	fee_base = 10;
+        }        
+        
         double fee_unit = (double)fee_base / fee_ref, fee;
         fee_unit *= load_factor / load_base;
         fee = units * fee_unit * Config.getFeeCushion();

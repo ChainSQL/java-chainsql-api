@@ -892,8 +892,8 @@ public class Chainsql extends Submit {
 	 * Generate a new account.
 	 * @return Contains folling fields:
 	 * 		   secret:Account secret.
-	 * 		   account_id:Account address.
-	 * 		   public_key:Account publickey. 
+	 * 		   address:Account address.
+	 * 		   publicKey:Account publickey. 
 	 */
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
@@ -935,8 +935,8 @@ public class Chainsql extends Submit {
 		if(!Config.isUseGM()){
 			obj.put("secret", secretKey);
 		}
-		obj.put("account_id", address);
-		obj.put("public_key", publicKey);
+		obj.put("address", address);
+		obj.put("publicKey", publicKey);
 		return obj;
 	}
 	/**

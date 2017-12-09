@@ -4,8 +4,6 @@ import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import cn.com.sansec.key.SWJAPI;
-
 import com.peersafe.base.crypto.sm.SMDevice;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.encodings.base58.B58;

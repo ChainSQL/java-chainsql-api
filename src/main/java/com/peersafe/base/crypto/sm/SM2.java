@@ -59,8 +59,6 @@ public class SM2 {
 	    *   
 	    * @param src  
 	    *            byte数组  
-	    * @param offset  
-	    *            从数组的第offset位开始  
 	    * @return int数值  
 	    */    
 	public static int bytesToInt(byte[] src) {  

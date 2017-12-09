@@ -1192,9 +1192,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /**
      * Select data from chain.
      * @param account Account address.
-     * @param tabarr Table array.
+     * @param owner Table owner address.
+     * @param name  Table name.
      * @param raw Raw data.
-     * @param cb Callback.
      * @return Request data.
      */
 	public Request select(AccountID account, AccountID owner, String name, String raw) {
@@ -1274,6 +1274,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /**
      * Request for transaction information.
      * @param address Account address.
+     * @param limit Transaction count limit.
      * @param cb Callback.
      */
     public  void getTransactions(final String address,final int limit,final Callback<JSONObject> cb){
@@ -1313,7 +1314,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     /**
      * Request for transaction information.
-     * @param address Account address.
+     * @param hash Tx hash ,if "" it will find first tx on this chain.
+     * @param limit Transaction count limit.
+     * @param include If include the transaction that hash point out.
      * @param cb Callback.
      */
     public  void getCrossChainTxs(final String hash,final int limit,final boolean include,final Callback<JSONObject> cb){

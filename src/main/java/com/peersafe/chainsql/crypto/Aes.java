@@ -24,7 +24,6 @@ public class Aes {
 	 * @param password password bytes.
 	 * @param content content.
 	 * @return return value.
-	 * @throws UnsupportedEncodingException 
 	 */
 	public static String aesEncrypt(byte[] password,String content){
 		try{
@@ -40,7 +39,6 @@ public class Aes {
 	 * @param password Password.
 	 * @param content Content.
 	 * @return Return value.
-	 * @throws UnsupportedEncodingException 
 	 */
 	public static String aesEncrypt(String password,String content){
 		try{
@@ -79,9 +77,9 @@ public class Aes {
 	/** 
 	 * 加密 
 	 *  
-	 * @param content 需要加密的内容 
+	 * @param byteContent 需要加密的内容 
 	 * @param password  加密密码 
-	 * @return 
+	 * @return 加密结果
 	 */  
 	public static byte[] encrypt(byte[] password,byte[] byteContent) {  
         try {             
@@ -115,7 +113,7 @@ public class Aes {
 	/**解密 
 	 * @param content  待解密内容 
 	 * @param password 解密密钥 
-	 * @return 
+	 * @return 解密结果
 	 */  
 	public static byte[] decrypt(byte[] content, byte[] password) {  
         try {

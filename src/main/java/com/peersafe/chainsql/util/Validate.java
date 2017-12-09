@@ -63,6 +63,7 @@ public class Validate {
     /**
      * Check fields
      * @param strraw Raw data list.
+     * @param name Table name
      * @throws Exception Throws when exception occur.
      */
 	public static void checkCreate(List<JSONObject> strraw,String name) throws Exception{

@@ -91,7 +91,7 @@ public class Table extends Submit{
 	}
 	/**
 	 * Select data from a table.
-	 * @param orgs Select parameters.
+	 * @param args Select parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table get(List<String> args){
@@ -144,6 +144,8 @@ public class Table extends Submit{
 	
 	/**
 	 * Assertion when sql-transaction begins.
+	 * @param orgs assert conditions.
+	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table sqlAssert(List<String> orgs){
 		for(String s: orgs){

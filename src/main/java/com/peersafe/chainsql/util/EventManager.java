@@ -136,6 +136,7 @@ public class EventManager {
 	 * Un-subscribe a table.
 	 * @param name Table name.
 	 * @param owner Table owner address.
+	 * @param cb Callback.
 	 */
 	public void unsubTable(String name, String owner,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
@@ -165,6 +166,7 @@ public class EventManager {
 	/**
 	 * Un-subscribe a transaction.
 	 * @param id Transaction hash.
+	 * @param cb Callback.
 	 */
 	public void unsubTx(String id,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();

@@ -7,12 +7,6 @@ import com.peersafe.base.core.coretypes.hash.Hash256;
 import com.peersafe.base.core.coretypes.hash.prefixes.HashPrefix;
 
 public class SMDigest {
-	/**
-	 * 获取交易hash
-	 * @param prefix
-	 * @param blob
-	 * @return
-	 */
 	public static Hash256 getTransactionHash(HashPrefix prefix,byte[] blob){
 		try {
 			SWJAPI sdkey = SMDevice.sdkey;

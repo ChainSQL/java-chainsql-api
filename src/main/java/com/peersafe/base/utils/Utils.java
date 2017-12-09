@@ -12,10 +12,7 @@ public class Utils {
     public static BigInteger uBigInt(byte[] bytes) {
         return new BigInteger(1, bytes);
     }
-    
-	/*** 
-     * encode by Base64 
-     */  
+
     public static String encodeBase64(byte[]input) throws Exception{  
 		Class clazz = Class.forName("com.sun.org.apache.xerces.internal.impl.dv.util.Base64");
 		Method mainMethod = clazz.getMethod("encode", byte[].class);
@@ -28,9 +25,7 @@ public class Utils {
 		result = result.replace("=", "");
 		return result;
     }  
-    /*** 
-     * decode by Base64 
-     */  
+
     public static byte[] decodeBase64(String input) throws Exception{ 
     	input = input.replace( "-", "+");
     	input = input.replace("_", "/");

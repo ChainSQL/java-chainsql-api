@@ -76,7 +76,7 @@ public class TestChainsql {
 	public void generateAccount() {
 		JSONObject obj = c.generateAddress();
 		System.out.println("new account:" + obj);
-		sNewAccountId = obj.getString("account_id");
+		sNewAccountId = obj.getString("address");
 		sNewSecret = obj.getString("secret");
 	}
 

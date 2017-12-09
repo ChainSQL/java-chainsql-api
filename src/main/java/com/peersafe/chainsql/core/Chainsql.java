@@ -87,10 +87,10 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * Connect to a secure websocket url.
-	 * @param wss url,e.g.:"ws://127.0.0.1:5006".
-	 * @param serverCertPath
-	 * @param storePass
-	 * @return
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath server certificate path
+	 * @param storePass password
+	 * @return Connection
 	 */
 	@SuppressWarnings("resource")
 	public Connection connect(String url,String serverCertPath,String storePass) {
@@ -194,7 +194,7 @@ public class Chainsql extends Submit {
 	
 	/**
 	 * use guomi algorithm
-	 * @param useGM 
+	 * @param useGM 是否使用国密
 	 * @param bNewKeyPair 是否生成新的公私钥对
 	 * @param pin default is '666666'
 	 * @throws Exception throws exception if failed.
@@ -212,7 +212,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Sign a transaction.
 	 * @param tx transaction Json.
-	 * @param secret 
+	 * @param secret Secret used to sign
 	 * @return tx_blob and hash:
 	 * {
 	 * 	  "tx_blob":"xxxxx",
@@ -241,7 +241,7 @@ public class Chainsql extends Submit {
 	/**
 	 * sign for 
 	 * @param tx transaction Json.
-	 * @param secret
+	 * @param secret Secret used to sign
 	 * @return sign result form:
 	 {
 	    "Signer":{
@@ -527,12 +527,13 @@ public class Chainsql extends Submit {
 		if(mapToken.containsKey(pair)){
 			token = mapToken.get(pair);
 		}else {
-			JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
-			if(res.get("status").equals("error")){
+			JSONObject res = this.connection.client.getUserToken(this.connection.address,connection.address,name);
+			if(res.has("status") && res.get("status").equals("error")){
 				System.out.println(res.getString("error_message"));
 				return this;
 			}
-			token = res.getString("token");
+			if(res.has("token"))
+				token = res.getString("token");
 		}
 
 		String newToken = "";
@@ -756,28 +757,7 @@ public class Chainsql extends Submit {
 	 * @return LedgerVersion data
 	 */
 	public JSONObject getLedgerVersion(){
-		
-		mRetJson = null;
-		this.connection.client.getLedgerVersion(new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
-			}
-		});
-		while(mRetJson == null){
-			Util.waiting();
-		}
-		
-		if(mRetJson.has("ledger_current_index")){
-			return mRetJson;
-		}else{
-			return null;
-		}
-		
+		return this.connection.client.getLedgerVersion();		
 	}
 	/**
 	 * Get newest validated ledger index,asynchronous.
@@ -912,8 +892,8 @@ public class Chainsql extends Submit {
 	 * Generate a new account.
 	 * @return Contains folling fields:
 	 * 		   secret:Account secret.
-	 * 		   account_id:Account address.
-	 * 		   public_key:Account publickey. 
+	 * 		   address:Account address.
+	 * 		   publicKey:Account publickey. 
 	 */
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
@@ -955,13 +935,13 @@ public class Chainsql extends Submit {
 		if(!Config.isUseGM()){
 			obj.put("secret", secretKey);
 		}
-		obj.put("account_id", address);
-		obj.put("public_key", publicKey);
+		obj.put("address", address);
+		obj.put("publicKey", publicKey);
 		return obj;
 	}
 	/**
 	 * Create validation key
-	 * @param count 
+	 * @param count Count to create.
 	 * @return JSONArray contains validation keys, each with a structue of {"seed":xxx,"publickey":xxx}
 	 */
 	public JSONArray validationCreate(int count){

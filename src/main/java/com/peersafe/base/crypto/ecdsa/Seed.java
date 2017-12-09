@@ -5,10 +5,8 @@ import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Random;
 
 import com.peersafe.base.config.Config;
-import com.peersafe.base.crypto.sm.SMKeyPair;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.encodings.base58.B58;
 import com.peersafe.base.utils.Sha512;
@@ -68,7 +66,8 @@ public class Seed {
             return EDKeyPair.from128Seed(seedBytes);
         }  else if(Arrays.equals(version, VER_SM)){
         	try {
-				return new SMKeyPair();
+				//return new SMKeyPair();
+        		return null;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
@@ -130,7 +129,8 @@ public class Seed {
     public static IKeyPair getKeyPair(String b58) {
     	if(Config.isUseGM()){
     		try {
-				return new SMKeyPair();
+//				return new SMKeyPair();
+    			return null;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;

@@ -42,11 +42,6 @@ public class Validate {
         return stArr;
     }
 	
-	public static JSONObject getUserToken(Connection connection,String owner, String name) {
-		Request request = connection.client.getUserToken(owner,connection.address,name);
-		return request.response.result;
-	}
-	
 	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
 		Request request = client.tablePrepare(tx_json);
 		return request.response.result;
@@ -68,6 +63,7 @@ public class Validate {
     /**
      * Check fields
      * @param strraw Raw data list.
+     * @param name Table name
      * @throws Exception Throws when exception occur.
      */
 	public static void checkCreate(List<JSONObject> strraw,String name) throws Exception{

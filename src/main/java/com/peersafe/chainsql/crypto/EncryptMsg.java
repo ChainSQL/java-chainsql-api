@@ -11,84 +11,30 @@ public final class EncryptMsg {
       extends com.google.protobuf.MessageOrBuilder {
 
     // required bytes public_other = 1;
-    /**
-     * <code>required bytes public_other = 1;</code>
-     *
-     * <pre>
-     *DH 随机产生的公钥
-     * </pre>
-     */
+
     boolean hasPublicOther();
-    /**
-     * <code>required bytes public_other = 1;</code>
-     *
-     * <pre>
-     *DH 随机产生的公钥
-     * </pre>
-     */
+
     com.google.protobuf.ByteString getPublicOther();
 
     // repeated .MultiEncrypt.HashToken hash_token_pair = 2;
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     java.util.List<EncryptMsg.MultiEncrypt.HashToken> 
         getHashTokenPairList();
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     EncryptMsg.MultiEncrypt.HashToken getHashTokenPair(int index);
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     int getHashTokenPairCount();
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     java.util.List<? extends EncryptMsg.MultiEncrypt.HashTokenOrBuilder> 
         getHashTokenPairOrBuilderList();
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     EncryptMsg.MultiEncrypt.HashTokenOrBuilder getHashTokenPairOrBuilder(
         int index);
 
     // required bytes cipher = 3;
-    /**
-     * <code>required bytes cipher = 3;</code>
-     *
-     * <pre>
-     *字符串的密文
-     * </pre>
-     */
+
     boolean hasCipher();
-    /**
-     * <code>required bytes cipher = 3;</code>
-     *
-     * <pre>
-     *字符串的密文
-     * </pre>
-     */
+
     com.google.protobuf.ByteString getCipher();
   }
   /**
@@ -206,28 +152,18 @@ public final class EncryptMsg {
         extends com.google.protobuf.MessageOrBuilder {
 
       // required bytes public_hash = 1;
-      /**
-       * <code>required bytes public_hash = 1;</code>
-       */
+
       boolean hasPublicHash();
-      /**
-       * <code>required bytes public_hash = 1;</code>
-       */
+
       com.google.protobuf.ByteString getPublicHash();
 
       // required bytes token = 2;
-      /**
-       * <code>required bytes token = 2;</code>
-       */
+
       boolean hasToken();
-      /**
-       * <code>required bytes token = 2;</code>
-       */
+
       com.google.protobuf.ByteString getToken();
     }
-    /**
-     * Protobuf type {@code MultiEncrypt.HashToken}
-     */
+
     public static final class HashToken extends
         com.google.protobuf.GeneratedMessage
         implements HashTokenOrBuilder {
@@ -329,15 +265,11 @@ public final class EncryptMsg {
       // required bytes public_hash = 1;
       public static final int PUBLIC_HASH_FIELD_NUMBER = 1;
       private com.google.protobuf.ByteString publicHash_;
-      /**
-       * <code>required bytes public_hash = 1;</code>
-       */
+ 
       public boolean hasPublicHash() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      /**
-       * <code>required bytes public_hash = 1;</code>
-       */
+
       public com.google.protobuf.ByteString getPublicHash() {
         return publicHash_;
       }
@@ -345,15 +277,11 @@ public final class EncryptMsg {
       // required bytes token = 2;
       public static final int TOKEN_FIELD_NUMBER = 2;
       private com.google.protobuf.ByteString token_;
-      /**
-       * <code>required bytes token = 2;</code>
-       */
+
       public boolean hasToken() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
-      /**
-       * <code>required bytes token = 2;</code>
-       */
+
       public com.google.protobuf.ByteString getToken() {
         return token_;
       }
@@ -483,9 +411,7 @@ public final class EncryptMsg {
         Builder builder = new Builder(parent);
         return builder;
       }
-      /**
-       * Protobuf type {@code MultiEncrypt.HashToken}
-       */
+ 
       public static final class Builder extends
           com.google.protobuf.GeneratedMessage.Builder<Builder>
          implements EncryptMsg.MultiEncrypt.HashTokenOrBuilder {
@@ -620,21 +546,15 @@ public final class EncryptMsg {
 
         // required bytes public_hash = 1;
         private com.google.protobuf.ByteString publicHash_ = com.google.protobuf.ByteString.EMPTY;
-        /**
-         * <code>required bytes public_hash = 1;</code>
-         */
+
         public boolean hasPublicHash() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
-        /**
-         * <code>required bytes public_hash = 1;</code>
-         */
+
         public com.google.protobuf.ByteString getPublicHash() {
           return publicHash_;
         }
-        /**
-         * <code>required bytes public_hash = 1;</code>
-         */
+
         public Builder setPublicHash(com.google.protobuf.ByteString value) {
           if (value == null) {
     throw new NullPointerException();
@@ -644,9 +564,7 @@ public final class EncryptMsg {
           onChanged();
           return this;
         }
-        /**
-         * <code>required bytes public_hash = 1;</code>
-         */
+
         public Builder clearPublicHash() {
           bitField0_ = (bitField0_ & ~0x00000001);
           publicHash_ = getDefaultInstance().getPublicHash();
@@ -656,21 +574,15 @@ public final class EncryptMsg {
 
         // required bytes token = 2;
         private com.google.protobuf.ByteString token_ = com.google.protobuf.ByteString.EMPTY;
-        /**
-         * <code>required bytes token = 2;</code>
-         */
+
         public boolean hasToken() {
           return ((bitField0_ & 0x00000002) == 0x00000002);
         }
-        /**
-         * <code>required bytes token = 2;</code>
-         */
+
         public com.google.protobuf.ByteString getToken() {
           return token_;
         }
-        /**
-         * <code>required bytes token = 2;</code>
-         */
+
         public Builder setToken(com.google.protobuf.ByteString value) {
           if (value == null) {
     throw new NullPointerException();
@@ -680,9 +592,7 @@ public final class EncryptMsg {
           onChanged();
           return this;
         }
-        /**
-         * <code>required bytes token = 2;</code>
-         */
+
         public Builder clearToken() {
           bitField0_ = (bitField0_ & ~0x00000002);
           token_ = getDefaultInstance().getToken();
@@ -705,23 +615,11 @@ public final class EncryptMsg {
     // required bytes public_other = 1;
     public static final int PUBLIC_OTHER_FIELD_NUMBER = 1;
     private com.google.protobuf.ByteString publicOther_;
-    /**
-     * <code>required bytes public_other = 1;</code>
-     *
-     * <pre>
-     *DH 随机产生的公钥
-     * </pre>
-     */
+
     public boolean hasPublicOther() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    /**
-     * <code>required bytes public_other = 1;</code>
-     *
-     * <pre>
-     *DH 随机产生的公钥
-     * </pre>
-     */
+
     public com.google.protobuf.ByteString getPublicOther() {
       return publicOther_;
     }
@@ -729,54 +627,24 @@ public final class EncryptMsg {
     // repeated .MultiEncrypt.HashToken hash_token_pair = 2;
     public static final int HASH_TOKEN_PAIR_FIELD_NUMBER = 2;
     private java.util.List<EncryptMsg.MultiEncrypt.HashToken> hashTokenPair_;
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     public java.util.List<EncryptMsg.MultiEncrypt.HashToken> getHashTokenPairList() {
       return hashTokenPair_;
     }
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     public java.util.List<? extends EncryptMsg.MultiEncrypt.HashTokenOrBuilder> 
         getHashTokenPairOrBuilderList() {
       return hashTokenPair_;
     }
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     public int getHashTokenPairCount() {
       return hashTokenPair_.size();
     }
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     public EncryptMsg.MultiEncrypt.HashToken getHashTokenPair(int index) {
       return hashTokenPair_.get(index);
     }
-    /**
-     * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-     *
-     * <pre>
-     *公钥哈希与Token数组
-     * </pre>
-     */
+
     public EncryptMsg.MultiEncrypt.HashTokenOrBuilder getHashTokenPairOrBuilder(
         int index) {
       return hashTokenPair_.get(index);
@@ -785,23 +653,11 @@ public final class EncryptMsg {
     // required bytes cipher = 3;
     public static final int CIPHER_FIELD_NUMBER = 3;
     private com.google.protobuf.ByteString cipher_;
-    /**
-     * <code>required bytes cipher = 3;</code>
-     *
-     * <pre>
-     *字符串的密文
-     * </pre>
-     */
+
     public boolean hasCipher() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
-    /**
-     * <code>required bytes cipher = 3;</code>
-     *
-     * <pre>
-     *字符串的密文
-     * </pre>
-     */
+
     public com.google.protobuf.ByteString getCipher() {
       return cipher_;
     }
@@ -945,9 +801,7 @@ public final class EncryptMsg {
       Builder builder = new Builder(parent);
       return builder;
     }
-    /**
-     * Protobuf type {@code MultiEncrypt}
-     */
+
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements EncryptMsg.MultiEncryptOrBuilder {
@@ -1130,33 +984,15 @@ public final class EncryptMsg {
 
       // required bytes public_other = 1;
       private com.google.protobuf.ByteString publicOther_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>required bytes public_other = 1;</code>
-       *
-       * <pre>
-       *DH 随机产生的公钥
-       * </pre>
-       */
+
       public boolean hasPublicOther() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      /**
-       * <code>required bytes public_other = 1;</code>
-       *
-       * <pre>
-       *DH 随机产生的公钥
-       * </pre>
-       */
+
       public com.google.protobuf.ByteString getPublicOther() {
         return publicOther_;
       }
-      /**
-       * <code>required bytes public_other = 1;</code>
-       *
-       * <pre>
-       *DH 随机产生的公钥
-       * </pre>
-       */
+
       public Builder setPublicOther(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
@@ -1166,13 +1002,7 @@ public final class EncryptMsg {
         onChanged();
         return this;
       }
-      /**
-       * <code>required bytes public_other = 1;</code>
-       *
-       * <pre>
-       *DH 随机产生的公钥
-       * </pre>
-       */
+
       public Builder clearPublicOther() {
         bitField0_ = (bitField0_ & ~0x00000001);
         publicOther_ = getDefaultInstance().getPublicOther();
@@ -1193,13 +1023,7 @@ public final class EncryptMsg {
       private com.google.protobuf.RepeatedFieldBuilder<
           EncryptMsg.MultiEncrypt.HashToken, EncryptMsg.MultiEncrypt.HashToken.Builder, EncryptMsg.MultiEncrypt.HashTokenOrBuilder> hashTokenPairBuilder_;
 
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public java.util.List<EncryptMsg.MultiEncrypt.HashToken> getHashTokenPairList() {
         if (hashTokenPairBuilder_ == null) {
           return java.util.Collections.unmodifiableList(hashTokenPair_);
@@ -1207,13 +1031,7 @@ public final class EncryptMsg {
           return hashTokenPairBuilder_.getMessageList();
         }
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public int getHashTokenPairCount() {
         if (hashTokenPairBuilder_ == null) {
           return hashTokenPair_.size();
@@ -1221,13 +1039,7 @@ public final class EncryptMsg {
           return hashTokenPairBuilder_.getCount();
         }
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public EncryptMsg.MultiEncrypt.HashToken getHashTokenPair(int index) {
         if (hashTokenPairBuilder_ == null) {
           return hashTokenPair_.get(index);
@@ -1235,13 +1047,7 @@ public final class EncryptMsg {
           return hashTokenPairBuilder_.getMessage(index);
         }
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder setHashTokenPair(
           int index, EncryptMsg.MultiEncrypt.HashToken value) {
         if (hashTokenPairBuilder_ == null) {
@@ -1256,13 +1062,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder setHashTokenPair(
           int index, EncryptMsg.MultiEncrypt.HashToken.Builder builderForValue) {
         if (hashTokenPairBuilder_ == null) {
@@ -1274,13 +1074,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder addHashTokenPair(EncryptMsg.MultiEncrypt.HashToken value) {
         if (hashTokenPairBuilder_ == null) {
           if (value == null) {
@@ -1294,13 +1088,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder addHashTokenPair(
           int index, EncryptMsg.MultiEncrypt.HashToken value) {
         if (hashTokenPairBuilder_ == null) {
@@ -1315,13 +1103,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder addHashTokenPair(
           EncryptMsg.MultiEncrypt.HashToken.Builder builderForValue) {
         if (hashTokenPairBuilder_ == null) {
@@ -1333,13 +1115,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder addHashTokenPair(
           int index, EncryptMsg.MultiEncrypt.HashToken.Builder builderForValue) {
         if (hashTokenPairBuilder_ == null) {
@@ -1351,13 +1127,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder addAllHashTokenPair(
           java.lang.Iterable<? extends EncryptMsg.MultiEncrypt.HashToken> values) {
         if (hashTokenPairBuilder_ == null) {
@@ -1369,13 +1139,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder clearHashTokenPair() {
         if (hashTokenPairBuilder_ == null) {
           hashTokenPair_ = java.util.Collections.emptyList();
@@ -1386,13 +1150,7 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public Builder removeHashTokenPair(int index) {
         if (hashTokenPairBuilder_ == null) {
           ensureHashTokenPairIsMutable();
@@ -1403,24 +1161,12 @@ public final class EncryptMsg {
         }
         return this;
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public EncryptMsg.MultiEncrypt.HashToken.Builder getHashTokenPairBuilder(
           int index) {
         return getHashTokenPairFieldBuilder().getBuilder(index);
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public EncryptMsg.MultiEncrypt.HashTokenOrBuilder getHashTokenPairOrBuilder(
           int index) {
         if (hashTokenPairBuilder_ == null) {
@@ -1428,13 +1174,7 @@ public final class EncryptMsg {
           return hashTokenPairBuilder_.getMessageOrBuilder(index);
         }
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public java.util.List<? extends EncryptMsg.MultiEncrypt.HashTokenOrBuilder> 
            getHashTokenPairOrBuilderList() {
         if (hashTokenPairBuilder_ != null) {
@@ -1443,36 +1183,18 @@ public final class EncryptMsg {
           return java.util.Collections.unmodifiableList(hashTokenPair_);
         }
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public EncryptMsg.MultiEncrypt.HashToken.Builder addHashTokenPairBuilder() {
         return getHashTokenPairFieldBuilder().addBuilder(
             EncryptMsg.MultiEncrypt.HashToken.getDefaultInstance());
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public EncryptMsg.MultiEncrypt.HashToken.Builder addHashTokenPairBuilder(
           int index) {
         return getHashTokenPairFieldBuilder().addBuilder(
             index, EncryptMsg.MultiEncrypt.HashToken.getDefaultInstance());
       }
-      /**
-       * <code>repeated .MultiEncrypt.HashToken hash_token_pair = 2;</code>
-       *
-       * <pre>
-       *公钥哈希与Token数组
-       * </pre>
-       */
+
       public java.util.List<EncryptMsg.MultiEncrypt.HashToken.Builder> 
            getHashTokenPairBuilderList() {
         return getHashTokenPairFieldBuilder().getBuilderList();
@@ -1494,33 +1216,15 @@ public final class EncryptMsg {
 
       // required bytes cipher = 3;
       private com.google.protobuf.ByteString cipher_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>required bytes cipher = 3;</code>
-       *
-       * <pre>
-       *字符串的密文
-       * </pre>
-       */
+
       public boolean hasCipher() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
-      /**
-       * <code>required bytes cipher = 3;</code>
-       *
-       * <pre>
-       *字符串的密文
-       * </pre>
-       */
+
       public com.google.protobuf.ByteString getCipher() {
         return cipher_;
       }
-      /**
-       * <code>required bytes cipher = 3;</code>
-       *
-       * <pre>
-       *字符串的密文
-       * </pre>
-       */
+
       public Builder setCipher(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
@@ -1530,13 +1234,7 @@ public final class EncryptMsg {
         onChanged();
         return this;
       }
-      /**
-       * <code>required bytes cipher = 3;</code>
-       *
-       * <pre>
-       *字符串的密文
-       * </pre>
-       */
+
       public Builder clearCipher() {
         bitField0_ = (bitField0_ & ~0x00000004);
         cipher_ = getDefaultInstance().getCipher();

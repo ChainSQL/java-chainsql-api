@@ -17,8 +17,6 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
-import com.peersafe.base.crypto.sm.SMDigest;
-import com.peersafe.base.crypto.sm.SMKeyPair;
 
 public class SignedTransaction {
     private SignedTransaction(Transaction of) {
@@ -154,7 +152,7 @@ public class SignedTransaction {
             txn.toBytesSink(new MultiSink(blob, id));
             tx_blob = blob.bytesHex();
             if(Config.isUseGM()){
-            	hash = SMDigest.getTransactionHash(HashPrefix.transactionID, blob.bytes());
+//            	hash = SMDigest.getTransactionHash(HashPrefix.transactionID, blob.bytes());
             }else{
             	hash = Hash256.prefixedHalfSha512(HashPrefix.transactionID, blob.bytes());	
             }

@@ -1,14 +1,6 @@
 package com.peersafe.chainsql.util;
 
-/** 
- *  
- * @author wy_okmeiyu from CSDN 
- * @QQ     You can't see 
- * @Version 1.0 
- * @TODO: 创造一个类似C++中的Pair类 
- * @UpdateDate： 2015-11-19 
- * @param <E> 
- */  
+
 public class GenericPair<E extends Object, F extends Object> {  
     private E first;  
     private F second;  

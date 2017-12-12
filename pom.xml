@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>1.4.1</version>
+	<version>1.4.2</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
-	<url>https://github.com/peersafe/java-chainsql</url>
+	<url>https://github.com/chainsql/java-chainsql-api</url>
 	<description>ChainSQL JAVA API is an api for chainsql server</description>
 	
 	<licenses>
@@ -26,9 +26,9 @@
 	    </developer>
 	</developers>
 	<scm>
-	    <connection>scm:git:https://github.com/peersafe/java-chainsql.git</connection>
-	    <developerConnection>scm:git:https://github.com/peersafe/java-chainsql.git</developerConnection>
-	    <url>https://github.com/peersafe/java-chainsql</url>
+	    <connection>scm:git:https://github.com/chainsql/java-chainsql-api.git</connection>
+	    <developerConnection>scm:git:https://github.com/chainsql/java-chainsql-api.git</developerConnection>
+	    <url>https://github.com/chainsql/java-chainsql-api.git</url>
 	    <tag>v${project.version}</tag>
 	</scm>
 

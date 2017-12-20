@@ -321,7 +321,7 @@ public class Chainsql extends Submit {
 	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
-	    		System.out.println(tx_json.getString("error_message"));
+	    		//System.out.println(tx_json.getString("error_message"));
 	    		return tx_json;
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");	    			

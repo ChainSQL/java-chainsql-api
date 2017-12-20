@@ -327,7 +327,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		// we don't recreate tx_blob, or resign ;)
 		
 		JSONObject txJson = new JSONObject(txn.txn.prettyJSON());
-		Amount extraFee = Util.getExtraFee(txJson, TransactionType.fromNumber(txJson.getInt("TransactionType")));
+		Amount extraFee = Util.getExtraFee(txJson, TransactionType.valueOf(txJson.getString("TransactionType")));
 		fee = fee.add(extraFee);
 		
 		long currentLedgerIndex = client.serverInfo.ledger_index;

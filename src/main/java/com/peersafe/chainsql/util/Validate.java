@@ -44,8 +44,17 @@ public class Validate {
 	
 	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
 		Request request = client.tablePrepare(tx_json);
-		return request.response.result;
-		
+		if(request.response.result != null)
+			return request.response.result;
+		else {
+			JSONObject obj = new JSONObject();
+			obj.put("status", request.response.status);
+			if(request.response.error_message != null)
+				obj.put("error_message", request.response.error_message);
+			else
+				obj.put("error_message", request.response.error);
+			return obj;
+		}		
 	}
 
 	public static Map<String,Object> rippleRes(Client client,AccountID account){

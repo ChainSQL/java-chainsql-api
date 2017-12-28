@@ -82,7 +82,7 @@ public class EventManager {
 	 * @param owner Table owner address.
 	 * @param cb Callback.
 	 */
-	public void subTable(String name, String owner ,Callback<?> cb) {
+	public void subscribeTable(String name, String owner ,Callback<?> cb) {
  		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("owner", owner);
@@ -111,7 +111,7 @@ public class EventManager {
 	 * @param id Transaction hash.
 	 * @param cb Callback.
 	 */
-	public void subTx(String id,Callback<?> cb) {
+	public void subscribeTx(String id,Callback<?> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("transaction", id);
@@ -138,7 +138,7 @@ public class EventManager {
 	 * @param owner Table owner address.
 	 * @param cb Callback.
 	 */
-	public void unsubTable(String name, String owner,Callback<JSONObject> cb) {
+	public void unsubscribeTable(String name, String owner,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("owner", owner);
@@ -168,7 +168,7 @@ public class EventManager {
 	 * @param id Transaction hash.
 	 * @param cb Callback.
 	 */
-	public void unsubTx(String id,Callback<JSONObject> cb) {
+	public void unsubscribeTx(String id,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("transaction", id);

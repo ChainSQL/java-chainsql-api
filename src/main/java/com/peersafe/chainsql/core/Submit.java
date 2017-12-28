@@ -218,7 +218,7 @@ public abstract class Submit {
 	}
 	
 	private void subscribeTx(String txId){
-    	EventManager.instance().subTx(txId,new Callback<JSONObject>(){
+    	EventManager.instance().subscribeTx(txId,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 	    		if(cb != null){

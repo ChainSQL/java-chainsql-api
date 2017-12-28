@@ -995,7 +995,11 @@ public class Chainsql extends Submit {
 				String balance = request.response.result.optJSONObject("account_data").getString("Balance");
 				BigInteger bal = new BigInteger(balance);
 				BigInteger zxc = bal.divide(BigInteger.valueOf(1000000));
-				return zxc.toString();
+				BigInteger mod = bal.mod(BigInteger.valueOf(1000000));
+				String finalZxc = zxc.toString();
+				finalZxc += ".";
+				finalZxc += mod.toString();
+				return finalZxc;
 			}else {
 				return null;
 			}

@@ -81,22 +81,9 @@ public class Chainsql extends Submit {
 	 * @return Connection object after connected.
 	 */
 	@SuppressWarnings("resource")
-	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
+	public Connection connect(String url) {
 		connection = new Connection().connect(url);
-		connection.client.onConnected(new Client.OnConnected() {
-			@Override
-			public void called(Client args) {
-				connectCb.called(args);
-			}
-		});
-		connection.client.onDisconnected(new Client.OnDisconnected() {
-			@Override
-			public void called(Client args) {
-				disconnectCb.called(args);
-			}
-		});
-		
-//		doWhenConnect();
+		doWhenConnect();
 		return connection;
 	}
 	/**
@@ -107,21 +94,88 @@ public class Chainsql extends Submit {
 	 * @return Connection
 	 */
 	@SuppressWarnings("resource")
-	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
+	public Connection connect(String url,String serverCertPath,String storePass) {
 		connection = new Connection().connect(url,serverCertPath,storePass);
-//		doWhenConnect();
+		doWhenConnect();
+		return connection;
+	}
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
+	 * @param connectCb callback when connected
+	 * @return Connection object after connected.
+	 */
+	public Connection connect(String url,final Callback<Client> connectCb) {
+		return connect(url,connectCb,null);
+	}
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
+	 * @param connectCb callback when connected
+	 * @param disconnectCb callback when disconnected
+	 * @return Connection object after connected.
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
+		connection = new Connection().connect(url);
+		EventManager.instance().init(this.connection);
 		connection.client.onConnected(new Client.OnConnected() {
 			@Override
 			public void called(Client args) {
 				connectCb.called(args);
 			}
 		});
-		connection.client.onDisconnected(new Client.OnDisconnected() {
+		if(disconnectCb != null) {
+			connection.client.onDisconnected(new Client.OnDisconnected() {
+				@Override
+				public void called(Client args) {
+					disconnectCb.called(args);
+				}
+			});	
+		}
+		
+		return connection;
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath server certificate path
+	 * @param storePass password
+	 * @param connectCb callback when connected
+	 * @return Connection
+	 */
+	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb) {
+		return connect(url,serverCertPath,storePass,connectCb,null);
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath server certificate path
+	 * @param storePass password
+	 * @param connectCb callback when connected
+	 * @param disconnectCb callback when disconnected
+	 * @return Connection
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
+		connection = new Connection().connect(url,serverCertPath,storePass);
+		EventManager.instance().init(this.connection);
+
+		connection.client.onConnected(new Client.OnConnected() {
 			@Override
 			public void called(Client args) {
-				disconnectCb.called(args);
+				connectCb.called(args);
 			}
 		});
+		if(disconnectCb != null) {
+			connection.client.onDisconnected(new Client.OnDisconnected() {
+				@Override
+				public void called(Client args) {
+					disconnectCb.called(args);
+				}
+			});
+		}
+
 		return connection;
 	}
 	

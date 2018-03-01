@@ -14,6 +14,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.client.Client;
 import com.peersafe.base.client.Client.OnReconnected;
 import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
@@ -80,9 +81,22 @@ public class Chainsql extends Submit {
 	 * @return Connection object after connected.
 	 */
 	@SuppressWarnings("resource")
-	public Connection connect(String url) {
+	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url);
-		doWhenConnect();
+		connection.client.onConnected(new Client.OnConnected() {
+			@Override
+			public void called(Client args) {
+				connectCb.called(args);
+			}
+		});
+		connection.client.onDisconnected(new Client.OnDisconnected() {
+			@Override
+			public void called(Client args) {
+				disconnectCb.called(args);
+			}
+		});
+		
+//		doWhenConnect();
 		return connection;
 	}
 	/**
@@ -93,9 +107,21 @@ public class Chainsql extends Submit {
 	 * @return Connection
 	 */
 	@SuppressWarnings("resource")
-	public Connection connect(String url,String serverCertPath,String storePass) {
+	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url,serverCertPath,storePass);
-		doWhenConnect();
+//		doWhenConnect();
+		connection.client.onConnected(new Client.OnConnected() {
+			@Override
+			public void called(Client args) {
+				connectCb.called(args);
+			}
+		});
+		connection.client.onDisconnected(new Client.OnDisconnected() {
+			@Override
+			public void called(Client args) {
+				disconnectCb.called(args);
+			}
+		});
 		return connection;
 	}
 	

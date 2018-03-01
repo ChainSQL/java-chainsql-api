@@ -70,7 +70,12 @@ public class Aes {
 	private static AlgorithmParameters generateIV(byte[] pass) throws Exception{  
         //iv 为一个 16 字节的数组，这里采用和 iOS 端一样的构造方法，数据全为0  
         AlgorithmParameters params = AlgorithmParameters.getInstance(KEY_ALGORITHM);  
-        params.init(new IvParameterSpec(pass));  
+        byte[] iv = new byte[16];
+        for(int i=0; i<16; i++)
+        {
+        	iv[i] = pass[i];
+        }
+        params.init(new IvParameterSpec(iv));  
         return params;  
     } 
     
@@ -141,9 +146,9 @@ public class Aes {
         return null;  
 	}
 	
-	private static byte[] paddingPass(byte[] password){
+	private static byte[] paddingPass(byte[] password){	     
+		byte[] retByte = new byte[16];
 		if(password.length < 16){
-			byte[] retByte = new byte[16];
 			byte byteToPad = (byte) (16 - password.length);
 			for(int i=0; i<16; i++){
 				if(i<password.length)
@@ -151,9 +156,11 @@ public class Aes {
 				else
 					retByte[i] = byteToPad;
 			}
-			return retByte;
 		}else{
-			return password;
+			for(int i=0; i<16; i++) {
+				retByte[i] = password[i];
+			}
 		}
+		return retByte;
 	}
 }

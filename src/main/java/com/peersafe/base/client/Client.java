@@ -653,6 +653,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param msg JSONObject msg.
      */
     public void onMessageInClientThread(JSONObject msg) {
+//    	System.out.println(msg);
     	String str = msg.optString("type",null);
         Message type = Message.valueOf(str);
         try {

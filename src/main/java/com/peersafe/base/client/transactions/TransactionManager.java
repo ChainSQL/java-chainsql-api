@@ -173,7 +173,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 			accountRoot.once(TrackedAccountRoot.OnUpdate.class, new TrackedAccountRoot.OnUpdate() {
 				@Override
 				public void called(TrackedAccountRoot accountRoot) {
-					System.out.println("queue:accountRoot.once callback called");
+//					System.out.println("queue:accountRoot.once callback called");
 					queue(tx, locallyPreemptedSubmissionSequence());
 				}
 			});
@@ -365,10 +365,14 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 			});
 			break;
 		default:
+			
 			// TODO, what other cases should this retry?
 			// TODO, what if this actually eventually clears?
 			// TOOD, need to use LastLedgerSequence
-			awaitLastLedgerSequenceExpiry(txn);
+//			awaitLastLedgerSequenceExpiry(txn);
+			
+			//peersafe comment:only callback one time,the awaitLastLedgerSequenceExpiry does not work
+			txn.emit(ManagedTxn.OnSubmitError.class, res);
 			break;
 		}
 	}

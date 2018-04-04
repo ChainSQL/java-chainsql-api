@@ -54,8 +54,8 @@ public class Chainsql extends Submit {
 	
 	/**
 	 * Assigning the operating user.
-	 * @param address Account address,start with a lower case 'r'.
-	 * @param secret  Account secret,start with a lower case 's'.
+	 * @param address Account address,start with a lower case 'z'.
+	 * @param secret  Account secret,start with a lower case 'x'.
 	 */
 	public void as(String address, String secret) {
 		this.connection.address = address;
@@ -594,8 +594,8 @@ public class Chainsql extends Submit {
 	/**
 	 * Grant a user with authorities to operate a table.
 	 * @param name Table name
-	 * @param user User address,start with a lower case 'r'.
-	 * @param userPublicKey User's public key,start with a lower case 'a'.
+	 * @param user User address,start with a lower case 'z'.
+	 * @param userPublicKey User's public key,start with a lower case 'c'.
 	 * 						Will be used if the table is confidential.
 	 * @param flag Options to notify the authorities.eg:"{insert:true,delete:false}" means 
 	 * 			   the user can insert to this table,but cannot delete from this table.
@@ -640,7 +640,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Grant a user with authorities to operate a table.
 	 * @param name Table name
-	 * @param user User address,start with a lower case 'r'.
+	 * @param user User address,start with a lower case 'z'.
 	 * @param flag Options to notify the authorities.eg:"{insert:true,delete:false}" means 
 	 * 			   the user can insert to this table,but cannot delete from this table.
 	 * @return You can use this to call other Chainsql functions continuely.

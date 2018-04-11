@@ -7,6 +7,7 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -590,6 +591,31 @@ public class Chainsql extends Submit {
 		return this;
 		
 	}
+	/**
+	 * check if publickey matches user
+	 * @param user
+	 * @param userPublicKey
+	 * @return
+	 */
+	private boolean checkUserMatchPublic(String user,String userPublicKey) {
+		if(user.isEmpty() || userPublicKey.isEmpty())
+			return false;
+		byte[] pubBytes = getB58IdentiferCodecs().decode(userPublicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		byte[] o;
+		{
+			SHA256Digest sha = new SHA256Digest();
+			sha.update(pubBytes, 0, pubBytes.length);
+		    byte[] result = new byte[sha.getDigestSize()];
+		    sha.doFinal(result, 0);
+		    
+			RIPEMD160Digest d = new RIPEMD160Digest();
+		    d.update (result, 0, result.length);
+		    o = new byte[d.getDigestSize()];
+		    d.doFinal (o, 0);
+		}
+		String address = getB58IdentiferCodecs().encodeAddress(o);
+		return user.equals(address);
+	}
 
 	/**
 	 * Grant a user with authorities to operate a table.
@@ -603,6 +629,10 @@ public class Chainsql extends Submit {
 	 */
 	public Chainsql grant(String name, String user,String userPublicKey,String flag){
 		String token = "";
+		if(!checkUserMatchPublic(user,userPublicKey)) {
+			System.out.println("PublicKey does not match User");
+			return null;
+		}
 		GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
 		if(mapToken.containsKey(pair)){
 			token = mapToken.get(pair);

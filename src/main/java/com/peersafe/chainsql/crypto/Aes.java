@@ -87,6 +87,9 @@ public class Aes {
 	 * @return 加密结果
 	 */  
 	public static byte[] encrypt(byte[] password,byte[] byteContent) {  
+		if(password.length == 0 || byteContent.length == 0) {
+			return null;
+		}
         try {             
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// 创建密码器  
             password = paddingPass(password);
@@ -120,7 +123,11 @@ public class Aes {
 	 * @param password 解密密钥 
 	 * @return 解密结果
 	 */  
-	public static byte[] decrypt(byte[] content, byte[] password) {  
+	public static byte[] decrypt(byte[] content, byte[] password) {
+		if(password.length == 0 || content.length == 0) {
+			return null;
+		}
+		
         try {
             password = paddingPass(password);              
             Key key = convertToKey(password);

@@ -322,6 +322,7 @@ public class Table extends Submit{
 			//this.data = response.result.get("lines");
 			obj.put("final_result", true);
 			obj.put("lines", response.result.get("lines"));
+			obj.put("diff", response.result.getInt("diff"));
 		}else{
 			obj.put("error_message", response.error);
 		}

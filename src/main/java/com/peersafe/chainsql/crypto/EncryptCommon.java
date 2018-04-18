@@ -32,7 +32,7 @@ public class EncryptCommon {
 //			return SM4.encrypt(password, plainBytes);
 			return null;
 		}else{
-			return Aes.encrypt(password, plainBytes);
+			return Aes128.encrypt(password, plainBytes);
 		}
 	}
 	//通用对称解密
@@ -41,7 +41,7 @@ public class EncryptCommon {
 //			return SM4.decrypt(password, cipherText);
 			return null;
 		}else{
-			return Aes.decrypt(cipherText, password);
+			return Aes128.decrypt(cipherText, password);
 		}
 	}
 }

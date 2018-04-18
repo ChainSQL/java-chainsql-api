@@ -135,6 +135,23 @@ public class Util {
 	    return new String(baos.toByteArray());
 	} 
 	
+	public static byte[] paddingPass(byte[] password,int keyLength){
+		if(password.length == keyLength)
+			return password;
+		byte[] retByte = new byte[keyLength];
+		if(password.length < keyLength){
+			byte byteToPad = (byte) (keyLength - password.length);
+			for(int i=0; i<keyLength; i++){
+				if(i<password.length)
+					retByte[i] = password[i];
+				else
+					retByte[i] = byteToPad;
+			}
+		}else{
+			System.arraycopy(password, 0, retByte, 0, keyLength);
+		}
+		return retByte;
+	}
 //	public static List array(Object val0, Object... vals){
 //	 	List res = new ArrayList();
 //	 	if(val0.getClass().isArray()){

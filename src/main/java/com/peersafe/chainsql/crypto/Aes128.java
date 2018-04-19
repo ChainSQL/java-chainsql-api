@@ -19,47 +19,6 @@ import com.peersafe.chainsql.util.Util;
 public class Aes128 {
 	private static final String KEY_ALGORITHM = "AES";  
 	
-	/**
-	 * AES encrypting.
-	 * @param password password bytes.
-	 * @param content content.
-	 * @return return value.
-	 */
-	public static String aesEncrypt(byte[] password,String content){
-		try{
-			byte[] ret = encrypt(password,content.getBytes("utf-8"));
-			return ret == null ? "" :Util.bytesToHex(ret);
-		}catch(Exception e){
-			e.printStackTrace();
-			return "";
-		}
-	}
-	/**
-	 * AES encrypting.	
-	 * @param password Password.
-	 * @param content Content.
-	 * @return Return value.
-	 */
-	public static String aesEncrypt(String password,String content){
-		try{
-			byte[] ret = encrypt(password.getBytes(),content.getBytes("utf-8"));
-			return ret == null ? "" :Util.bytesToHex(ret);
-		}catch(Exception e){
-			e.printStackTrace();
-			return "";
-		}
-	}
-	
-	/**
-	 * AES decrypting.
-	 * @param password Password.
-	 * @param encryptedHex encryped hex string.
-	 * @return return value.
-	 */
-	public static byte[] aesDecrypt(String password,String encryptedHex){
-		return decrypt(Util.hexToBytes(encryptedHex),password.getBytes());
-	}
-	
     //转化成JAVA的密钥格式  
 	private static Key convertToKey(byte[] keyBytes) throws Exception{  
         SecretKey secretKey = new SecretKeySpec(keyBytes,KEY_ALGORITHM);  
@@ -86,7 +45,7 @@ public class Aes128 {
 	 * @param password  加密密码 
 	 * @return 加密结果
 	 */  
-	public static byte[] encrypt(byte[] password,byte[] byteContent) {  
+	public static byte[] encrypt(byte[] byteContent, byte[] password) {  
 		if(password.length == 0 || byteContent.length == 0) {
 			return null;
 		}

@@ -63,8 +63,8 @@ public class Ecies {
 			return null;
 		
 		//AES encrypt
-		byte[] password = Util.getRandomBytes(16);
-    	byte[] aesEnc = Aes128.encrypt(password, plainText.getBytes());
+		byte[] password = Util.getRandomBytes(AESKeyLength);
+    	byte[] aesEnc = Aes256.encrypt(plainText.getBytes(), password);
     	
     	try {
     	   	//encrypt password
@@ -159,7 +159,7 @@ public class Ecies {
 					}
 				}
 				if(password != null) {
-					byte[] plain = Aes128.decrypt(msg.getCipher().toByteArray(), password);
+					byte[] plain = Aes256.decrypt(msg.getCipher().toByteArray(), password);
 					return new String(plain);
 				}
 	    	}else {
@@ -179,7 +179,7 @@ public class Ecies {
 					}
 				}
 				if(password != null) {
-					byte[] plain = Aes128.decrypt(msg.getCipher().toByteArray(), password);
+					byte[] plain = Aes256.decrypt(msg.getCipher().toByteArray(), password);
 					return new String(plain);
 				}
 	    	}

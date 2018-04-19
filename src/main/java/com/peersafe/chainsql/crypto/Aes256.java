@@ -80,6 +80,5 @@ public class Aes256 {
     	byte[] decrypted = Aes256.decrypt(cipher, key.getBytes());
     	System.out.println(new String(decrypted));
     	
-    	
     }
 }  

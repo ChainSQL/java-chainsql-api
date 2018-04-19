@@ -44,7 +44,7 @@ public class Chainsql extends Submit {
 
 	private JSONObject mTxJson;
 	
-	private static final int PASSWORD_LENGTH = 16;  
+	private static final int PASSWORD_LENGTH = 32;  
 	private static final int DEFAULT_TX_LIMIT = 20;
 	
 	// Logger

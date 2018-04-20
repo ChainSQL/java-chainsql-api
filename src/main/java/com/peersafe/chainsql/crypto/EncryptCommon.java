@@ -1,6 +1,7 @@
 package com.peersafe.chainsql.crypto;
 
 import com.peersafe.base.config.Config;
+import com.peersafe.chainsql.util.Util;
 
 public class EncryptCommon {
 	//通用非对称加密
@@ -42,6 +43,25 @@ public class EncryptCommon {
 			return null;
 		}else{
 			return Aes256.decrypt(cipherText, password);
+		}
+	}
+	
+	public static String symEncrypt(String plainBytes,String password){
+		if(Config.isUseGM()){
+//			return SM4.encrypt(password, plainBytes);
+			return null;
+		}else{
+			return Util.bytesToHex(Aes256.encrypt(plainBytes.getBytes(), password.getBytes()));
+		}
+	}
+	//通用对称解密
+	public static String symDecrypt(String cipherText, String password){
+		if(Config.isUseGM()){
+//			return SM4.decrypt(password, cipherText);
+			return null;
+		}else{
+			
+			return new String(Aes256.decrypt(Util.hexToBytes(cipherText), password.getBytes()));
 		}
 	}
 }

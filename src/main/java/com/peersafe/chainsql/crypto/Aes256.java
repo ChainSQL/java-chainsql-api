@@ -29,6 +29,9 @@ public class Aes256 {
 	
       
    public static byte[] crypt(byte[] bytes, byte[] key,boolean bEncrypt){  
+		if(bytes.length == 0 || key.length == 0) {
+			return null;
+		}
        initialize();  
 		try{
 	        key = Util.paddingPass(key, AESKeyLength);
@@ -41,8 +44,13 @@ public class Aes256 {
 	        cipher.init(bEncrypt, keyWithIv);        
 	        byte[] cryptedBytes  = new byte[cipher.getOutputSize(bytes.length)];
 	        int length1 = cipher.processBytes(bytes, 0, bytes.length, cryptedBytes , 0);	        
-	        cipher.doFinal(cryptedBytes , length1);
-	        return cryptedBytes;
+	        int length2 = cipher.doFinal(cryptedBytes , length1);
+	        byte[] finalBytes = cryptedBytes;
+	        if(!bEncrypt && length2 != cryptedBytes.length) {
+	        	finalBytes = new byte[length2];
+	        	System.arraycopy(cryptedBytes, 0, finalBytes, 0, length2);
+	        }
+	        return finalBytes;
 		}catch(Exception e){
 			e.printStackTrace();
 		}

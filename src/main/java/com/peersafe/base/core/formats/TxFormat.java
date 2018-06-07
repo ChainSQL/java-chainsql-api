@@ -73,6 +73,8 @@ public class TxFormat extends Format {
             Field.MessageKey,      Requirement.OPTIONAL,
             Field.Domain,          Requirement.OPTIONAL,
             Field.TransferRate,    Requirement.OPTIONAL,
+            Field.TransferFeeMin,  Requirement.OPTIONAL,
+            Field.TransferFeeMax,  Requirement.OPTIONAL,
             Field.SetFlag,         Requirement.OPTIONAL,
             Field.ClearFlag,       Requirement.OPTIONAL);
 

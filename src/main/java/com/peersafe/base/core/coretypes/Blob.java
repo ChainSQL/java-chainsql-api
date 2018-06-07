@@ -109,4 +109,7 @@ public class Blob implements SerializedType {
     static public BlobField AutoFillField = blobField(Field.AutoFillField);
     static public BlobField Statements = blobField(Field.Statements);
     static public BlobField OperationRule = blobField(Field.OperationRule);
+
+    static public BlobField TransferFeeMin = blobField(Field.TransferFeeMin);
+    static public BlobField TransferFeeMax = blobField(Field.TransferFeeMax);
 }

@@ -143,6 +143,8 @@ public enum Field {
     AutoFillField(54,Type.Blob),	
     Statements(55,Type.Blob),
     OperationRule(56,Type.Blob),
+    TransferFeeMin(62,Type.Blob),
+    TransferFeeMax(63,Type.Blob),
  
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),

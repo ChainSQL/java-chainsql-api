@@ -46,9 +46,10 @@ public class Aes256 {
 	        int length1 = cipher.processBytes(bytes, 0, bytes.length, cryptedBytes , 0);	        
 	        int length2 = cipher.doFinal(cryptedBytes , length1);
 	        byte[] finalBytes = cryptedBytes;
-	        if(!bEncrypt && length2 != cryptedBytes.length) {
-	        	finalBytes = new byte[length2];
-	        	System.arraycopy(cryptedBytes, 0, finalBytes, 0, length2);
+	        int finalLength = length1+length2;
+	        if(!bEncrypt && finalLength != cryptedBytes.length) {
+	        	finalBytes = new byte[finalLength];
+	        	System.arraycopy(cryptedBytes, 0, finalBytes, 0, finalLength);
 	        }
 	        return finalBytes;
 		}catch(Exception e){

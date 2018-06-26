@@ -57,20 +57,23 @@ public class Aes256 {
 		}
 		return null;
    }  
-    /** 
-     * @param  String str  要被加密的字符串 
-     * @param  byte[] key  加/解密要用的长度为32的字节数组（256位）密钥 
-     * @return byte[]  加密后的字节数组 
-     */  
+ 
+   /**
+    * 
+    * @param plainBytes 要被加密的字符串 
+    * @param key 加/解密要用的长度为32的字节数组（256位）密钥 
+    * @return 加密后的字节数组 
+    */
     public static byte[] encrypt(byte[] plainBytes, byte[] key){  
         return crypt(plainBytes,key,true);
     }  
       
-    /** 
-     * @param  byte[] bytes  要被解密的字节数组 
-     * @param  byte[] key    加/解密要用的长度为32的字节数组（256位）密钥 
-     * @return String  解密后的字符串 
-     */  
+    /**
+     * 
+     * @param cipherBytes 要被解密的字节数组 
+     * @param key 加/解密要用的长度为32的字节数组（256位）密钥 
+     * @return 解密后的字符串 
+     */
     public static byte[] decrypt(byte[] cipherBytes, byte[] key){  
     	return crypt(cipherBytes,key,false);
     }  

@@ -13,6 +13,7 @@ public enum Field {
     TransactionType(2, Type.UInt16),
     SignerWeight(3, Type.UInt16),
     OpType(50, Type.UInt16),
+    ContractOpType(51,Type.UInt16),
     
     Flags(2, Type.UInt32),
     SourceTag(3, Type.UInt32),
@@ -55,6 +56,8 @@ public enum Field {
     TxnLgrSeq(50,Type.UInt32),   
     CreateLgrSeq(51,Type.UInt32),
     NeedVerify(52,Type.UInt32),
+    Nonce(53,Type.UInt32),
+    Gas(55,Type.UInt32),
 
 
     IndexNext(1, Type.UInt64),
@@ -114,6 +117,7 @@ public enum Field {
     RippleEscrow(17, Type.Amount),
     // Added in rippled commit: e7f0b8eca69dd47419eee7b82c8716b3aa5a9e39
     DeliveredAmount(18, Type.Amount),
+    ContractValue(19,Type.Amount),
     // These are auxiliary fields
 //    quality(257, Type.AMOUNT),
     taker_gets_funded(258, Type.Amount),
@@ -145,6 +149,8 @@ public enum Field {
     OperationRule(56,Type.Blob),
     TransferFeeMin(62,Type.Blob),
     TransferFeeMax(63,Type.Blob),
+    ContractCode(64,Type.Blob),
+    ContractData(65,Type.Blob),
  
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),
@@ -154,6 +160,8 @@ public enum Field {
     RegularKey(8, Type.AccountID),
     User(50, Type.AccountID),
     OriginalAddress(51,Type.AccountID),
+    ContractAddress(52,Type.AccountID),
+    
 
     ObjectEndMarker(1, Type.STObject),
     TransactionMetaData(2, Type.STObject),
@@ -201,6 +209,8 @@ public enum Field {
     Indexes(1, Type.Vector256),
     Hashes(2, Type.Vector256),
     Amendments(3, Type.Vector256),
+    
+    StorageOverlay(1,Type.Map256),
 
     Transaction(1, Type.Transaction),
     LedgerEntry(1, Type.LedgerEntry),

@@ -329,4 +329,15 @@ public class Util {
     		return Amount.fromString("0");
     	}
 	}
+	
+	public static String getNewAccountFromTx(JSONObject tx) {
+    	JSONArray nodes = tx.getJSONObject("meta").getJSONArray("AffectedNodes");
+    	for(int i=0; i<nodes.length(); i++) {
+    		JSONObject node = nodes.getJSONObject(i);
+    		if(node.has("CreatedNode")) {
+    			return node.getJSONObject("CreatedNode").getJSONObject("NewFields").getString("Account");
+    		}
+    	}
+    	return null;
+	}
 }

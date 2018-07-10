@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -21,7 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.util.Util;
 import com.peersafe.base.client.enums.Command;
 import com.peersafe.base.client.enums.Message;
 import com.peersafe.base.client.enums.RPCErr;
@@ -44,11 +44,11 @@ import com.peersafe.base.core.coretypes.STObject;
 import com.peersafe.base.core.coretypes.hash.Hash256;
 import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.types.known.sle.LedgerEntry;
-import com.peersafe.base.core.types.known.sle.entries.AccountRoot;
 import com.peersafe.base.core.types.known.sle.entries.Offer;
 import com.peersafe.base.core.types.known.tx.result.TransactionResult;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.chainsql.util.Util;
 
 public class Client extends Publisher<Client.events> implements TransportEventHandler {
     // Logger
@@ -1501,6 +1501,36 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	    waiting(request);
 	    return request;	
    }
+    /**
+     * contractCall synchronously
+     * @param obj call parameters
+     * @return call return
+     */
+    public JSONObject contractCall(JSONObject obj) {
+    	Request request = newRequest(Command.contract_call);
+    	Iterator<String> it = obj.keys();
+    	while(it.hasNext()) {
+    		String key = (String) it.next();  
+            String value = obj.getString(key);  
+            request.json(key,value);
+    	}
+	    request.request();
+	    waiting(request);
+	    return request.response.result;
+    }
+    
+    /**
+     * getTransaction synchronously
+     * @param hash
+     * @return
+     */
+    public JSONObject getTransaction(String hash) {
+    	Request request = newRequest(Command.tx);
+    	request.json("transaction", hash);
+	    request.request();
+	    waiting(request);
+	    return request.response.result;
+    }
     
     /**
      * Request for a transaction's information.

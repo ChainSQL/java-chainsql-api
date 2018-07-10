@@ -736,5 +736,5 @@ public class Amount extends Number implements SerializedType, Comparable<Amount>
     static public AmountField RippleEscrow = amountField(Field.RippleEscrow);
     static public AmountField taker_gets_funded = amountField(Field.taker_gets_funded);
     static public AmountField taker_pays_funded = amountField(Field.taker_pays_funded);
-
+    static public AmountField ContractValue = amountField(Field.ContractValue);
 }

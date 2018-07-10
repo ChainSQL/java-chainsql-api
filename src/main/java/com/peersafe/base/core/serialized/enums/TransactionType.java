@@ -29,7 +29,8 @@ public enum TransactionType implements SerializedType {
     SetFee(101),
 	TableListSet(21),
 	SQLStatement(22),
-	SQLTransaction(23);
+	SQLTransaction(23),
+	Contract(24);
     public int asInteger() {
         return ord;
     }

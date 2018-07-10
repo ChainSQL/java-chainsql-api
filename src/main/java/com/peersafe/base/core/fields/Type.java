@@ -22,6 +22,7 @@ public enum Type {
     Hash160(17),
     PathSet(18),
     Vector256(19),
+    Map256(29),
     Transaction(10001),
     LedgerEntry(10002),
     Validation(10003);

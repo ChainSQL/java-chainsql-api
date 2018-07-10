@@ -68,7 +68,12 @@ public class LEFormat extends Format {
             Field.WalletSize,          Requirement.OPTIONAL,
             Field.MessageKey,          Requirement.OPTIONAL,
             Field.TransferRate,        Requirement.OPTIONAL,
-            Field.Domain,              Requirement.OPTIONAL
+            Field.Domain,              Requirement.OPTIONAL,
+            Field.TransferFeeMax,	   Requirement.OPTIONAL,
+            Field.TransferFeeMin,	   Requirement.OPTIONAL,
+            Field.StorageOverlay,	   Requirement.OPTIONAL,
+            Field.Nonce,			   Requirement.OPTIONAL,
+            Field.ContractCode,		   Requirement.OPTIONAL
     );
 
     public static LEFormat DirectoryNode = new LEFormat(

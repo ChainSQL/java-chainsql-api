@@ -112,4 +112,6 @@ public class Blob implements SerializedType {
 
     static public BlobField TransferFeeMin = blobField(Field.TransferFeeMin);
     static public BlobField TransferFeeMax = blobField(Field.TransferFeeMax);
+    static public BlobField ContractData = blobField(Field.ContractData);
+    static public BlobField ContractCode = blobField(Field.ContractCode);
 }

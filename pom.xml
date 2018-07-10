@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>1.4.3</version>
+	<version>1.4.4</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
 	<url>https://github.com/chainsql/java-chainsql-api</url>
@@ -34,6 +34,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<web3j.version>3.4.0</web3j.version>
 	</properties>
 	<dependencies>
 	<!-- 
@@ -71,6 +72,16 @@
 		    <artifactId>protobuf-java</artifactId>  
 		    <version>2.5.0</version>  
 		</dependency>
+		<dependency>
+		    <groupId>org.web3j</groupId>
+		    <artifactId>abi</artifactId>
+		    <version>${web3j.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>io.reactivex</groupId>
+		    <artifactId>rxjava</artifactId>
+		    <version>1.2.4</version>
+		</dependency>		
 	</dependencies>
     <profiles>
         <profile>
@@ -82,8 +93,8 @@
 				        <artifactId>maven-compiler-plugin</artifactId>
 				        <version>3.2</version>
 				        <configuration>
-				          <source>1.6</source>
-				          <target>1.6</target>
+				          <source>1.8</source>
+				          <target>1.8</target>
 				        </configuration>
 				      </plugin>
                     <!-- Source -->
@@ -118,7 +129,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
+                        <version>1.8</version>
                         <executions>
                             <execution>
                                 <phase>verify</phase>

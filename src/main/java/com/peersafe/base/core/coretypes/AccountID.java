@@ -294,6 +294,7 @@ public class AccountID extends Hash160 {
     static public AccountIDField RegularKey = accountField(Field.RegularKey);
     static public AccountIDField User = accountField(Field.User);
     static public AccountIDField OriginalAddress = accountField(Field.OriginalAddress);
+    static public AccountIDField ContractAddress = accountField(Field.ContractAddress);
 
     // Exceptions
     public static class UnknownAlias extends RuntimeException {

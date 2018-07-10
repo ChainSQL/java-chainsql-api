@@ -181,7 +181,13 @@ public class TxFormat extends Format {
             Field.FutureTxHash,	 		Requirement.OPTIONAL);
 
 
-
+    static public TxFormat Contract = new TxFormat(
+    		TransactionType.Contract,
+    		Field.ContractOpType,		Requirement.REQUIRED,
+    		Field.ContractData,			Requirement.REQUIRED,
+    		Field.Gas,					Requirement.REQUIRED,
+    		Field.ContractAddress,		Requirement.OPTIONAL,
+    		Field.ContractValue,		Requirement.OPTIONAL); 
 
     static public TxFormat EnableAmendment = new TxFormat(
             TransactionType.EnableAmendment,

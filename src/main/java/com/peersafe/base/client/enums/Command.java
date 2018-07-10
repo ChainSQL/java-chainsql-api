@@ -49,6 +49,7 @@ public enum Command {
     tx,
     tx_history,
     t_prepare,
+    contract_call,
     tx_crossget,
     tx_count,
     unl_add,

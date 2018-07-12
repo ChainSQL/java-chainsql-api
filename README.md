@@ -23,14 +23,3 @@ chainsql-java-api 是一个 maven 工程，包含以下子工程：<br>
 ```
 java -jar codegen_chainsql.jar <input binary file>.bin <input abi file>.abi -p|--package <base package name> -o|--output <destination base directory>
 ```
-打包 jar包需要导出的相关jar包包括：
-- chainsql
-- abi
-- utils
-- core
-- javapoet  
-- slf4j-api
-- rxjava
-- jackson-databind
-- jackson-annotation
-- jackson-core

@@ -8,5 +8,6 @@ public enum Message {
     path_find,
     error,
     singleTransaction,
-    table    
+    table,
+    contract_event,
 }

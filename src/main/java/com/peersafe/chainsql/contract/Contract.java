@@ -22,18 +22,19 @@ import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 
+import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.chainsql.contract.exception.ContractCallException;
 import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.ContractOp;
 import com.peersafe.chainsql.core.Submit.SyncCond;
+import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 
 /**
  * Solidity contract type abstraction for interacting with smart contracts via native Java types.
  */
-@SuppressWarnings("WeakerAccess")
 public abstract class Contract{
 
 	public enum ContractOpType {
@@ -316,14 +317,13 @@ public abstract class Contract{
 
 
 
-    public static EventValues staticExtractEventParameters(
-            Event event/*, Log log*/) {
+    public EventValues extractEventParameters(
+            Event event,List<String> topics,String logData) {
     	
-//        List<String> topics = log.getTopics();
-        List<String> topics = new ArrayList<String>();
-        String logData = null;
         String encodedEventSignature = EventEncoder.encode(event);
-        if (!topics.get(0).equals(encodedEventSignature)) {
+        encodedEventSignature = encodedEventSignature.substring(2, encodedEventSignature.length());
+        //remove 0x,to lowercase
+        if (!topics.get(0).equals(encodedEventSignature.toUpperCase())) {
             return null;
         }
 
@@ -339,32 +339,24 @@ public abstract class Contract{
         }
         return new EventValues(indexedValues, nonIndexedValues);
     }
-/*
-    protected EventValues extractEventParameters(Event event, Log log) {
-        return staticExtractEventParameters(event, log);
+    
+    protected void on(Event event,Callback<EventValues> cb) {
+    	EventManager.instance().subscribeContract(contractAddress, event, new Callback<JSONObject>() {
+
+			@Override
+			public void called(JSONObject args) {
+				JSONArray arr = args.getJSONArray("ContractEventTopics");
+				List<String> list = new ArrayList<String>();
+				for(int i=0; i<arr.length(); i++) {
+					list.add(arr.getString(i));
+				}
+				EventValues ev = extractEventParameters(event,list,args.getString("ContractEventInfo"));
+				cb.called(ev);
+			}
+    		
+    	});
     }
 
-    protected List<EventValues> extractEventParameters(
-            Event event, TransactionReceipt transactionReceipt) {
-        return transactionReceipt.getLogs().stream()
-                .map(log -> extractEventParameters(event, log))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    protected EventValuesWithLog extractEventParametersWithLog(Event event, Log log) {
-        final EventValues eventValues = staticExtractEventParameters(event, log);
-        return (eventValues == null) ? null : new EventValuesWithLog(eventValues, log);
-    }
-
-    protected List<EventValuesWithLog> extractEventParametersWithLog(
-            Event event, TransactionReceipt transactionReceipt) {
-        return transactionReceipt.getLogs().stream()
-                .map(log -> extractEventParametersWithLog(event, log))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-*/
     /**
      * Subclasses should implement this method to return pre-existing addresses for deployed
      * contracts.

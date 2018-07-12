@@ -70,6 +70,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public static interface OnValidatedTransaction extends events<TransactionResult> {}
     public static interface OnReconnecting extends events<JSONObject> {}
     public static interface OnReconnected extends events<JSONObject> {}
+    public static interface OnContractEvent extends events<JSONObject> {}
 
     /**
      * Trigger when a transaction validated.
@@ -162,6 +163,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     public Client onDisconnected(OnDisconnected cb) {
         on(OnDisconnected.class, cb);
+        return this;
+    }
+    
+    public Client onContractEvent(OnContractEvent cb) {
+        on(OnContractEvent.class, cb);
         return this;
     }
 
@@ -695,6 +701,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 case table:
                 	emit(OnTBMessage.class,msg);
                 	break;
+                case contract_event:
+                	emit(OnContractEvent.class,msg);
                 default:
                     unhandledMessage(msg);
                     break;

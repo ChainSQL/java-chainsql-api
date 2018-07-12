@@ -3,10 +3,14 @@ package com.peersafe.chainsql.util;
 import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 import java.util.HashMap;
+import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.web3j.abi.datatypes.Event;
 
 import com.peersafe.base.client.Client;
+import com.peersafe.base.client.Client.OnContractEvent;
 import com.peersafe.base.client.Client.OnTBMessage;
 import com.peersafe.base.client.Client.OnTXMessage;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
@@ -21,6 +25,7 @@ public class EventManager {
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
+	private HashMap<String,Map<Event,Callback>> mapContractEvents;
 	public JSONObject result;
 	
 	private static EventManager single = new EventManager();
@@ -39,6 +44,7 @@ public class EventManager {
 		this.connection = connection;
 		this.mapCache = new HashMap<String,Callback>();
 		mapPass = new HashMap<String,byte[]>();
+		mapContractEvents = new HashMap<String,Map<Event,Callback>>();
 		this.onTbMessage = false;
 		this.onTxMessage = false;
 		this.onSubRet = false;
@@ -132,6 +138,40 @@ public class EventManager {
 		this.mapCache.put(id, cb);
 	}
 
+	public void subscribeContract(final String address,final Event event,Callback cb) {
+		if(mapContractEvents.containsKey(address)) {
+			mapContractEvents.get(address).put(event, cb);
+		}else {
+			Map<Event,Callback> map = new HashMap<Event,Callback>();
+			map.put(event, cb);
+			mapContractEvents.put(address, map);
+			
+			JSONObject messageEv = new JSONObject();
+			messageEv.put("command", "subscribe");
+			JSONArray arr = new JSONArray();
+			arr.put(address);
+			messageEv.put("accounts_contract", arr);
+			this.connection.client.subscriptions.addMessage(messageEv);
+			if (!this.onTxMessage) {
+				this.connection.client.onContractEvent(new OnContractEvent() {
+
+					@SuppressWarnings("unchecked")
+					@Override
+					public void called(JSONObject args) {
+//						System.out.println(args);
+						if(mapContractEvents.get(address) != null && mapContractEvents.get(address).get(event) != null) {
+							mapContractEvents.get(address).get(event).called(args);
+						}						
+					}
+					
+				});
+			}
+		}
+	}
+	
+	public void unsubscribeContract(String address,Event event) {
+		
+	}
 	/**
 	 * Un-subscribe a table.
 	 * @param name Table name.

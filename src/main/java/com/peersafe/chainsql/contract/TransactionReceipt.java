@@ -16,13 +16,18 @@ public class TransactionReceipt {
     private String status;
 
     public TransactionReceipt() {
+    	
     }
 
     public TransactionReceipt(String contractAddress,JSONObject ret) {
-        this.transactionHash = ret.getString("tx_hash");
+    	if(ret.has("tx_hash")) {
+    		this.transactionHash = ret.getString("tx_hash");	
+    	}        
         this.contractAddress = contractAddress;
         this.transactionSubRet = ret;
-        this.status = ret.getString("status");
+        if(ret.has("status")) {
+        	this.status = ret.getString("status");	
+        }        
     }
 
     public String getTransactionHash() {

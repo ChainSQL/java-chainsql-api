@@ -249,9 +249,14 @@ public class Currency extends Hash160 {
     private static String isoCodeFromBytesAndOffset(byte[] bytes, int offset) {
     	char length = charFrom(bytes,offset);
     	String code = "";
-    	for(int i=0; i<length; i++) {
-    		code += charFrom(bytes, offset + 1 + i);
+    	if(length > 0) {
+        	for(int i=0; i<length; i++) {
+        		code += charFrom(bytes, offset + 1 + i);
+        	}
+    	}else {
+    		code = "\0\0\0";
     	}
+
         return code;
     }
 }

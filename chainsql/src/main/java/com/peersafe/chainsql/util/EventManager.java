@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.web3j.abi.datatypes.Event;
 
+import com.peersafe.abi.datatypes.Event;
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.Client.OnContractEvent;
 import com.peersafe.base.client.Client.OnTBMessage;

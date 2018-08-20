@@ -12,16 +12,16 @@ import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.web3j.abi.EventEncoder;
-import org.web3j.abi.EventValues;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
 
+import com.peersafe.abi.EventEncoder;
+import com.peersafe.abi.EventValues;
+import com.peersafe.abi.FunctionEncoder;
+import com.peersafe.abi.FunctionReturnDecoder;
+import com.peersafe.abi.TypeReference;
+import com.peersafe.abi.datatypes.Address;
+import com.peersafe.abi.datatypes.Event;
+import com.peersafe.abi.datatypes.Function;
+import com.peersafe.abi.datatypes.Type;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.chainsql.contract.exception.ContractCallException;
@@ -215,6 +215,9 @@ public abstract class Contract{
         op.connection = this.chainsql.connection;
         
         JSONObject obj = op.submit(SyncCond.validate_success);
+        if(obj.has("error_message")){
+        	throw new RuntimeException(obj.getString("error_message"));
+        }
         TransactionReceipt receipt = new TransactionReceipt(this.contractAddress,obj);
 
         return receipt;
@@ -261,7 +264,12 @@ public abstract class Contract{
             if(obj.getString("status").equals("validate_success")) {
             	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
             	contractAddress = Util.getNewAccountFromTx(tx);
-            }   	
+            }else
+            {
+                if(obj.has("error_message")){
+                	throw new RuntimeException(obj.getString("error_message"));
+                }
+            }
         }catch(Exception e) {
         	throw new RuntimeException(e.getMessage());
         }

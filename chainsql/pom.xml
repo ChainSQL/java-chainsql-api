@@ -72,10 +72,10 @@
 		    <artifactId>protobuf-java</artifactId>  
 		    <version>2.5.0</version>  
 		</dependency>
-		<dependency>
-		    <groupId>org.web3j</groupId>
-		    <artifactId>abi</artifactId>
-		    <version>${web3j.version}</version>
+  		<dependency>
+		    <groupId>com.peersafe</groupId>
+		    <artifactId>abi_chainsql</artifactId>
+		    <version>1.4.4</version>
 		</dependency>
 		<dependency>
 		    <groupId>io.reactivex</groupId>

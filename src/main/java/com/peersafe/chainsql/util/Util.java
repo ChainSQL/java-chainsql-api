@@ -196,14 +196,14 @@ public class Util {
 		}
 		if(tx.has("Raw")){
 			String sRaw = fromHexString(tx.getString("Raw"));		
-			tx.put("Raw", sRaw);
+			tx.put("Raw", new JSONArray(sRaw));
 		}
 
 		if(tx.has("Statements")){
-			tx.put("Statements", fromHexString(tx.getString("Statements")));
+			tx.put("Statements", new JSONArray(fromHexString(tx.getString("Statements"))));
 		}
 		if(tx.has("OperationRule")){
-			tx.put("OperationRule", fromHexString(tx.getString("OperationRule")));
+			tx.put("OperationRule", new JSONObject(fromHexString(tx.getString("OperationRule"))));
 		}
 	}
 	/**
@@ -231,7 +231,7 @@ public class Util {
 			}else {
 				sRaw = fromHexString(sRaw);
 			}
-			tx.put("Raw", sRaw);
+			tx.put("Raw", new JSONArray(sRaw));
 		}
 		
 		if(tx.has("Statements")){
@@ -241,10 +241,10 @@ public class Util {
 				JSONObject obj = statement.getJSONObject(i);
 				decryptData(pass,obj);
 			}
-			tx.put("Statements", statement);
+			tx.put("Statements", new JSONArray(statement));
 		}
 		if(tx.has("OperationRule")){
-			tx.put("OperationRule", fromHexString(tx.getString("OperationRule")));
+			tx.put("OperationRule", new JSONObject(fromHexString(tx.getString("OperationRule"))));
 		}
 	}
 	/**

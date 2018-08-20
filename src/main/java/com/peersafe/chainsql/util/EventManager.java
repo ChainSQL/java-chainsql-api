@@ -20,7 +20,7 @@ public class EventManager {
 	public boolean onTxMessage;
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
-	private HashMap<String,byte[]> mapPass;
+	private HashMap<String,byte[]> mapPass; 	//store pass for encrypted table
 	public JSONObject result;
 	
 	private static EventManager single = new EventManager();
@@ -220,7 +220,7 @@ public class EventManager {
    								e.printStackTrace();
    							}
    						}else {
-   							mapPass.put(key, null);
+   							//not encrypted table
 							Util.decryptData(mapPass.get(key), tx);
 							makeCallback(key,data);
    						}

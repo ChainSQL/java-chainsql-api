@@ -1,0 +1,14 @@
+#Fat Jar Configuration File
+#Fri Aug 17 11:31:25 CST 2018
+onejar.license.required=false
+manifest.classpath=
+manifest.removesigners=true
+onejar.checkbox=true
+jarname=codegen_fat.jar
+manifest.mergeall=true
+manifest.mainclass=com.peersafe.codegen.SolidityFunctionWrapperGenerator
+manifest.file=<createnew>
+jarname.isextern=false
+onejar.expand=
+excludes=<jar|bcprov-jdk15on-1.56.jar>;<jar|abi-3.4.0.jar>;<jar|crypto-3.4.0.jar>;<jar|rlp-3.4.0.jar>;<jar|tuples-3.4.0.jar>;<jar|jnr-unixsocket-0.15.jar>;<jar|jnr-ffi-2.1.2.jar>;<jar|jffi-1.2.14.jar>;<jar|jffi-1.2.14-native.jar>;<jar|asm-5.0.3.jar>;<jar|asm-commons-5.0.3.jar>;<jar|asm-analysis-5.0.3.jar>;<jar|asm-tree-5.0.3.jar>;<jar|asm-util-5.0.3.jar>;<jar|jnr-x86asm-1.0.2.jar>;<jar|jnr-constants-0.9.6.jar>;<jar|jnr-enxio-0.14.jar>;<jar|jnr-posix-3.0.33.jar>;<jar|okhttp-3.8.1.jar>;<jar|okio-1.13.0.jar>;<jar|logging-interceptor-3.8.1.jar>;<jar|junit-4.11.jar>;<jar|hamcrest-core-1.3.jar>;<jar|mockito-core-1.3.jar>;<jar|objenesis-1.0.jar>;<jar|cglib-nodep-2.1_3.jar>;<jar|json-20160810.jar>;<jar|Java-WebSocket-1.3.8.jar>;<jar|i2p-0.9.26.jar>;<jar|protobuf-java-2.5.0.jar>
+includes=

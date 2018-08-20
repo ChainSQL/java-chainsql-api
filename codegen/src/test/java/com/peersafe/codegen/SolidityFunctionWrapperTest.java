@@ -17,19 +17,19 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Bool;
-import org.web3j.abi.datatypes.DynamicArray;
-import org.web3j.abi.datatypes.DynamicBytes;
-import org.web3j.abi.datatypes.StaticArray;
-import org.web3j.abi.datatypes.Utf8String;
-import org.web3j.abi.datatypes.generated.Bytes32;
-import org.web3j.abi.datatypes.generated.Int256;
-import org.web3j.abi.datatypes.generated.StaticArray10;
-import org.web3j.abi.datatypes.generated.StaticArray2;
-import org.web3j.abi.datatypes.generated.StaticArray3;
-import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.abi.datatypes.generated.Uint64;
+import com.peersafe.abi.datatypes.Address;
+import com.peersafe.abi.datatypes.Bool;
+import com.peersafe.abi.datatypes.DynamicArray;
+import com.peersafe.abi.datatypes.DynamicBytes;
+import com.peersafe.abi.datatypes.StaticArray;
+import com.peersafe.abi.datatypes.Utf8String;
+import com.peersafe.abi.datatypes.generated.Bytes32;
+import com.peersafe.abi.datatypes.generated.Int256;
+import com.peersafe.abi.datatypes.generated.StaticArray10;
+import com.peersafe.abi.datatypes.generated.StaticArray2;
+import com.peersafe.abi.datatypes.generated.StaticArray3;
+import com.peersafe.abi.datatypes.generated.Uint256;
+import com.peersafe.abi.datatypes.generated.Uint64;
 import org.web3j.protocol.core.methods.response.AbiDefinition;
 
 import com.peersafe.codegen.GenerationReporter;
@@ -163,10 +163,10 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
         //CHECKSTYLE:OFF
         String expected =
                 "public org.web3j.protocol.core.RemoteCall<org.web3j.protocol.core.methods.response.TransactionReceipt> functionName(java.math.BigInteger param) {\n"
-                        + "  final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(\n"
+                        + "  final com.peersafe.abi.datatypes.Function function = new com.peersafe.abi.datatypes.Function(\n"
                         + "      FUNC_FUNCTIONNAME, \n"
-                        + "      java.util.Arrays.<org.web3j.abi.datatypes.Type>asList(new org.web3j.abi.datatypes.generated.Uint8(param)), \n"
-                        + "      java.util.Collections.<org.web3j.abi.TypeReference<?>>emptyList());\n"
+                        + "      java.util.Arrays.<com.peersafe.abi.datatypes.Type>asList(new com.peersafe.abi.datatypes.generated.Uint8(param)), \n"
+                        + "      java.util.Collections.<com.peersafe.abi.TypeReference<?>>emptyList());\n"
                         + "  return executeRemoteCallTransaction(function);\n"
                         + "}\n";
         //CHECKSTYLE:ON
@@ -211,10 +211,10 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
         //CHECKSTYLE:OFF
         String expected =
                 "public org.web3j.protocol.core.RemoteCall<org.web3j.protocol.core.methods.response.TransactionReceipt> functionName(java.math.BigInteger param, java.math.BigInteger weiValue) {\n"
-                        + "  final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(\n"
+                        + "  final com.peersafe.abi.datatypes.Function function = new com.peersafe.abi.datatypes.Function(\n"
                         + "      FUNC_FUNCTIONNAME, \n"
-                        + "      java.util.Arrays.<org.web3j.abi.datatypes.Type>asList(new org.web3j.abi.datatypes.generated.Uint8(param)), \n"
-                        + "      java.util.Collections.<org.web3j.abi.TypeReference<?>>emptyList());\n"
+                        + "      java.util.Arrays.<com.peersafe.abi.datatypes.Type>asList(new com.peersafe.abi.datatypes.generated.Uint8(param)), \n"
+                        + "      java.util.Collections.<com.peersafe.abi.TypeReference<?>>emptyList());\n"
                         + "  return executeRemoteCallTransaction(function, weiValue);\n"
                         + "}\n";
         //CHECKSTYLE:ON
@@ -239,9 +239,9 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
         //CHECKSTYLE:OFF
         String expected =
                 "public org.web3j.protocol.core.RemoteCall<java.math.BigInteger> functionName(java.math.BigInteger param) {\n"
-                        + "  final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_FUNCTIONNAME, \n"
-                        + "      java.util.Arrays.<org.web3j.abi.datatypes.Type>asList(new org.web3j.abi.datatypes.generated.Uint8(param)), \n"
-                        + "      java.util.Arrays.<org.web3j.abi.TypeReference<?>>asList(new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.generated.Int8>() {}));\n"
+                        + "  final com.peersafe.abi.datatypes.Function function = new com.peersafe.abi.datatypes.Function(FUNC_FUNCTIONNAME, \n"
+                        + "      java.util.Arrays.<com.peersafe.abi.datatypes.Type>asList(new com.peersafe.abi.datatypes.generated.Uint8(param)), \n"
+                        + "      java.util.Arrays.<com.peersafe.abi.TypeReference<?>>asList(new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.generated.Int8>() {}));\n"
                         + "  return executeRemoteCallSingleValueReturn(function, java.math.BigInteger.class);\n"
                         + "}\n";
         //CHECKSTYLE:ON
@@ -266,15 +266,15 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
         //CHECKSTYLE:OFF
         String expected =
                 "public org.web3j.protocol.core.RemoteCall<java.util.List> functionName(java.math.BigInteger param) {\n"
-                + "  final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_FUNCTIONNAME, \n"
-                + "      java.util.Arrays.<org.web3j.abi.datatypes.Type>asList(new org.web3j.abi.datatypes.generated.Uint8(param)), \n"
-                + "      java.util.Arrays.<org.web3j.abi.TypeReference<?>>asList(new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>>() {}));\n"
+                + "  final com.peersafe.abi.datatypes.Function function = new com.peersafe.abi.datatypes.Function(FUNC_FUNCTIONNAME, \n"
+                + "      java.util.Arrays.<com.peersafe.abi.datatypes.Type>asList(new com.peersafe.abi.datatypes.generated.Uint8(param)), \n"
+                + "      java.util.Arrays.<com.peersafe.abi.TypeReference<?>>asList(new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.DynamicArray<com.peersafe.abi.datatypes.Address>>() {}));\n"
                 + "  return new org.web3j.protocol.core.RemoteCall<java.util.List>(\n"
                 + "      new java.util.concurrent.Callable<java.util.List>() {\n"
                 + "        @java.lang.Override\n"
                 + "        @java.lang.SuppressWarnings(\"unchecked\")\n"
                 + "        public java.util.List call() throws java.lang.Exception {\n"
-                + "          java.util.List<org.web3j.abi.datatypes.Type> result = (java.util.List<org.web3j.abi.datatypes.Type>) executeCallSingleValueReturn(function, java.util.List.class);\n"
+                + "          java.util.List<com.peersafe.abi.datatypes.Type> result = (java.util.List<com.peersafe.abi.datatypes.Type>) executeCallSingleValueReturn(function, java.util.List.class);\n"
                 + "          return convertToNative(result);\n"
                 + "        }\n"
                 + "      });\n"
@@ -317,15 +317,15 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
 
         //CHECKSTYLE:OFF
         String expected = "public org.web3j.protocol.core.RemoteCall<org.web3j.tuples.generated.Tuple2<java.math.BigInteger, java.math.BigInteger>> functionName(java.math.BigInteger param1, java.math.BigInteger param2) {\n"
-                + "  final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_FUNCTIONNAME, \n"
-                + "      java.util.Arrays.<org.web3j.abi.datatypes.Type>asList(new org.web3j.abi.datatypes.generated.Uint8(param1), \n"
-                + "      new org.web3j.abi.datatypes.generated.Uint32(param2)), \n"
-                + "      java.util.Arrays.<org.web3j.abi.TypeReference<?>>asList(new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.generated.Int8>() {}, new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.generated.Int32>() {}));\n"
+                + "  final com.peersafe.abi.datatypes.Function function = new com.peersafe.abi.datatypes.Function(FUNC_FUNCTIONNAME, \n"
+                + "      java.util.Arrays.<com.peersafe.abi.datatypes.Type>asList(new com.peersafe.abi.datatypes.generated.Uint8(param1), \n"
+                + "      new com.peersafe.abi.datatypes.generated.Uint32(param2)), \n"
+                + "      java.util.Arrays.<com.peersafe.abi.TypeReference<?>>asList(new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.generated.Int8>() {}, new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.generated.Int32>() {}));\n"
                 + "  return new org.web3j.protocol.core.RemoteCall<org.web3j.tuples.generated.Tuple2<java.math.BigInteger, java.math.BigInteger>>(\n"
                 + "      new java.util.concurrent.Callable<org.web3j.tuples.generated.Tuple2<java.math.BigInteger, java.math.BigInteger>>() {\n"
                 + "        @java.lang.Override\n"
                 + "        public org.web3j.tuples.generated.Tuple2<java.math.BigInteger, java.math.BigInteger> call() throws java.lang.Exception {\n"
-                + "          java.util.List<org.web3j.abi.datatypes.Type> results = executeCallMultipleValueReturn(function);\n"
+                + "          java.util.List<com.peersafe.abi.datatypes.Type> results = executeCallMultipleValueReturn(function);\n"
                 + "          return new org.web3j.tuples.generated.Tuple2<java.math.BigInteger, java.math.BigInteger>(\n"
                 + "              (java.math.BigInteger) results.get(0).getValue(), \n"
                 + "              (java.math.BigInteger) results.get(1).getValue());\n"
@@ -363,9 +363,9 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
         //CHECKSTYLE:OFF
         String expected =
                 "class testClass {\n"
-                        + "  public static final org.web3j.abi.datatypes.Event TRANSFER_EVENT = new org.web3j.abi.datatypes.Event(\"Transfer\", \n" +
-                        "      java.util.Arrays.<org.web3j.abi.TypeReference<?>>asList(new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.Utf8String>() {}, new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.Address>() {}, new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.Address>() {}),\n" +
-                        "      java.util.Arrays.<org.web3j.abi.TypeReference<?>>asList(new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.generated.Uint256>() {}, new org.web3j.abi.TypeReference<org.web3j.abi.datatypes.Utf8String>() {}));\n  ;\n\n"
+                        + "  public static final com.peersafe.abi.datatypes.Event TRANSFER_EVENT = new com.peersafe.abi.datatypes.Event(\"Transfer\", \n" +
+                        "      java.util.Arrays.<com.peersafe.abi.TypeReference<?>>asList(new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.Utf8String>() {}, new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.Address>() {}, new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.Address>() {}),\n" +
+                        "      java.util.Arrays.<com.peersafe.abi.TypeReference<?>>asList(new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.generated.Uint256>() {}, new com.peersafe.abi.TypeReference<com.peersafe.abi.datatypes.Utf8String>() {}));\n  ;\n\n"
                         + "  public java.util.List<TransferEventResponse> getTransferEvents(org.web3j.protocol.core.methods.response.TransactionReceipt transactionReceipt) {\n"
                         + "    java.util.List<org.web3j.tx.Contract.EventValuesWithLog> valueList = extractEventParametersWithLog(TRANSFER_EVENT, transactionReceipt);\n"
                         + "    java.util.ArrayList<TransferEventResponse> responses = new java.util.ArrayList<TransferEventResponse>(valueList.size());\n"
@@ -401,7 +401,7 @@ public class SolidityFunctionWrapperTest extends TempFileProvider {
                         + "\n"
                         + "  public rx.Observable<TransferEventResponse> transferEventObservable(org.web3j.protocol.core.DefaultBlockParameter startBlock, org.web3j.protocol.core.DefaultBlockParameter endBlock) {\n"
                         + "    org.web3j.protocol.core.methods.request.EthFilter filter = new org.web3j.protocol.core.methods.request.EthFilter(startBlock, endBlock, getContractAddress());\n"
-                        + "    filter.addSingleTopic(org.web3j.abi.EventEncoder.encode(TRANSFER_EVENT));\n"
+                        + "    filter.addSingleTopic(com.peersafe.abi.EventEncoder.encode(TRANSFER_EVENT));\n"
                         + "    return transferEventObservable(filter);\n"
                         + "  }\n"
                         + "\n"

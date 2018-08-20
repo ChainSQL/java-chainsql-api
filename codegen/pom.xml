@@ -18,12 +18,13 @@
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<web3j.version>3.4.0</web3j.version>
-	</properties>
+		<chainsql.version>1.4.4</chainsql.version>
+  </properties>
   <dependencies>
   		<dependency>
-		    <groupId>org.web3j</groupId>
-		    <artifactId>abi</artifactId>
-		    <version>${web3j.version}</version>
+		    <groupId>com.peersafe</groupId>
+		    <artifactId>abi_chainsql</artifactId>
+		    <version>${chainsql.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.squareup</groupId>
@@ -65,7 +66,7 @@
 		<dependency>
 		    <groupId>com.peersafe</groupId>
 		    <artifactId>chainsql</artifactId>
-		    <version>1.4.4</version>
+		    <version>${chainsql.version}</version>
 		</dependency>		
   </dependencies>
 </project>

@@ -14,13 +14,13 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 
-import org.web3j.abi.datatypes.Bytes;
-import org.web3j.abi.datatypes.Fixed;
-import org.web3j.abi.datatypes.Int;
-import org.web3j.abi.datatypes.StaticArray;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Ufixed;
-import org.web3j.abi.datatypes.Uint;
+import com.peersafe.abi.datatypes.Bytes;
+import com.peersafe.abi.datatypes.Fixed;
+import com.peersafe.abi.datatypes.Int;
+import com.peersafe.abi.datatypes.StaticArray;
+import com.peersafe.abi.datatypes.Type;
+import com.peersafe.abi.datatypes.Ufixed;
+import com.peersafe.abi.datatypes.Uint;
 
 /**
  * Generator class for creating all the different numeric type variants.

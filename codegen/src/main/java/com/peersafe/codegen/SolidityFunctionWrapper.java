@@ -18,19 +18,19 @@ import javax.lang.model.element.Modifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.web3j.abi.EventValues;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Bool;
-import org.web3j.abi.datatypes.DynamicArray;
-import org.web3j.abi.datatypes.DynamicBytes;
-import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.StaticArray;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
-import org.web3j.abi.datatypes.generated.AbiTypes;
+import com.peersafe.abi.EventValues;
+import com.peersafe.abi.FunctionEncoder;
+import com.peersafe.abi.TypeReference;
+import com.peersafe.abi.datatypes.Address;
+import com.peersafe.abi.datatypes.Bool;
+import com.peersafe.abi.datatypes.DynamicArray;
+import com.peersafe.abi.datatypes.DynamicBytes;
+import com.peersafe.abi.datatypes.Event;
+import com.peersafe.abi.datatypes.Function;
+import com.peersafe.abi.datatypes.StaticArray;
+import com.peersafe.abi.datatypes.Type;
+import com.peersafe.abi.datatypes.Utf8String;
+import com.peersafe.abi.datatypes.generated.AbiTypes;
 import org.web3j.protocol.ObjectMapperFactory;
 import org.web3j.protocol.core.methods.response.AbiDefinition;
 import org.web3j.utils.Collection;
@@ -449,7 +449,7 @@ public class SolidityFunctionWrapper extends Generator {
                             + innerTypeName + ".class";
                 }
                 return "new " + parameterSpecType + "(\n"
-                        + "        org.web3j.abi.Utils.typeMap("
+                        + "        com.peersafe.abi.Utils.typeMap("
                         + parameterSpec.name + ", " + typeMapInput + "))";
             }
         } else {
@@ -1011,7 +1011,7 @@ public class SolidityFunctionWrapper extends Generator {
 
     private static Class<?> getStaticArrayTypeReferenceClass(String type) {
         try {
-            return Class.forName("org.web3j.abi.datatypes.generated.StaticArray" + type);
+            return Class.forName("com.peersafe.abi.datatypes.generated.StaticArray" + type);
         } catch (ClassNotFoundException e) {
             // Unfortunately we can't encode it's length as a type if it's > 32.
             return StaticArray.class;

@@ -1,20 +1,21 @@
 package com.peersafe.example.contract;
 
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+
+import com.peersafe.abi.EventValues;
+import com.peersafe.abi.FunctionEncoder;
+import com.peersafe.abi.TypeReference;
+import com.peersafe.abi.datatypes.Event;
+import com.peersafe.abi.datatypes.Function;
+import com.peersafe.abi.datatypes.Type;
+import com.peersafe.abi.datatypes.Utf8String;
 import com.peersafe.base.client.pubsub.Publisher;
 import com.peersafe.chainsql.contract.Contract;
 import com.peersafe.chainsql.contract.RemoteCall;
 import com.peersafe.chainsql.contract.TransactionReceipt;
 import com.peersafe.chainsql.core.Chainsql;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-import org.web3j.abi.EventValues;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
 
 /**
  * <p>Auto generated code.
@@ -54,7 +55,7 @@ public class Greeter extends Contract {
     public RemoteCall<TransactionReceipt> newGreeting(String _greeting) {
         final Function function = new Function(
                 FUNC_NEWGREETING, 
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(_greeting)), 
+                Arrays.<Type>asList(new com.peersafe.abi.datatypes.Utf8String(_greeting)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
@@ -67,7 +68,7 @@ public class Greeter extends Contract {
     }
 
     public static RemoteCall<Greeter> deploy(Chainsql chainsql, BigInteger gasLimit, BigInteger initialDropsValue, String _greeting) {
-        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(_greeting)));
+        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new com.peersafe.abi.datatypes.Utf8String(_greeting)));
         return deployRemoteCall(Greeter.class,chainsql, gasLimit, BINARY, encodedConstructor, initialDropsValue);
     }
 

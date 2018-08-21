@@ -11,5 +11,6 @@
   <modules>
     <module>chainsql</module>
     <module>codegen</module>
+    <module>abi_chainsql</module>
   </modules>
 </project>

@@ -703,6 +703,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 	break;
                 case contract_event:
                 	emit(OnContractEvent.class,msg);
+                	break;
                 default:
                     unhandledMessage(msg);
                     break;
@@ -1524,7 +1525,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	}
 	    request.request();
 	    waiting(request);
-	    return request.response.result;
+	    if(request.response.result != null)
+	    	return request.response.result;
+	    else
+	    	return request.response.message;
     }
     
     /**

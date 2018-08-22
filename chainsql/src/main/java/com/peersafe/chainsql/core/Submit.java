@@ -51,6 +51,7 @@ public abstract class Submit {
 	protected boolean strictMode = false;
 	
 	public enum SyncCond {
+		submit_success,
         validate_success,	
         db_success,
 	}
@@ -264,6 +265,9 @@ public abstract class Submit {
         obj.put("status", "error");
         if(res.result.has("engine_result_message"))
         	obj.put("error_message", res.result.getString("engine_result_message"));
+        if(res.result.has("engine_result_message_detail"))
+        	obj.put("error_message",res.result.getString("engine_result_message_detail"));
+        
         if(res.result.has("engine_result_code")){
         	obj.put("error_code", res.result.getInt("engine_result_code"));
         }

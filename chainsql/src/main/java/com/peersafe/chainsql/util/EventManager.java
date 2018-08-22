@@ -22,6 +22,7 @@ public class EventManager {
 	public Connection connection;
 	public boolean onTbMessage;
 	public boolean onTxMessage;
+	public boolean onContractMessage;
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
@@ -48,6 +49,7 @@ public class EventManager {
 		this.onTbMessage = false;
 		this.onTxMessage = false;
 		this.onSubRet = false;
+		this.onContractMessage = false;
 	}
 	
 	/**
@@ -151,8 +153,9 @@ public class EventManager {
 			JSONArray arr = new JSONArray();
 			arr.put(address);
 			messageEv.put("accounts_contract", arr);
+			
 			this.connection.client.subscriptions.addMessage(messageEv);
-			if (!this.onTxMessage) {
+			if (!this.onContractMessage) {
 				this.connection.client.onContractEvent(new OnContractEvent() {
 
 					@SuppressWarnings("unchecked")
@@ -165,6 +168,7 @@ public class EventManager {
 					}
 					
 				});
+				this.onContractMessage = true;
 			}
 		}
 	}

@@ -727,6 +727,11 @@ public class Chainsql extends Submit {
 			return null;
 		}
 	}
+	
+	public JSONObject payToContract(String contract_address,String amount,int gasLimit) {
+		
+		return null;
+	}
 
 	/**
 	 * Begin a sql-transaction type operation.

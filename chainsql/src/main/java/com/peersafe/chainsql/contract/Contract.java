@@ -91,19 +91,19 @@ public abstract class Contract{
      * @param newPrice gas price to use for subsequent transactions
      * @deprecated use ContractGasProvider
      */
-    public void setGasPrice(BigInteger newPrice) {
+//    public void setGasPrice(BigInteger newPrice) {
 //        this.gasProvider = new StaticGasProvider(newPrice, gasProvider.getGasLimit());
-    }
+//    }
 
     /**
      * Get the current {@code gasPrice} value this contract uses when executing transactions.
      * @return the gas price set on this contract
      * @deprecated use ContractGasProvider
      */
-    public BigInteger getGasPrice() {
-		return null;
+//    public BigInteger getGasPrice() {
+//		return null;
 //        return gasProvider.getGasPrice();
-    }
+//    }
     
     public BigInteger getGasLimit() {
     	return gasLimit;
@@ -113,6 +113,10 @@ public abstract class Contract{
     	return chainsql;
     }
     
+//    protected RemoteCall<TransactionReceipt> payToContract(BigInteger drops)
+//    {
+//    	return new RemoteCall<>(() -> executeTransaction("",drops,""));
+//    }
     /**
      * Execute constant function call - i.e. a call that does not change state of the contract
      *
@@ -129,14 +133,11 @@ public abstract class Contract{
         objTx.put("contract_address", contractAddress);
         
         JSONObject ret = this.chainsql.connection.client.contractCall(objTx);
-        if(ret.has("error")){
-        	if(ret.has("error_code"))
+        if(ret.has("error_message")){
+           	if(ret.has("error_code"))
+        		throw new ContractCallException(ret.getString("error_message"),ret.getInt("error_code"));
+        	else
         		throw new ContractCallException(ret.getString("error_message"));
-        	else {
-        		List<Type> error = FunctionReturnDecoder.decode(ret.getString("error_message"), function.getOutputParameters());
-        		String str = (String)(Object)error.get(0);
-        		throw new ContractCallException(str);
-        	}
         }
         return FunctionReturnDecoder.decode(ret.getString("contract_call_result"), function.getOutputParameters());
     }
@@ -205,7 +206,10 @@ public abstract class Contract{
         JSONObject objTx = new JSONObject();
         objTx.put("Account", chainsql.connection.address);
         objTx.put("ContractOpType", ContractOpType.MessageSend.value());
-        objTx.put("ContractData", data.substring(2, data.length()));
+        if(data.length() > 2)
+        	objTx.put("ContractData", data.substring(2, data.length()));
+        else
+        	objTx.put("ContractData", "");
         objTx.put("Gas", gasLimit.intValue());
         if(weiValue.intValue() > 0)
         	objTx.put("ContractValue", Amount.fromString(weiValue.toString()));
@@ -216,7 +220,10 @@ public abstract class Contract{
         
         JSONObject obj = op.submit(SyncCond.validate_success);
         if(obj.has("error_message")){
-        	throw new RuntimeException(obj.getString("error_message"));
+           	if(obj.has("error_code"))
+        		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));
+        	else
+        		throw new TransactionException(obj.getString("error_message"));
         }
         TransactionReceipt receipt = new TransactionReceipt(this.contractAddress,obj);
 
@@ -260,20 +267,19 @@ public abstract class Contract{
         ContractOp op = new ContractOp(objTx,contract.getChainsql());
         JSONObject obj = op.submit(SyncCond.validate_success);
         String contractAddress = null;
-        try {
-            if(obj.getString("status").equals("validate_success")) {
-            	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
-            	contractAddress = Util.getNewAccountFromTx(tx);
-            }else
-            {
-                if(obj.has("error_message")){
-                	throw new RuntimeException(obj.getString("error_message"));
-                }
+
+        if(obj.getString("status").equals("validate_success")) {
+        	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
+        	contractAddress = Util.getNewAccountFromTx(tx);
+        }else{
+            if(obj.has("error_message")){
+            	if(obj.has("error_code"))
+            		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));
+            	else
+            		throw new TransactionException(obj.getString("error_message"));
             }
-        }catch(Exception e) {
-        	throw new RuntimeException(e.getMessage());
         }
-     
+ 
         if (contractAddress == null) {
             throw new RuntimeException("Empty contract address returned");
         }
@@ -304,7 +310,6 @@ public abstract class Contract{
             throw new RuntimeException(e);
         }
     }
-
 
 
     public static <T extends Contract> RemoteCall<T> deployRemoteCall(

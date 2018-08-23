@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
+import com.peersafe.chainsql.core.Ripple;
 
 public class TestChainsql {
 	public static final Chainsql c = Chainsql.c;
@@ -81,7 +82,8 @@ public class TestChainsql {
 	}
 
 	public void activateAccount(String account) {
-		JSONObject ret = c.pay(account, "200");
+		Ripple ripple = new Ripple(c);
+		JSONObject ret = ripple.pay(account, "200");
 		System.out.println("pay result:" + ret);
 	}
 	

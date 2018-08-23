@@ -704,35 +704,6 @@ public class Chainsql extends Submit {
 		this.mTxJson = json;
 		return this;
 	}
-	/**
-	 * Start a payment transaction, can be used to activate account 
-	 * @param accountId The Address of an account.
-	 * @param count		Count of coins to transfer,max value:1e11.
-	 * @return You can use this to call other Chainsql functions continuely.
-	 */
-	public JSONObject pay(String accountId,String count){
-		JSONObject obj = new JSONObject();
-		obj.put("Account", this.connection.address);
-		obj.put("Destination", accountId);
-		BigInteger bigCount = new BigInteger(count);
-		BigInteger amount = bigCount.multiply(BigInteger.valueOf(1000000));
-		obj.put("Amount", amount.toString());
-		
-		Transaction payment;
-		try {
-			payment = toTransaction(obj,TransactionType.Payment);
-			signed = payment.sign(this.connection.secret);
-			return doSubmitNoPrepare();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public JSONObject payToContract(String contract_address,String amount,int gasLimit) {
-		
-		return null;
-	}
 
 	/**
 	 * Begin a sql-transaction type operation.

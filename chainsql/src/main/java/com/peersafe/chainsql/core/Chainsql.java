@@ -387,6 +387,7 @@ public class Chainsql extends Submit {
 		}
 	}
 	@Override
+	protected
 	JSONObject prepareSigned() {
 		try {
 			if(mTxJson.toString().equals("{}")) {

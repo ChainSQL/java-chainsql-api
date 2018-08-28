@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.peersafe.abi.EventEncoder;
@@ -22,12 +23,16 @@ import com.peersafe.abi.datatypes.Address;
 import com.peersafe.abi.datatypes.Event;
 import com.peersafe.abi.datatypes.Function;
 import com.peersafe.abi.datatypes.Type;
+import com.peersafe.base.client.pubsub.Publisher;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.core.coretypes.Amount;
+import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.contract.exception.ContractCallException;
 import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.ContractOp;
+import com.peersafe.chainsql.core.Submit;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
@@ -35,13 +40,11 @@ import com.peersafe.chainsql.util.Util;
 /**
  * Solidity contract type abstraction for interacting with smart contracts via native Java types.
  */
-public abstract class Contract{
+public abstract class Contract extends Submit{
 
 	public enum ContractOpType {
 		ContractCreation(1),			///< Transaction to create contracts - receiveAddress() is ignored.
-		MessageSend(2),					///< Transaction to invoke a message call - receiveAddress() is used.
-		ContractDeletion(3),			///
-		MessageCall(4);
+		MessageSend(2);					///< Transaction to invoke a message call - receiveAddress() is used.;
 		
 		private int nType;
 		private ContractOpType(int type) {
@@ -63,6 +66,8 @@ public abstract class Contract{
     protected BigInteger gasLimit;
     protected Chainsql chainsql;
 
+    private JSONObject mTxJson;
+    
     protected Contract(Chainsql chainsql,String contractBinary, String contractAddress,BigInteger gasLimit) {
     	this.chainsql = chainsql;
     	
@@ -71,6 +76,8 @@ public abstract class Contract{
         this.contractBinary = contractBinary;
         
         this.gasLimit = gasLimit;
+        
+        this.connection = chainsql.connection;
     }
 
 
@@ -85,25 +92,6 @@ public abstract class Contract{
     public String getContractBinary() {
         return contractBinary;
     }
-
-    /**
-     * Allow {@code gasPrice} to be set.
-     * @param newPrice gas price to use for subsequent transactions
-     * @deprecated use ContractGasProvider
-     */
-//    public void setGasPrice(BigInteger newPrice) {
-//        this.gasProvider = new StaticGasProvider(newPrice, gasProvider.getGasLimit());
-//    }
-
-    /**
-     * Get the current {@code gasPrice} value this contract uses when executing transactions.
-     * @return the gas price set on this contract
-     * @deprecated use ContractGasProvider
-     */
-//    public BigInteger getGasPrice() {
-//		return null;
-//        return gasProvider.getGasPrice();
-//    }
     
     public BigInteger getGasLimit() {
     	return gasLimit;
@@ -113,10 +101,6 @@ public abstract class Contract{
     	return chainsql;
     }
     
-//    protected RemoteCall<TransactionReceipt> payToContract(BigInteger drops)
-//    {
-//    	return new RemoteCall<>(() -> executeTransaction("",drops,""));
-//    }
     /**
      * Execute constant function call - i.e. a call that does not change state of the contract
      *
@@ -124,7 +108,7 @@ public abstract class Contract{
      * @return {@link List} of values returned by function call
      */
     private List<Type> executeCall(
-            Function function) throws IOException {
+            Function function) throws ContractCallException {
         String encodedFunction = FunctionEncoder.encode(function);
         String data = encodedFunction.substring(2, encodedFunction.length());
         JSONObject objTx = new JSONObject();
@@ -144,7 +128,7 @@ public abstract class Contract{
 
     @SuppressWarnings("unchecked")
     protected <T extends Type> T executeCallSingleValueReturn(
-            Function function) throws IOException {
+            Function function) throws ContractCallException {
         List<Type> values = executeCall(function);
         if (!values.isEmpty()) {
             return (T) values.get(0);
@@ -155,7 +139,7 @@ public abstract class Contract{
 
     @SuppressWarnings("unchecked")
     protected <T extends Type, R> R executeCallSingleValueReturn(
-            Function function, Class<R> returnType) throws IOException {
+            Function function, Class<R> returnType) throws ContractCallException {
         T result = executeCallSingleValueReturn(function);
         if (result == null) {
             throw new ContractCallException("Empty value (0x) returned from contract");
@@ -174,34 +158,32 @@ public abstract class Contract{
     }
 
     protected List<Type> executeCallMultipleValueReturn(
-            Function function) throws IOException {
+            Function function) throws ContractCallException {
         return executeCall(function);
     }
 
-    protected TransactionReceipt executeTransaction(
-            Function function)
-            throws IOException, TransactionException {
+    protected Contract executeTransaction(
+            Function function) {
         return executeTransaction(function, BigInteger.ZERO);
     }
 
-    private TransactionReceipt executeTransaction(
-            Function function, BigInteger weiValue)
-            throws IOException, TransactionException {
-        return executeTransaction(FunctionEncoder.encode(function), weiValue, function.getName());
+    private Contract executeTransaction(
+            Function function, BigInteger dropValue){
+        return executeTransaction(FunctionEncoder.encode(function), dropValue, function.getName());
     }
 
     /**
      * Given the duration required to execute a transaction.
      *
      * @param data  to send in transaction
-     * @param weiValue in Wei to send in transaction
+     * @param dropValue in Wei to send in transaction
      * @return {@link Optional} containing our transaction receipt
      * @throws IOException                 if the call to the node fails
      * @throws TransactionException if the transaction was not mined while waiting
      */
-    TransactionReceipt executeTransaction(
-            String data, BigInteger weiValue, String funcName)
-            throws TransactionException, IOException {
+    Contract executeTransaction(
+            String data, BigInteger dropValue, String funcName)
+            /*throws TransactionException, IOException*/ {
 
         JSONObject objTx = new JSONObject();
         objTx.put("Account", chainsql.connection.address);
@@ -211,50 +193,58 @@ public abstract class Contract{
         else
         	objTx.put("ContractData", "");
         objTx.put("Gas", gasLimit.intValue());
-        if(weiValue.intValue() > 0)
-        	objTx.put("ContractValue", Amount.fromString(weiValue.toString()));
+        if(dropValue.intValue() > 0)
+        	objTx.put("ContractValue", Amount.fromString(dropValue.toString()));
         objTx.put("ContractAddress", contractAddress);
         
-        ContractOp op = new ContractOp(objTx,this.chainsql);
-        op.connection = this.chainsql.connection;
+        mTxJson = objTx;
         
-        JSONObject obj = op.submit(SyncCond.validate_success);
-        if(obj.has("error_message")){
-           	if(obj.has("error_code"))
-        		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));
-        	else
-        		throw new TransactionException(obj.getString("error_message"));
-        }
-        TransactionReceipt receipt = new TransactionReceipt(this.contractAddress,obj);
-
-        return receipt;
+        return this;
     }
 
-    protected <T extends Type> RemoteCall<T> executeRemoteCallSingleValueReturn(Function function) {
-        return new RemoteCall<>(() -> executeCallSingleValueReturn(function));
+	protected JSONObject prepareSigned() {
+		try {
+			
+			if(mTxJson.toString().equals("{}")) {
+				return Util.errorObject("Exception occured:Json not prepared");
+			}
+			mTxJson.put("Account",this.connection.address);
+	    	
+	    	Transaction tx = toTransaction(mTxJson,TransactionType.Contract);
+			
+			signed = tx.sign(this.connection.secret);
+			
+			return Util.successObject();
+		} catch (Exception e) {
+			return Util.errorObject(e.getMessage());
+		}
+	}
+	
+    protected <T extends Type> T executeRemoteCallSingleValueReturn(Function function) throws ContractCallException {
+        return executeCallSingleValueReturn(function);
+    }
+	
+    protected <T> T executeRemoteCallSingleValueReturn(
+            Function function, Class<T> returnType) throws ContractCallException {
+        return executeCallSingleValueReturn(function, returnType);
     }
 
-    protected <T> RemoteCall<T> executeRemoteCallSingleValueReturn(
-            Function function, Class<T> returnType) {
-        return new RemoteCall<>(() -> executeCallSingleValueReturn(function, returnType));
+    protected List<Type> executeRemoteCallMultipleValueReturn(Function function) throws ContractCallException {
+        return executeCallMultipleValueReturn(function);
     }
 
-    protected RemoteCall<List<Type>> executeRemoteCallMultipleValueReturn(Function function) {
-        return new RemoteCall<>(() -> executeCallMultipleValueReturn(function));
+    protected Contract executeRemoteCallTransaction(Function function) {
+        return executeTransaction(function);
     }
 
-    protected RemoteCall<TransactionReceipt> executeRemoteCallTransaction(Function function) {
-        return new RemoteCall<>(() -> executeTransaction(function));
-    }
-
-    protected RemoteCall<TransactionReceipt> executeRemoteCallTransaction(
-            Function function, BigInteger weiValue) {
-        return new RemoteCall<>(() -> executeTransaction(function, weiValue));
+    protected Contract executeRemoteCallTransaction(
+            Function function, BigInteger dropValue) {
+        return executeTransaction(function, dropValue);
     }
 
     private static <T extends Contract> T create(
-            T contract, String binary, String encodedConstructor, BigInteger value)
-            throws IOException, TransactionException {
+            T contract, String binary, String encodedConstructor, BigInteger value,final Callback<T> cb)
+            throws TransactionException {
         
         JSONObject objTx = new JSONObject();
         Chainsql c = contract.getChainsql();
@@ -264,34 +254,54 @@ public abstract class Contract{
         objTx.put("Gas", contract.getGasLimit().intValue());
         objTx.put("ContractValue", Amount.fromString(value.toString()));
         
-        ContractOp op = new ContractOp(objTx,contract.getChainsql());
-        JSONObject obj = op.submit(SyncCond.validate_success);
-        String contractAddress = null;
+        if(cb == null) {
+            ContractOp op = new ContractOp(objTx,contract.getChainsql());
+            JSONObject obj = op.submit(SyncCond.validate_success);
+            String contractAddress = null;
 
-        if(obj.getString("status").equals("validate_success")) {
-        	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
-        	contractAddress = Util.getNewAccountFromTx(tx);
-        }else{
-            if(obj.has("error_message")){
-            	if(obj.has("error_code"))
-            		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));
-            	else
-            		throw new TransactionException(obj.getString("error_message"));
+            if(obj.getString("status").equals("validate_success")) {
+            	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
+            	contractAddress = Util.getNewAccountFromTx(tx);
+                contract.setContractAddress(contractAddress);
+            }else{
+                if(obj.has("error_message")){
+                	if(obj.has("error_code"))
+                		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));
+                	else
+                		throw new TransactionException(obj.getString("error_message"));
+                }
             }
-        }
- 
-        if (contractAddress == null) {
-            throw new RuntimeException("Empty contract address returned");
-        }
-        contract.setContractAddress(contractAddress);
+     
+            return contract;
+        }else {
+        	ContractOp op = new ContractOp(objTx,contract.getChainsql());
+        	op.submit(new Callback<JSONObject>() {
 
-        return contract;
+				@Override
+				public void called(JSONObject obj){
+					String contractAddress = null;
+					if(obj.getString("status").equals("validate_success")) {
+		            	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
+		            	contractAddress = Util.getNewAccountFromTx(tx);
+		            	contract.setContractAddress(contractAddress);
+		            	cb.called(contract);
+		            }else{
+		                if(obj.has("error_message")){
+		                	System.err.println(obj);
+		                }
+		                cb.called(null);
+		            }
+				}
+        		
+        	});
+        	return null;
+        }        
     }
 
     protected static <T extends Contract> T deploy(
             Class<T> type, Chainsql chainsql,BigInteger gasLimit,
             String binary, String encodedConstructor, BigInteger value) throws
-            IOException, TransactionException {
+            TransactionException {
 
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(
@@ -303,7 +313,30 @@ public abstract class Contract{
             // we want to use null here to ensure that "to" parameter on message is not populated
             T contract = constructor.newInstance(chainsql, binary, gasLimit);
 
-            return create(contract, binary, encodedConstructor, value);
+            return create(contract, binary, encodedConstructor, value,null);
+        } catch (TransactionException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    protected static <T extends Contract> void deploy(
+            Class<T> type, Chainsql chainsql,BigInteger gasLimit,
+            String binary, String encodedConstructor, BigInteger value,Callback<T> cb) throws
+            TransactionException {
+
+        try {
+            Constructor<T> constructor = type.getDeclaredConstructor(
+            		Chainsql.class,
+                    String.class,
+                    BigInteger.class);
+            constructor.setAccessible(true);
+
+            // we want to use null here to ensure that "to" parameter on message is not populated
+            T contract = constructor.newInstance(chainsql, binary, gasLimit);
+
+            create(contract, binary, encodedConstructor, value,cb);
         } catch (TransactionException e) {
             throw e;
         } catch (Exception e) {
@@ -312,22 +345,37 @@ public abstract class Contract{
     }
 
 
-    public static <T extends Contract> RemoteCall<T> deployRemoteCall(
+    public static <T extends Contract> T deployRemoteCall(
             Class<T> type, Chainsql chainsql,BigInteger gasLimit,
-            String binary, String encodedConstructor, BigInteger value) {
-        return new RemoteCall<>(() -> deploy(
+            String binary, String encodedConstructor, BigInteger value) throws TransactionException {
+        return deploy(
                 type,chainsql, gasLimit, binary,
-                encodedConstructor, value));
+                encodedConstructor, value);
     }
 
-    public static <T extends Contract> RemoteCall<T> deployRemoteCall(
+    public static <T extends Contract> void deployRemoteCall(
             Class<T> type, Chainsql chainsql,BigInteger gasLimit,
-            String binary, String encodedConstructor) {
+            String binary, String encodedConstructor, BigInteger value,Publisher.Callback<T> cb) throws TransactionException {
+        deploy(
+                type,chainsql, gasLimit, binary,
+                encodedConstructor, value,cb);
+    }
+    
+    public static <T extends Contract> T deployRemoteCall(
+            Class<T> type, Chainsql chainsql,BigInteger gasLimit,
+            String binary, String encodedConstructor) throws TransactionException {
         return deployRemoteCall(
                 type,chainsql, gasLimit,
                 binary, encodedConstructor, BigInteger.ZERO);
     }
 
+    public static <T extends Contract> void deployRemoteCall(
+    		Class<T> type, Chainsql chainsql,BigInteger gasLimit,
+            String binary, String encodedConstructor,Publisher.Callback<T> cb) throws TransactionException {
+    	deployRemoteCall(
+                type,chainsql, gasLimit, binary,
+                encodedConstructor, BigInteger.ZERO,cb);
+    }
 
 
     public EventValues extractEventParameters(

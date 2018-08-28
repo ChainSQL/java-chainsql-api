@@ -20,6 +20,7 @@ public class ContractOp extends Submit{
 	}
 	
 	@Override
+	protected
 	JSONObject prepareSigned() {
 		try {
 			if(mTxJson.toString().equals("{}")) {

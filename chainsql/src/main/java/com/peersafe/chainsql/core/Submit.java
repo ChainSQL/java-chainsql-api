@@ -140,7 +140,9 @@ public abstract class Submit {
 		return this.crossChainArgs != null;
 	}
 	
-	abstract JSONObject prepareSigned();
+	protected JSONObject prepareSigned() {
+		return null;
+	}
 
 	private JSONObject getError(String err){
 		JSONObject obj = new JSONObject();

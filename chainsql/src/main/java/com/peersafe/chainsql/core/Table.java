@@ -291,6 +291,7 @@ public class Table extends Submit{
 	}
 
 	@Override
+	protected
 	JSONObject prepareSigned() {
 		if(this.exec == "r_get"){
 			return select();

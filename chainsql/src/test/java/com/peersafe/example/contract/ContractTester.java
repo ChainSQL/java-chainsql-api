@@ -1,13 +1,12 @@
 package com.peersafe.example.contract;
 
-import java.util.concurrent.CompletableFuture;
-
+import org.json.JSONObject;
 import org.web3j.utils.Numeric;
 
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.chainsql.contract.Contract;
-import com.peersafe.chainsql.contract.TransactionReceipt;
 import com.peersafe.chainsql.core.Chainsql;
+import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.example.contract.Greeter.ModifiedEventResponse;
 
 public class ContractTester {
@@ -16,44 +15,45 @@ public class ContractTester {
 	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 
 	public static void main(String[] args) throws Exception {
-		c.connect("ws://192.168.0.89:6007");
+		c.connect("ws://127.0.0.1:6007");
 		c.as(rootAddress, rootSecret);
 
-		// deploy asynchronously
-		CompletableFuture<Greeter> completable = Greeter
-				.deploy(c, Contract.GAS_LIMIT, Contract.INITIAL_DROPS, "Hello blockchain world!").sendAsync();
-		completable.whenComplete((v, e) -> {
-			if (v != null) {
-				try {
-					System.out.println("Value stored in remote smart contract: " + v.greet().send());
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-			if (e != null) {
-				System.out.println(e);
-			}
-		});
+//		// deploy asynchronously
+//		CompletableFuture<Greeter> completable = Greeter
+//				.deploy(c, Contract.GAS_LIMIT, Contract.INITIAL_DROPS, "Hello blockchain world!").sendAsync();
+//		completable.whenComplete((v, e) -> {
+//			if (v != null) {
+//				try {
+//					System.out.println("Value stored in remote smart contract: " + v.greet().send());
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//			if (e != null) {
+//				System.out.println(e);
+//			}
+//		});
+//
+//		// // Now lets deploy a smart contract
+//		System.out.println("Deploying smart contract");
 
-		// // Now lets deploy a smart contract
-		System.out.println("Deploying smart contract");
+		 Greeter contract = Greeter.deploy(c,
+			 Contract.GAS_LIMIT,Contract.INITIAL_DROPS,
+			 "Hello blockchain world!");
 
-		// Greeter contract = Greeter.deploy(c,
-		// Contract.GAS_LIMIT,Contract.INITIAL_DROPS,
-		// "Hello blockchain world!").send();
+		
+		 String contractAddress = contract.getContractAddress();
+		 System.out.println("Smart contract deployed to address " + contractAddress);
+		
+		 System.out.println("Value stored in remote smart contract: " +
+		 contract.greet());
 
-		//
-		// String contractAddress = contract.getContractAddress();
-		// System.out.println("Smart contract deployed to address " + contractAddress);
-		//
-		// System.out.println("Value stored in remote smart contract: " +
-		// contract.greet().send());
-
-		// load contract from address, set gas limit
-		Greeter contract = Greeter.load(c, "zKotgrRHyoc7dywd7vf6LgFBXnv3K66rEg", Contract.GAS_LIMIT);
-
-		System.out.println("Value stored in remote smart contract: " + contract.greet().send());
-
+//		
+//		// load contract from address, set gas limit
+//		Greeter contract = Greeter.load(c, "zPxcuzA2SCzx7i5TK2tnbCYN1fhBjrY1Sp", Contract.GAS_LIMIT);
+//		 
+//		System.out.println("Value stored in remote smart contract: " + contract.greet());
+		
 		// subscribe modified event
 		contract.onModifiedEvents(new Callback<Greeter.ModifiedEventResponse>() {
 
@@ -68,10 +68,11 @@ public class ContractTester {
 		});
 
 		// Lets modify the value in our smart contract
-		TransactionReceipt transactionReceipt = contract.newGreeting("Well hello again3").send();
+		JSONObject ret = contract.newGreeting("Well hello again3").submit(SyncCond.validate_success);
 
-		System.out.println("Value stored in remote smart contract: " + contract.greet().send());
+		System.out.println("Value stored in remote smart contract: " + contract.greet());
 
-		System.out.println(transactionReceipt.getTransactionHash());
+		System.out.println(ret);
+
 	}
 }

@@ -83,7 +83,7 @@ public class TestChainsql {
 
 	public void activateAccount(String account) {
 		Ripple ripple = new Ripple(c);
-		JSONObject ret = ripple.pay(account, "200");
+		JSONObject ret = ripple.pay(account, "200").submit(SyncCond.validate_success);
 		System.out.println("pay result:" + ret);
 	}
 	

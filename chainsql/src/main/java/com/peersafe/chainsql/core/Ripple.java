@@ -24,10 +24,6 @@ public class Ripple extends Submit {
 		this.connection = chainsql.connection;
 	}
 	
-	public void setTxJson(JSONObject obj) {
-		mTxJson = obj;
-	}
-	
 	@Override
 	JSONObject prepareSigned() {
 		try {
@@ -58,45 +54,31 @@ public class Ripple extends Submit {
 	 * Start a payment transaction, can be used to activate account 
 	 * @param accountId The Address of an account.
 	 * @param count		Count of coins to transfer,max value:1e11.
-	 * @return You can use this to call other Chainsql functions continuely.
+	 * @return You can use this to call other Ripple functions continually.
 	 */
-	public JSONObject pay(String accountId,String count){
-		JSONObject obj = new JSONObject();
-		obj.put("Account", this.connection.address);
-		obj.put("Destination", accountId);
+	public Ripple pay(String accountId,String count){
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		mTxJson.put("Destination", accountId);
 		BigInteger bigCount = new BigInteger(count);
 		BigInteger amount = bigCount.multiply(BigInteger.valueOf(1000000));
-		obj.put("Amount", amount.toString());
-		obj.put("TransactionType", "Payment");
-		return SubmitTransaction(obj, TransactionType.Payment);
+		mTxJson.put("Amount", amount.toString());
+		mTxJson.put("TransactionType", "Payment");
+		return this;
 	}
 	
-	public JSONObject payToContract(String contract_address, String count, int gasLimit) {
-		JSONObject obj = new JSONObject();
-		obj.put("Account", this.connection.address);
-		obj.put("ContractAddress", contract_address);
-		obj.put("ContractOpType", 2);
-		obj.put("Gas", gasLimit);
+	public Ripple payToContract(String contract_address, String count, int gasLimit) {
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		mTxJson.put("ContractAddress", contract_address);
+		mTxJson.put("ContractOpType", 2);
+		mTxJson.put("Gas", gasLimit);
 		BigInteger bigCount = new BigInteger(count);
 		BigInteger amount = bigCount.multiply(BigInteger.valueOf(1000000));
-		obj.put("ContractValue", amount.toString());
-		obj.put("ContractData", "");
-		obj.put("TransactionType", "Contract");
-		
-		//
-		return SubmitTransaction(obj, TransactionType.Contract);
+		mTxJson.put("ContractValue", amount.toString());
+		mTxJson.put("ContractData", "");
+		mTxJson.put("TransactionType", "Contract");
+		return this;
 	}
 
-	private JSONObject SubmitTransaction(JSONObject obj, TransactionType type) {
-		mTxJson = obj;
-		Transaction payment;
-		try {
-			payment = toTransaction(obj, type);
-			signed = payment.sign(this.connection.secret);
-			return doSubmitNoPrepare();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 }

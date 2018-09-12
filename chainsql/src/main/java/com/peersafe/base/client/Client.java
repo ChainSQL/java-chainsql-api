@@ -1530,7 +1530,20 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	    else
 	    	return request.response.message;
     }
-    
+
+    /**
+     * GetAccountLines synchronously
+     * @param address
+     * @return
+     */
+	public JSONObject GetAccountLines(String address){
+		Request request = newRequest(Command.account_lines);
+		request.json("account", address);
+		request.request();
+		waiting(request);
+		return request.response.result;
+	}
+	
     /**
      * getTransaction synchronously
      * @param hash

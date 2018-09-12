@@ -705,6 +705,77 @@ public class Chainsql extends Submit {
 	}
 
 	/**
+	 * Start a Ripple transaction
+	 * @param tx_json  transaction tx_json
+	 * @return You can use this to call other Ripple functions continually.
+	 */
+	public Ripple createRippleTransaction(JSONObject tx_json)
+	{
+		Ripple ripple = new Ripple(this);
+		ripple.setTxJson(tx_json);
+		return ripple; 
+	}
+	
+	/**
+	 * Start a payment transaction, can be used to activate account 
+	 * @param accountId The Address of an account.
+	 * @param value		Count of coins to transfer,max value:1e11.
+	 * @return You can use this to call other Ripple functions continually.
+	 */
+	public Ripple pay(String accountId, String value)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.pay(accountId, value);
+	}
+	public Ripple pay(String accountId, String value, String sCurrency, String sIssuer)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.pay(accountId, value, sCurrency, sIssuer);
+	}
+	//
+	public Ripple payToContract(String contract_address, String value, int gasLimit)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.payToContract(contract_address, value, gasLimit);
+	}
+	//
+	public Ripple escrowCreate(String sDestAddr, String value, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.escrowCreate(sDestAddr, value, dateFormatTMFinish, dateFormatTMCancel);
+	}
+	
+	public Ripple escrowCreate(String sDestAddr, String value, String sCurrency, String sIssuer, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.escrowCreate(sDestAddr, value, sCurrency, sIssuer, dateFormatTMFinish, dateFormatTMCancel);
+	}
+	
+	public Ripple escrowExecute(String sOwner, int nCreateEscrowSeq)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.escrowExecute(sOwner, nCreateEscrowSeq);
+	}
+	
+	public Ripple escrowCancel(String sOwner, int nCreateEscrowSeq)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.escrowCancel(sOwner, nCreateEscrowSeq);
+	}
+	
+	public Ripple accountSet()
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.accountSet();
+	}
+	
+	public Ripple trustSet(String value, String sCurrency, String sIssuer)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.trustSet(value, sCurrency, sIssuer);
+	}
+	
+	/**
 	 * Begin a sql-transaction type operation.
 	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
 	 */
@@ -1076,7 +1147,7 @@ public class Chainsql extends Submit {
 	public Connection getConnection() {
 		return connection;
 	}
-
+	
 	public String getAccountBalance(String address){
 		try{
 			AccountID account = AccountID.fromAddress(address);

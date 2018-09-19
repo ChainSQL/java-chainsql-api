@@ -51,14 +51,14 @@ public abstract class Submit {
 	protected boolean strictMode = false;
 	
 	public enum SyncCond {
-		submit_success,
+		send_success,
         validate_success,	
         db_success,
 	}
 	
 	public enum SubmitState{
 		waiting_submit,
-		submit_success,
+		send_success,
 		submit_error,
 	}
 	
@@ -258,7 +258,7 @@ public abstract class Submit {
         obj.put("tx_hash", tx_json.get("hash").toString());
         
 		submitRes = obj;
-		submit_state = SubmitState.submit_success;
+		submit_state = SubmitState.send_success;
 	}
 
     private void onSubmitError(Response res) {

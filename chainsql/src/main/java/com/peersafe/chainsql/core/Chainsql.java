@@ -728,48 +728,122 @@ public class Chainsql extends Submit {
 		Ripple ripple = new Ripple(this);
 		return ripple.pay(accountId, value);
 	}
+	
+	/**
+	 * 
+	 * @param accountId The Address of an account.
+	 * @param value Count of coins to transfer,max value:1e11.
+	 * @param sCurrency  Arbitrary code for currency.
+	 * @param sIssuer currency Issuer address
+	 * @return You can use this to call other Ripple functions continually.
+	 */
 	public Ripple pay(String accountId, String value, String sCurrency, String sIssuer)
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.pay(accountId, value, sCurrency, sIssuer);
 	}
-	//
+
+	/**
+	 * 
+	 * @param contract_address The Address of a contract account.
+	 * @param value Count of coins to transfer.
+	 * @param gasLimit The maximum amount of gas available
+	 * @return You can use this to call other Ripple functions continually.
+	 */
 	public Ripple payToContract(String contract_address, String value, int gasLimit)
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.payToContract(contract_address, value, gasLimit);
 	}
-	//
+
+	/**
+	 * 
+	 * @param sDestAddr Address to receive escrowed amount
+	 * @param value Amounts to escrow
+	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
+	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
+	 * @return You can use this to call other Ripple functions continually.
+	 * @throws Exception
+	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.escrowCreate(sDestAddr, value, dateFormatTMFinish, dateFormatTMCancel);
 	}
-	
+
+	/**
+	 * 
+	 * @param sDestAddr Address to receive escrowed amount
+	 * @param value Amounts to escrow
+	 * @param sCurrency  Arbitrary code for currency.
+	 * @param sIssuer currency Issuer
+	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
+	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
+	 * @return You can use this to call other Ripple functions continually.
+	 * @throws Exception
+	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String sCurrency, String sIssuer, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.escrowCreate(sDestAddr, value, sCurrency, sIssuer, dateFormatTMFinish, dateFormatTMCancel);
 	}
-	
+
+	/**
+	 * 
+	 * @param sOwner Address of the source account that funded the held payment.
+	 * @param nCreateEscrowSeq Transaction sequence of EscrowCreate transaction that created the held payment to finish.
+	 * @return You can use this to call other Ripple functions continually.
+	 */
 	public Ripple escrowExecute(String sOwner, int nCreateEscrowSeq)
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.escrowExecute(sOwner, nCreateEscrowSeq);
 	}
-	
+
+	/**
+	 * 
+	 * @param sOwner Address of the source account that funded the held payment.
+	 * @param nCreateEscrowSeq Transaction sequence of EscrowCreate transaction that created the held payment to finish.
+	 * @return You can use this to call other Ripple functions continually.
+	 */
 	public Ripple escrowCancel(String sOwner, int nCreateEscrowSeq)
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.escrowCancel(sOwner, nCreateEscrowSeq);
 	}
 	
-	public Ripple accountSet()
+	/**
+	 * accountSet
+	 * @param nFlag accountSet flag which can be enable or disabled for an account
+	 * @param bSet true:SetFlag; false:ClearFlag
+	 * @return  You can use this to call other Ripple functions continually.
+	 */
+	public Ripple accountSet(int nFlag, boolean bSet)
 	{
 		Ripple ripple = new Ripple(this);
-		return ripple.accountSet();
+		return ripple.accountSet(nFlag, bSet);
 	}
-	
+
+	/**
+	 * 
+	 * @param transferRate    1.0 - 2.0 string
+	 * @param transferFeeMin  decimal number string
+	 * @param transferFeeMax  decimal number string
+	 * @return You can use this to call other Ripple functions continually.
+	 */
+	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.accountSet(transferRate, transferFeeMin, transferFeeMax);
+	}
+
+	/**
+	 * 
+	 * @param value Amounts to escrow
+	 * @param sCurrency  Arbitrary code for currency.
+	 * @param sIssuer currency Issuer
+	 * @return You can use this to call other Ripple functions continually.
+	 */
 	public Ripple trustSet(String value, String sCurrency, String sIssuer)
 	{
 		Ripple ripple = new Ripple(this);

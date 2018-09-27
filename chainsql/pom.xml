@@ -76,12 +76,18 @@
 		    <groupId>com.peersafe</groupId>
 		    <artifactId>abi_chainsql</artifactId>
 		    <version>1.4.4</version>
-		</dependency>
+		</dependency><!-- 
 		<dependency>
 		    <groupId>io.reactivex</groupId>
 		    <artifactId>rxjava</artifactId>
 		    <version>1.2.4</version>
-		</dependency>		
+		</dependency> -->
+		<dependency>
+		    <groupId>org.web3j</groupId>
+		    <artifactId>tuples</artifactId>
+		    <version>${web3j.version}</version>
+		</dependency>
+				
 	</dependencies>
     <profiles>
         <profile>

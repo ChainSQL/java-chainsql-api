@@ -4,10 +4,12 @@ import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.abi.EventEncoder;
 import com.peersafe.abi.datatypes.Event;
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.Client.OnContractEvent;
@@ -162,9 +164,19 @@ public class EventManager {
 					@Override
 					public void called(JSONObject args) {
 //						System.out.println(args);
-						if(mapContractEvents.get(address) != null && mapContractEvents.get(address).get(event) != null) {
-							mapContractEvents.get(address).get(event).called(args);
-						}						
+						if(!args.has("ContractEventTopics")) {
+							System.err.println("no ContractEventTopics found,not a valid event callback!");
+							return;
+						}
+						Map<Event,Callback> mapCb = mapContractEvents.get(address);
+						for (Entry<Event,Callback> entry : mapCb.entrySet()) {
+							String encodedEventSignature = EventEncoder.encode(entry.getKey());
+							encodedEventSignature = encodedEventSignature.substring(2, encodedEventSignature.length());
+							if(encodedEventSignature.toUpperCase().equals(args.getJSONArray("ContractEventTopics").get(0))) {
+								entry.getValue().called(args);
+								break;
+							}
+						}					
 					}
 					
 				});

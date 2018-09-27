@@ -277,8 +277,11 @@ public class SolidityFunctionWrapper extends Generator {
                             className, false);
             methodSpecs.add(buildDeployNoParams(
             		deployBuilder, className, false));
+            
+            MethodSpec.Builder deployBuilderAsync = getDeployMethodSpecAsync(
+                    className, false);
             methodSpecs.add(buildDeployNoParamsAsync(
-            		deployBuilder, className, false));
+            		deployBuilderAsync, className, false));
         }
 
         return methodSpecs;
@@ -397,10 +400,10 @@ public class SolidityFunctionWrapper extends Generator {
                 className, isPayable);
         String inputParams = addParameters(methodBuilder, functionDefinition.getInputs());
         
-        // add callback parameter
-        ParameterizedTypeName typeName = ParameterizedTypeName.get(
-                ClassName.get(Callback.class), ClassName.get("", className));
-        methodBuilder.addParameter(typeName,CALLBACK);
+//        // add callback parameter
+//        ParameterizedTypeName typeName = ParameterizedTypeName.get(
+//                ClassName.get(Callback.class), ClassName.get("", className));
+//        methodBuilder.addParameter(typeName,CALLBACK);
         
         if (!inputParams.isEmpty()) {
             return buildDeployWithParamsAsync(
@@ -459,6 +462,12 @@ public class SolidityFunctionWrapper extends Generator {
         if (isPayable) {
             builder.addParameter(BigInteger.class, INITIAL_VALUE);
         }
+        
+        // add callback parameter
+        ParameterizedTypeName typeName = ParameterizedTypeName.get(
+                ClassName.get(Callback.class), ClassName.get("", className));
+        builder.addParameter(typeName,CALLBACK);
+        
         return builder;
 
     }
@@ -717,25 +726,26 @@ public class SolidityFunctionWrapper extends Generator {
                             listType, listType, nativeReturnTypeName);
                     callCode.addStatement("return convertToNative(result)");
 
-                    TypeSpec callableType = TypeSpec.anonymousClassBuilder("")
-                            .addSuperinterface(ParameterizedTypeName.get(
-                                    ClassName.get(Callable.class), nativeReturnTypeName))
-                            .addMethod(MethodSpec.methodBuilder("call")
-                                    .addAnnotation(Override.class)
-                                    .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class)
-                                            .addMember("value", "$S", "unchecked")
-                                            .build())
-                                    .addModifiers(Modifier.PUBLIC)
-                                    .addException(Exception.class)
-                                    .returns(nativeReturnTypeName)
-                                    .addCode(callCode.build())
-                                    .build())
-                            .build();
+//                    TypeSpec callableType = TypeSpec.anonymousClassBuilder("")
+//                            .addSuperinterface(ParameterizedTypeName.get(
+//                                    ClassName.get(Callable.class), nativeReturnTypeName))
+//                            .addMethod(MethodSpec.methodBuilder("call")
+//                                    .addAnnotation(Override.class)
+//                                    .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class)
+//                                            .addMember("value", "$S", "unchecked")
+//                                            .build())
+//                                    .addModifiers(Modifier.PUBLIC)
+//                                    .addException(Exception.class)
+//                                    .returns(nativeReturnTypeName)
+//                                    .addCode(callCode.build())
+//                                    .build())
+//                            .build();
 
 //                    methodBuilder.addStatement("return new $T(\n$L)",
 //                            buildRemoteCall(nativeReturnTypeName), callableType);
-                    methodBuilder.addStatement("return new $T(\n$L)",
-                            nativeReturnTypeName, callableType);
+//                    methodBuilder.addStatement("return new $T(\n$L)",
+//                            nativeReturnTypeName, callableType);
+                    methodBuilder.addCode(callCode.build());
                 } else {
                     methodBuilder.addStatement(
                             "return executeRemoteCallSingleValueReturn(function, $T.class)",
@@ -1199,22 +1209,21 @@ public class SolidityFunctionWrapper extends Generator {
         }
         tupleConstructor.add("$<$<");
 
-        TypeSpec callableType = TypeSpec.anonymousClassBuilder("")
-                .addSuperinterface(ParameterizedTypeName.get(
-                        ClassName.get(Callable.class), tupleType))
-                .addMethod(MethodSpec.methodBuilder("call")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addException(Exception.class)
-                        .returns(tupleType)
-                        .addCode(tupleConstructor.build())
-                        .build())
-                .build();
+//        TypeSpec callableType = TypeSpec.anonymousClassBuilder("")
+//                .addSuperinterface(ParameterizedTypeName.get(
+//                        ClassName.get(Callable.class), tupleType))
+//                .addMethod(MethodSpec.methodBuilder("call")
+//                        .addAnnotation(Override.class)
+//                        .addModifiers(Modifier.PUBLIC)
+//                        .addException(Exception.class)
+//                        .returns(tupleType)
+//                        .addCode(tupleConstructor.build())
+//                        .build())
+//                .build();
 
 //        methodBuilder.addStatement(
 //                "return new $T(\n$L)", buildRemoteCall(tupleType), callableType);
-        methodBuilder.addStatement(
-                "return new $T(\n$L)", tupleType, callableType);
+        methodBuilder.addCode(tupleConstructor.build());
     }
 
     private static CodeBlock buildVariableLengthEventInitializer(

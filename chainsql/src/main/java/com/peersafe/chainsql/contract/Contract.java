@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.peersafe.abi.EventEncoder;
@@ -31,9 +30,7 @@ import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.contract.exception.ContractCallException;
 import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
-import com.peersafe.chainsql.core.ContractOp;
 import com.peersafe.chainsql.core.Submit;
-import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.Util;
 
@@ -81,6 +78,10 @@ public abstract class Contract extends Submit{
     }
 
 
+    public void setTxJson(JSONObject json) {
+    	mTxJson = json;
+    }
+    
     public void setContractAddress(String contractAddress) {
         this.contractAddress = contractAddress;
     }
@@ -253,10 +254,10 @@ public abstract class Contract extends Submit{
         objTx.put("ContractData", binary + encodedConstructor);
         objTx.put("Gas", contract.getGasLimit().intValue());
         objTx.put("ContractValue", Amount.fromString(value.toString()));
+        contract.setTxJson(objTx);
         
         if(cb == null) {
-            ContractOp op = new ContractOp(objTx,contract.getChainsql());
-            JSONObject obj = op.submit(SyncCond.validate_success);
+            JSONObject obj = contract.submit(SyncCond.validate_success);
             String contractAddress = null;
 
             if(obj.getString("status").equals("validate_success")) {
@@ -274,17 +275,29 @@ public abstract class Contract extends Submit{
      
             return contract;
         }else {
-        	ContractOp op = new ContractOp(objTx,contract.getChainsql());
-        	op.submit(new Callback<JSONObject>() {
+        	contract.submit(new Callback<JSONObject>() {
 
 				@Override
 				public void called(JSONObject obj){
-					String contractAddress = null;
+					String hash = obj.getJSONObject("transaction").getString("hash");
 					if(obj.getString("status").equals("validate_success")) {
-		            	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
-		            	contractAddress = Util.getNewAccountFromTx(tx);
-		            	contract.setContractAddress(contractAddress);
-		            	cb.called(contract);
+						try {
+							c.connection.client.getTransaction(hash,new Callback<JSONObject>(){
+								@Override
+								public void called(JSONObject tx) {
+									if(tx == null){
+										cb.called(null);
+									}else{
+										String contractAddress = Util.getNewAccountFromTx(tx);
+						            	contract.setContractAddress(contractAddress);
+						            	cb.called(contract);
+									}
+								}			
+							});
+						}catch(Exception e){
+							e.printStackTrace();
+							cb.called(null);
+						}		            	
 		            }else{
 		                if(obj.has("error_message")){
 		                	System.err.println(obj);

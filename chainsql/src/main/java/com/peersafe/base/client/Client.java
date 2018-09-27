@@ -1569,9 +1569,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-    			if(response.result.has("meta")){
-    				response.result.remove("meta");
-    			}
+//    			if(response.result.has("meta")){
+//    				response.result.remove("meta");
+//    			}
     			Util.unHexData(response.result);
                 return response.result;
             }

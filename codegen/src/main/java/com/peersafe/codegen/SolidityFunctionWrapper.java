@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,11 +38,11 @@ import com.peersafe.abi.datatypes.Type;
 import com.peersafe.abi.datatypes.Utf8String;
 import com.peersafe.abi.datatypes.generated.AbiTypes;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
+import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.chainsql.contract.Contract;
 import com.peersafe.chainsql.contract.exception.ContractCallException;
 import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
-import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
@@ -747,9 +746,18 @@ public class SolidityFunctionWrapper extends Generator {
 //                            nativeReturnTypeName, callableType);
                     methodBuilder.addCode(callCode.build());
                 } else {
-                    methodBuilder.addStatement(
-                            "return executeRemoteCallSingleValueReturn(function, $T.class)",
-                            nativeReturnTypeName);
+                	String simpleName = ((ClassName) typeName).simpleName();
+                    if (simpleName.equals(Address.class.getSimpleName())) {
+                    	methodBuilder.addStatement(
+                    					"String address = executeRemoteCallSingleValueReturn(function, $T.class)",
+                    						nativeReturnTypeName)
+                    				.addStatement("return $T.fromString(address.substring(2)).toString()",TypeName.get(AccountID.class));
+
+                    }else {
+                        methodBuilder.addStatement(
+                                "return executeRemoteCallSingleValueReturn(function, $T.class)",
+                                nativeReturnTypeName);
+                    }
                 }
             } else {
                 methodBuilder.addStatement("return executeRemoteCallSingleValueReturn(function)");
@@ -1189,6 +1197,10 @@ public class SolidityFunctionWrapper extends Generator {
             TypeName convertTo = typeArguments.get(i);
 
             String resultString = resultStringSimple;
+            boolean bAddress = ((ClassName) param).simpleName().equals(Address.class.getSimpleName());
+            if (bAddress) {
+            	resultString = "$T.fromString((" + resultStringSimple + ").substring(2)).toString()";
+            }
 
             // If we use native java types we need to convert
             // elements of arrays to native java types too
@@ -1202,9 +1214,14 @@ public class SolidityFunctionWrapper extends Generator {
                     resultString = resultStringNativeList;
                 }
             }
-
-            tupleConstructor
-                .add(resultString, convertTo, i);
+            if(bAddress) {
+            	tupleConstructor
+                	.add(resultString, TypeName.get(AccountID.class),convertTo, i);
+            }else {
+            	tupleConstructor
+                	.add(resultString, convertTo, i);
+            }
+            
             tupleConstructor.add(i < size - 1 ? ", " : ");\n");
         }
         tupleConstructor.add("$<$<");

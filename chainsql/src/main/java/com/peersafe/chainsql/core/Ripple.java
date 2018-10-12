@@ -62,7 +62,7 @@ public class Ripple extends Submit {
 	
 	
 	/**
-	 * Start a payment transaction, can be used to activate account 
+	 * Start a payment transaction, can be used to activate account or transfer currency
 	 * @param accountId The Address of an account.
 	 * @param amount Currency Amounts to transfer
 	 * @return You can use this to call other Ripple functions continually.
@@ -74,9 +74,57 @@ public class Ripple extends Submit {
 		{
 			Request request = this.connection.client.accountInfo(amount.issuer());
 			if(request.response.result!=null){
-				String transferFeeMax = request.response.result.optJSONObject("account_data").getString("TransferFeeMax");
-				BigDecimal bigCount = new BigDecimal(transferFeeMax);
-				Amount maxAmount = new Amount(bigCount.add(amount.value()), amount.currency(), amount.issuer());
+				BigDecimal value = amount.value();
+				JSONObject accountData = request.response.result.optJSONObject("account_data");
+				if(accountData != null)
+				{
+					String feeMin = null, feeMax = null;
+					long lFeeRate = 0;
+					if(accountData.has("TransferFeeMin"))
+						feeMin = accountData.getString("TransferFeeMin");
+					if(accountData.has("TransferFeeMax"))
+						feeMax = accountData.getString("TransferFeeMax");
+					if(accountData.has("TransferRate"))
+					{
+						lFeeRate = accountData.getLong("TransferRate");
+					}
+					//
+					if(feeMin == feeMax && (!feeMin.isEmpty()))
+					{
+						value = value.add(new BigDecimal(feeMin));
+					}
+					else if(lFeeRate>1000000000 && 1000000000<=2000000000)
+					{
+						//
+                        BigDecimal baseComputeNum = new BigDecimal(1000000000);
+                        BigDecimal rate = new BigDecimal(lFeeRate).subtract(baseComputeNum);
+                        rate = rate.divide(baseComputeNum);
+                        //
+		                BigDecimal fee = value.multiply(rate);
+		                if (!feeMin.isEmpty()) {
+		                    if (new BigDecimal(feeMin).compareTo(fee) > 0) {
+		                    	fee = new BigDecimal(feeMin);
+		                    }
+		                }
+		                if (!feeMax.isEmpty()) {
+		                    if (fee.compareTo(new BigDecimal(feeMax)) > 0) {
+		                    	fee = new BigDecimal(feeMax);
+		                    }
+		                }
+		                //
+		                value = value.add(fee);
+					}
+					else
+					{
+						try {
+							throw new Exception("Exception:transfer fee not valid!");
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				Amount maxAmount = new Amount(value, amount.currency(), amount.issuer());
 				mTxJson.put("SendMax", maxAmount.toJSON());
 			}
 		}
@@ -89,7 +137,7 @@ public class Ripple extends Submit {
 	/**
 	 * Start a payment transaction, can be used to activate account 
 	 * @param accountId The Address of an account.
-	 * @param value		Count of coins to transfer,max value:1e11.
+	 * @param value		Count of ZXC to transfer,max value:1e11.
 	 * @return You can use this to call other Ripple functions continually.
 	 */
 	public Ripple pay(String accountId,String value){
@@ -99,7 +147,7 @@ public class Ripple extends Submit {
 	}
 
 	/**
-	 * 
+	 * Start a payment transaction, can be used to transfer currency
 	 * @param accountId The Address of an account.
 	 * @param value Count of coins to transfer,max value:1e11.
 	 * @param sCurrency  Arbitrary code for currency.
@@ -116,7 +164,7 @@ public class Ripple extends Submit {
 	/**
 	 * 
 	 * @param contract_address The Address of a contract account.
-	 * @param value Count of coins to transfer.
+	 * @param value Count of ZXC to transfer.
 	 * @param gasLimit The maximum amount of gas available
 	 * @return You can use this to call other Ripple functions continually.
 	 */
@@ -135,11 +183,11 @@ public class Ripple extends Submit {
 	}
 	
 	/**
-	 * 
-	 * @param sDestAddr Address to receive escrowed amount
+	 * Sequester currency until the escrow process either finishes or is canceled
+	 * @param sDestAddr Address to receive escrowed currency
 	 * @param amount Amounts to escrow
-	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
-	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
+	 * @param dateFormatTMFinish The local time(format:yyyy-MM-dd HH:mm:ss)
+	 * @param dateFormatTMCancel The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @return You can use this to call other Ripple functions continually.
 	 * @throws Exception
 	 */
@@ -162,11 +210,11 @@ public class Ripple extends Submit {
 	}
 
 	/**
-	 * 
-	 * @param sDestAddr Address to receive escrowed amount
-	 * @param value Amounts to escrow
-	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
-	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
+	 * Sequester currency until the escrow process either finishes or is canceled
+	 * @param sDestAddr Address to receive escrowed currency
+	 * @param value Amounts of ZXC to escrow
+	 * @param dateFormatTMFinish The local time(format:yyyy-MM-dd HH:mm:ss)
+	 * @param dateFormatTMCancel The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @return You can use this to call other Ripple functions continually.
 	 * @throws Exception
 	 */
@@ -178,13 +226,13 @@ public class Ripple extends Submit {
 	}
 
 	/**
-	 * 
-	 * @param sDestAddr Address to receive escrowed amount
+	 * Sequester currency until the escrow process either finishes or is canceled
+	 * @param sDestAddr Address to receive escrowed currency
 	 * @param value Amounts to escrow
 	 * @param sCurrency  Arbitrary code for currency.
 	 * @param sIssuer currency Issuer
-	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
-	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
+	 * @param dateFormatTMFinish The local time(format:yyyy-MM-dd HH:mm:ss)
+	 * @param dateFormatTMCancel The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @return You can use this to call other Ripple functions continually.
 	 * @throws Exception
 	 */
@@ -196,7 +244,7 @@ public class Ripple extends Submit {
 	}
 	
 	/**
-	 * 
+	 * Deliver currency from a held payment to the recipient
 	 * @param sOwner Address of the source account that funded the held payment.
 	 * @param nCreateEscrowSeq Transaction sequence of EscrowCreate transaction that created the held payment to finish.
 	 * @return You can use this to call other Ripple functions continually.
@@ -211,7 +259,7 @@ public class Ripple extends Submit {
 	}
 
 	/**
-	 * 
+	 * Return escrowed currency to the sender
 	 * @param sOwner Address of the source account that funded the held payment.
 	 * @param nCreateEscrowSeq Transaction sequence of EscrowCreate transaction that created the held payment to finish.
 	 * @return You can use this to call other Ripple functions continually.
@@ -226,8 +274,8 @@ public class Ripple extends Submit {
 	}
 
 	/**
-	 * accountSet
-	 * @param flag accountSet flag which can be enable or disabled for an account
+	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setFlag or clearFlag
+	 * @param flag accountSet flag which can be enabled or disabled for an account
 	 * @param bSet true:SetFlag; false:ClearFlag
 	 * @return You can use this to call other Ripple functions continually.
 	 */
@@ -245,8 +293,19 @@ public class Ripple extends Submit {
 	}
 	
 	/**
+	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setTransferFee<p/>
+	 *
+	 * 1. transferRate>1.0 && transferRate<=2.0 && 0<=transferFeeMin && transferFeeMin<transferFeeMax <br/><br/>
+	 * &nbsp&nbsp&nbsp&nbsp			fee = min( max(transferFeeMin, amount*transferRate), transferFeeMax ); <br/>
+	 * 2. transferRate == 1.0 || transferRate == 0 <br/>
+	 * &nbsp&nbsp&nbsp&nbsp		1) transferFeeMin and transferFeeMax are both not set <br/>
+	 * &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp			no fee <br/>
+	 * &nbsp&nbsp&nbsp&nbsp		2) transferFeeMin == transferFeeMax <br/>
+	 * &nbsp&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp&nbsp		fee = transferFeeMin <br/>
 	 * 
-	 * @param transferRate    1.0 - 2.0 string
+	 * @param transferRate    decimal number string <br/>
+	 * &nbsp                  (1.0 - 2.0] : set transferRate <br/>
+	 * &nbsp&nbsp              0/1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
 	 * @param transferFeeMin  decimal number string
 	 * @param transferFeeMax  decimal number string
 	 * @return You can use this to call other Ripple functions continually.
@@ -257,16 +316,16 @@ public class Ripple extends Submit {
 		double rate = 1.0;double feeMin;double feeMax;
 		try {
 			rate = Double.parseDouble(transferRate);
-			if(rate<1.0 || rate>2.0)
+			if((rate != 0) && rate<1.0 || rate>2.0)
 			{
-				Client.logger.log(Level.WARNING, "TransferRate must be a number >= 1.0 && <= 2.0");
+				Client.logger.log(Level.WARNING, "TransferRate must be 0 or a number >= 1.0 && <= 2.0");
 				return null;
 			}
 			feeMin = Double.parseDouble(transferFeeMin);
 			feeMax = Double.parseDouble(transferFeeMax);
 			if(feeMin < 0 || feeMax <0)
 			{
-				Client.logger.log(Level.WARNING, "opt.min or opt.max cannot be less than 0");
+				Client.logger.log(Level.WARNING, "min or max cannot be less than 0");
 				return null;
 			}
 			if(feeMin > feeMax)
@@ -277,9 +336,16 @@ public class Ripple extends Submit {
 			//
 			if(feeMin == feeMax && feeMin>0)
 			{
-				if(rate != 1.0)
+				if(rate != 1.0 && rate != 0)
 				{
-					Client.logger.log(Level.WARNING, "Cannot set transferRate if set fixed fee");
+					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
+					return null;
+				}
+			}
+			if(feeMin < feeMax) {
+				if(rate == 1.0 || rate == 0)
+				{
+					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
 					return null;
 				}
 			}
@@ -311,7 +377,7 @@ public class Ripple extends Submit {
 	}
 
 	/**
-	 * 
+	 * Create or modify a trust line linking two accounts
 	 * @param value Amounts to escrow
 	 * @param sCurrency  Arbitrary code for currency.
 	 * @param sIssuer currency Issuer

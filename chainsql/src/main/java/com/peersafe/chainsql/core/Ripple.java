@@ -25,6 +25,8 @@ import com.peersafe.chainsql.util.Util;
  */
 public class Ripple extends Submit {
 	
+	private final static Double PRECISION = 0.0000001;
+	
 	private JSONObject mTxJson;
 
 	public Ripple(Chainsql chainsql) {
@@ -96,23 +98,23 @@ public class Ripple extends Submit {
 					else if(lFeeRate>1000000000 && 1000000000<=2000000000)
 					{
 						//
-                        BigDecimal baseComputeNum = new BigDecimal(1000000000);
-                        BigDecimal rate = new BigDecimal(lFeeRate).subtract(baseComputeNum);
-                        rate = rate.divide(baseComputeNum);
-                        //
-		                BigDecimal fee = value.multiply(rate);
-		                if (!feeMin.isEmpty()) {
-		                    if (new BigDecimal(feeMin).compareTo(fee) > 0) {
-		                    	fee = new BigDecimal(feeMin);
-		                    }
-		                }
-		                if (!feeMax.isEmpty()) {
-		                    if (fee.compareTo(new BigDecimal(feeMax)) > 0) {
-		                    	fee = new BigDecimal(feeMax);
-		                    }
-		                }
-		                //
-		                value = value.add(fee);
+						BigDecimal baseComputeNum = new BigDecimal(1000000000);
+						BigDecimal rate = new BigDecimal(lFeeRate).subtract(baseComputeNum);
+						rate = rate.divide(baseComputeNum);
+						//
+						BigDecimal fee = value.multiply(rate);
+						if (!feeMin.isEmpty()) {
+							if (new BigDecimal(feeMin).compareTo(fee) > 0) {
+								fee = new BigDecimal(feeMin);
+							}
+						}
+						if (!feeMax.isEmpty()) {
+							if (fee.compareTo(new BigDecimal(feeMax)) > 0) {
+								fee = new BigDecimal(feeMax);
+							}
+						}
+						//
+						value = value.add(fee);
 					}
 					else
 					{
@@ -336,14 +338,14 @@ public class Ripple extends Submit {
 			//
 			if(feeMin == feeMax && feeMin>0)
 			{
-				if(rate != 1.0 && rate != 0)
+				if(rate>PRECISION && rate-1.0 > PRECISION)
 				{
 					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
 					return null;
 				}
 			}
 			if(feeMin < feeMax) {
-				if(rate == 1.0 || rate == 0)
+				if(rate<PRECISION || rate-1.0 < PRECISION)
 				{
 					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
 					return null;

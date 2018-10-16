@@ -29,8 +29,10 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.K256KeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
@@ -1200,5 +1202,16 @@ public class Chainsql extends Submit {
 	public String decrypt(String cipher,String secret) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
 		return Ecies.decryptText(cipherBytes, secret);
+	}
+	
+	public static byte[] sign(byte[] message,String secret) {
+		IKeyPair keyPair = Seed.getKeyPair(secret);
+		return keyPair.signMessage(message);
+	}
+	
+	public static boolean verify(byte[] message,byte[] signature,String publicKey) {
+        byte[] pubBytes = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+        K256KeyPair keyPair = new K256KeyPair(null,Utils.uBigInt(pubBytes));
+        return keyPair.verifySignature(message, signature);
 	}
 }

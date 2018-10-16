@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.core.Chainsql;
+import com.peersafe.chainsql.util.Util;
 
 public class TestSign {
 	public static final Chainsql c = Chainsql.c;
@@ -15,6 +16,15 @@ public class TestSign {
 		testSignForTrustSet();
 		testSignSignerListSet();
 		testSignPathset();
+		
+		String hello = "helloworld";
+		byte[] signature = Chainsql.sign(hello.getBytes(), "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
+		if(Chainsql.verify(hello.getBytes(), signature, "cBQG8RQArjx1eTKFEAQXz2gS4utaDiEC9wmi7pfUPTi27VCchwgw"))
+		{
+			System.out.println("verify success");
+		}else {
+			System.out.println("verify failed");
+		}
 	}
 	
 	private static void testSignPayment(){

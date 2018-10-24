@@ -1532,6 +1532,43 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     
     /**
+     * contractCall asynchronously
+     * @param obj call parameters
+     * @param cb Callback.
+     */
+    public void contractCall(final JSONObject obj,final Callback<JSONObject> cb) {
+	    makeManagedRequest(Command.contract_call, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	Iterator<String> it = obj.keys();
+            	while(it.hasNext()) {
+            		String key = (String) it.next();  
+                    String value = obj.getString(key);  
+                    request.json(key,value);
+            	}
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+            	if(response.result != null)
+            		return response.result;
+            	else
+            		return response.message;
+            }
+        });
+    }
+    
+    /**
      * getTransaction synchronously
      * @param hash
      * @return

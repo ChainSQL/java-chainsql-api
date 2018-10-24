@@ -245,7 +245,9 @@ public class SolidityFunctionWrapper extends Generator {
         for (AbiDefinition functionDefinition : functionDefinitions) {
             if (functionDefinition.getType().equals("function")) {
                 methodSpecs.add(buildFunction(functionDefinition));
-
+                if(functionDefinition.isConstant()) {
+                	methodSpecs.add(buildConstantFunctionAsync(functionDefinition));
+                }
             } else if (functionDefinition.getType().equals("event")) {
                 methodSpecs.addAll(buildEventFunctions(functionDefinition, classBuilder));
 
@@ -681,6 +683,23 @@ public class SolidityFunctionWrapper extends Generator {
 
         return methodBuilder.build();
     }
+    
+    private MethodSpec buildConstantFunctionAsync(
+            AbiDefinition functionDefinition) throws ClassNotFoundException{
+    	String functionName = functionDefinition.getName();
+
+        MethodSpec.Builder methodBuilder =
+                MethodSpec.methodBuilder(functionName)
+                        .addModifiers(Modifier.PUBLIC);
+
+        String inputParams = addParameters(methodBuilder, functionDefinition.getInputs());
+        List<TypeName> outputParameterTypes = buildTypeNames(functionDefinition.getOutputs());
+        
+        buildConstantFunctionAsync(
+        		functionDefinition, methodBuilder, outputParameterTypes, inputParams);
+        
+        return methodBuilder.build();
+    }
 
     private void buildConstantFunction(
             AbiDefinition functionDefinition,
@@ -782,6 +801,130 @@ public class SolidityFunctionWrapper extends Generator {
         }
     }
 
+    private void buildConstantFunctionAsync(
+            AbiDefinition functionDefinition,
+            MethodSpec.Builder methodBuilder,
+            List<TypeName> outputParameterTypes,
+            String inputParams) throws ClassNotFoundException {
+
+        String functionName = functionDefinition.getName();
+        
+        methodBuilder.returns(TypeName.VOID);
+        methodBuilder.addException(ContractCallException.class);
+        if (outputParameterTypes.isEmpty()) {
+            throw new RuntimeException("Only transactional methods should have void return types");
+        } else if (outputParameterTypes.size() == 1) {
+
+            TypeName typeName0 = outputParameterTypes.get(0);
+            TypeName nativeReturnTypeName;
+            if (useNativeJavaTypes) {
+                nativeReturnTypeName = getWrapperRawType(typeName0);
+            } else {
+                nativeReturnTypeName = getWrapperType(typeName0);
+            }
+            
+        	ParameterizedTypeName typeName = ParameterizedTypeName.get(
+                    ClassName.get(Callback.class), nativeReturnTypeName);
+        	methodBuilder.addParameter(typeName,CALLBACK);
+        	
+            methodBuilder.addStatement("final $T function = "
+                            + "new $T($N, \n$T.<$T>asList($L), "
+                            + "\n$T.<$T<?>>asList(new $T<$T>() {}))",
+                    Function.class, Function.class, funcNameToConst(functionName),
+                    Arrays.class, Type.class, inputParams,
+                    Arrays.class, TypeReference.class,
+                    TypeReference.class, typeName0);
+
+            if (useNativeJavaTypes) {
+            	TypeSpec callback = null;
+                if (nativeReturnTypeName.equals(ClassName.get(List.class))) {
+                    // We return list. So all the list elements should
+                    // also be converted to native types
+                	TypeName listType = ParameterizedTypeName.get(List.class, Type.class);
+                    callback = TypeSpec.anonymousClassBuilder("")
+            			    .addSuperinterface(ParameterizedTypeName.get(Callback.class, nativeReturnTypeName.getClass()))
+            			    .addMethod(MethodSpec.methodBuilder("called")
+            				        .addAnnotation(Override.class)
+            				        .addModifiers(Modifier.PUBLIC)
+            				        .addParameter(nativeReturnTypeName, "args")
+            		                .addStatement("cb.called($T(args))",listType)
+            				        .build())
+            				    .build();
+                    
+                } else {
+                	String simpleName = ((ClassName) typeName0).simpleName();
+                    if (simpleName.equals(Address.class.getSimpleName())) {
+//                    	methodBuilder.addStatement(
+//                    					"String address = executeRemoteCallSingleValueReturn(function, $T.class)",
+//                    						nativeReturnTypeName)
+//                    				.addStatement("return $T.fromString(address.substring(2)).toString()",TypeName.get(AccountID.class));
+                    	callback = TypeSpec.anonymousClassBuilder("")
+                			    .addSuperinterface(ParameterizedTypeName.get(Callback.class, String.class))
+                			    .addMethod(MethodSpec.methodBuilder("called")
+                				        .addAnnotation(Override.class)
+                				        .addModifiers(Modifier.PUBLIC)
+                				        .addParameter(nativeReturnTypeName, "args")
+                		                .addStatement("cb.called($T.fromString(args.substring(2)).toString())",TypeName.get(AccountID.class))
+                				        .build())
+                				    .build();
+
+                    }else {
+//                        methodBuilder.addStatement(
+//                                "return executeRemoteCallSingleValueReturn(function, $T.class)",
+//                                nativeReturnTypeName);
+                    	callback = TypeSpec.anonymousClassBuilder("")
+                			    .addSuperinterface(ParameterizedTypeName.get(ClassName.get(Callback.class), nativeReturnTypeName))
+                			    .addMethod(MethodSpec.methodBuilder("called")
+                				        .addAnnotation(Override.class)
+                				        .addModifiers(Modifier.PUBLIC)
+                				        .addParameter(nativeReturnTypeName, "args")
+                		                .addStatement("cb.called(args)")
+                				        .build())
+                				    .build();
+                    }
+                }
+                methodBuilder.addStatement("executeCallSingleValueReturn(function, $T.class,$L)",nativeReturnTypeName,callback);
+            } else {
+//                methodBuilder.addStatement("return executeRemoteCallSingleValueReturn(function)");
+            	TypeSpec callback = TypeSpec.anonymousClassBuilder("")
+        			    .addSuperinterface(ParameterizedTypeName.get(Callback.class, nativeReturnTypeName.getClass()))
+        			    .addMethod(MethodSpec.methodBuilder("called")
+        				        .addAnnotation(Override.class)
+        				        .addModifiers(Modifier.PUBLIC)
+        				        .addParameter(nativeReturnTypeName, "args")
+        		                .addStatement("cb.called(args)")
+        				        .build())
+        				    .build();
+            	methodBuilder.addStatement("executeCallSingleValueReturn(function, $T.class,$L)",nativeReturnTypeName,callback);
+            }
+        } else {
+        	ParameterizedTypeName typeName = ParameterizedTypeName.get(
+                    ClassName.get(
+                            "org.web3j.tuples.generated",
+                            "Tuple" + outputParameterTypes.size()),
+                    outputParameterTypes.toArray(
+                            new TypeName[outputParameterTypes.size()]));
+        	
+            List<TypeName> returnTypes = buildReturnTypes(outputParameterTypes);
+
+            ParameterizedTypeName parameterizedTupleType = ParameterizedTypeName.get(
+                    ClassName.get(
+                            "org.web3j.tuples.generated",
+                            "Tuple" + returnTypes.size()),
+                    returnTypes.toArray(
+                            new TypeName[returnTypes.size()]));
+
+//            methodBuilder.returns(parameterizedTupleType);
+
+            buildVariableLengthReturnFunctionConstructor(
+                    methodBuilder, functionName, inputParams, outputParameterTypes);
+            
+            methodBuilder.addParameter(ParameterizedTypeName.get(
+                    ClassName.get(Callback.class), parameterizedTupleType),CALLBACK);
+
+            buildTupleResultContainerAsync(methodBuilder, parameterizedTupleType, outputParameterTypes);
+        }
+    }
 //    private static ParameterizedTypeName buildRemoteCall(TypeName typeName) {
 //        return ParameterizedTypeName.get(
 //                ClassName.get(RemoteCall.class), typeName);
@@ -1226,23 +1369,80 @@ public class SolidityFunctionWrapper extends Generator {
         }
         tupleConstructor.add("$<$<");
 
-//        TypeSpec callableType = TypeSpec.anonymousClassBuilder("")
-//                .addSuperinterface(ParameterizedTypeName.get(
-//                        ClassName.get(Callable.class), tupleType))
-//                .addMethod(MethodSpec.methodBuilder("call")
-//                        .addAnnotation(Override.class)
-//                        .addModifiers(Modifier.PUBLIC)
-//                        .addException(Exception.class)
-//                        .returns(tupleType)
-//                        .addCode(tupleConstructor.build())
-//                        .build())
-//                .build();
-
-//        methodBuilder.addStatement(
-//                "return new $T(\n$L)", buildRemoteCall(tupleType), callableType);
         methodBuilder.addCode(tupleConstructor.build());
     }
 
+    private void buildTupleResultContainerAsync(
+            MethodSpec.Builder methodBuilder, ParameterizedTypeName tupleType,
+            List<TypeName> outputParameterTypes)
+            throws ClassNotFoundException {
+
+        List<TypeName> typeArguments = tupleType.typeArguments;
+    	
+        CodeBlock.Builder tupleConstructor = CodeBlock.builder();
+        tupleConstructor.add(
+                "$T ret = new $T(", tupleType,tupleType)
+                .add("$>$>");
+
+        String resultStringSimple = "\n($T) results.get($L)";
+        if (useNativeJavaTypes) {
+            resultStringSimple += ".getValue()";
+        }
+
+        String resultStringNativeList =
+                "\nconvertToNative(($T) results.get($L).getValue())";
+
+        int size = typeArguments.size();
+        ClassName classList = ClassName.get(List.class);
+
+        for (int i = 0; i < size; i++) {
+            TypeName param = outputParameterTypes.get(i);
+            TypeName convertTo = typeArguments.get(i);
+
+            String resultString = resultStringSimple;
+            boolean bAddress = ((ClassName) param).simpleName().equals(Address.class.getSimpleName());
+            if (bAddress) {
+            	resultString = "$T.fromString((" + resultStringSimple + ").substring(2)).toString()";
+            }
+
+            // If we use native java types we need to convert
+            // elements of arrays to native java types too
+            if (useNativeJavaTypes && param instanceof ParameterizedTypeName) {
+                ParameterizedTypeName oldContainer = (ParameterizedTypeName)param;
+                ParameterizedTypeName newContainer = (ParameterizedTypeName)convertTo;
+                if (newContainer.rawType.compareTo(classList) == 0
+                        && newContainer.typeArguments.size() == 1) {
+                    convertTo = ParameterizedTypeName.get(classList,
+                            oldContainer.typeArguments.get(0));
+                    resultString = resultStringNativeList;
+                }
+            }
+            if(bAddress) {
+            	tupleConstructor
+                	.add(resultString, TypeName.get(AccountID.class),convertTo, i);
+            }else {
+            	tupleConstructor
+                	.add(resultString, convertTo, i);
+            }
+            
+            tupleConstructor.add(i < size - 1 ? ", " : ");\n");
+        }
+        tupleConstructor.add("$<$<");
+
+        ParameterizedTypeName listType = ParameterizedTypeName.get(List.class, Type.class);
+    	TypeSpec callback = TypeSpec.anonymousClassBuilder("")
+			    .addSuperinterface(ParameterizedTypeName.get(ClassName.get(Callback.class), listType))
+			    .addMethod(MethodSpec.methodBuilder("called")
+				        .addAnnotation(Override.class)
+				        .addModifiers(Modifier.PUBLIC)
+				        .addParameter(listType, "results")
+				        .addCode(tupleConstructor.build())
+		                .addStatement("cb.called(ret)")
+				        .build())
+				    .build();
+    	methodBuilder.addStatement("executeCallMultipleValueReturn(function, $L)",callback);
+    }
+    
     private static CodeBlock buildVariableLengthEventInitializer(
             String eventName,
             List<NamedTypeName> indexedParameterTypes,

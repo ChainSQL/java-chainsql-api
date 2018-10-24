@@ -44,23 +44,13 @@ public class Config {
         return b58;
     }
 
-    /**
-     * TODO, this is gross
-     */
-    static public boolean bouncyInitiated = false;
-    static public void initBouncy() {
-        if (!bouncyInitiated) {
-            Security.addProvider(new BouncyCastleProvider());
-            bouncyInitiated = true;
-        }
-    }
     /***
      * We set up all the defaults here
      */
     static {
         setAlphabet(DEFAULT_ALPHABET);
         setFeeCushion(1.1);
-        initBouncy();
+//        initBouncy();
     }
 
     /**

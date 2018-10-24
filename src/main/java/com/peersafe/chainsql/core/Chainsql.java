@@ -79,7 +79,11 @@ public class Chainsql extends Submit {
 	public void use(String address) {
 		this.connection.scope = address;
 	}
-
+	
+	static {
+		Security.addProvider(new BouncyCastleProvider());	
+	}
+	
 	public static final Chainsql c = new Chainsql();
 
 	/**
@@ -1012,13 +1016,11 @@ public class Chainsql extends Submit {
 	 * 		   publicKey:Account publickey. 
 	 */
 	public JSONObject generateAddress(){
-		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.randomSeed();		
 		return generateAddress(seed);
 	}
 	
 	public JSONObject generateAddress(String secret){
-		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.fromBase58(secret);
 		
 		return generateAddress(seed);
@@ -1204,13 +1206,19 @@ public class Chainsql extends Submit {
 		return Ecies.decryptText(cipherBytes, secret);
 	}
 	
-	public static byte[] sign(byte[] message,String secret) {
+	public byte[] sign(byte[] message,String secret) {
 		IKeyPair keyPair = Seed.getKeyPair(secret);
 		return keyPair.signMessage(message);
 	}
 	
-	public static boolean verify(byte[] message,byte[] signature,String publicKey) {
-        byte[] pubBytes = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+	public boolean verify(byte[] message,byte[] signature,String publicKey) {
+		byte[] pubBytes = null;
+		if(publicKey.length() == 66) {
+			pubBytes = Util.hexToBytes(publicKey);
+		}else {
+			pubBytes = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		}
+        
         K256KeyPair keyPair = new K256KeyPair(null,Utils.uBigInt(pubBytes));
         return keyPair.verifySignature(message, signature);
 	}

@@ -110,12 +110,7 @@ public abstract class Contract extends Submit{
      */
     private List<Type> executeCall(
             Function function) throws ContractCallException {
-        String encodedFunction = FunctionEncoder.encode(function);
-        String data = encodedFunction.substring(2, encodedFunction.length());
-        JSONObject objTx = new JSONObject();
-        objTx.put("account", chainsql.connection.address);
-        objTx.put("contract_data", data);
-        objTx.put("contract_address", contractAddress);
+    	JSONObject objTx = prepareCallParam(function);
         
         JSONObject ret = this.chainsql.connection.client.contractCall(objTx);
         if(ret.has("error_message")){
@@ -126,7 +121,34 @@ public abstract class Contract extends Submit{
         }
         return FunctionReturnDecoder.decode(ret.getString("contract_call_result"), function.getOutputParameters());
     }
+    
+    private void executeCall(Function function,Callback<List<Type>> cb) throws ContractCallException{
+        JSONObject objTx = prepareCallParam(function);
+        
+        this.chainsql.connection.client.contractCall(objTx,new Callback<JSONObject>() {
 
+			@Override
+			public void called(JSONObject ret) {
+				if(ret.has("error_message")){
+		           	if(ret.has("error_code"))
+		        		throw new ContractCallException(ret.getString("error_message"),ret.getInt("error_code"));
+		        	else
+		        		throw new ContractCallException(ret.getString("error_message"));
+		        }
+				cb.called(FunctionReturnDecoder.decode(ret.getString("contract_call_result"), function.getOutputParameters()));
+			}        	
+        });
+    }
+
+    private JSONObject prepareCallParam(Function function) {
+    	String encodedFunction = FunctionEncoder.encode(function);
+        String data = encodedFunction.substring(2, encodedFunction.length());
+        JSONObject objTx = new JSONObject();
+        objTx.put("account", chainsql.connection.address);
+        objTx.put("contract_data", data);
+        objTx.put("contract_address", contractAddress);
+        return objTx;
+    }
     @SuppressWarnings("unchecked")
     protected <T extends Type> T executeCallSingleValueReturn(
             Function function) throws ContractCallException {
@@ -136,6 +158,24 @@ public abstract class Contract extends Submit{
         } else {
             return null;
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected <T extends Type> void executeCallSingleValueReturn(
+            Function function,final Callback<T> cb) throws ContractCallException {
+    	executeCall(function,new Callback<List<Type>>() {
+
+			@Override
+			public void called(List<Type> values) {
+				if (!values.isEmpty()) {
+		            cb.called((T)values.get(0));
+		        } else {
+		            cb.called(null);
+		        }
+			}
+    		
+    	});
+        
     }
 
     @SuppressWarnings("unchecked")
@@ -157,10 +197,40 @@ public abstract class Contract extends Submit{
                             + " to expected type: " + returnType.getSimpleName());
         }
     }
+    protected <T extends Type,R> void executeCallSingleValueReturn(
+            Function function, Class<R> returnType,final Callback<R> cb) throws ContractCallException {
+    	
+    	executeCallSingleValueReturn(function,new Callback<T>() {
+
+			@Override
+			public void called(T result) {
+				if (result == null) {
+		            throw new ContractCallException("Empty value (0x) returned from contract");
+		        }
+
+		        Object value = result.getValue();
+		        if (returnType.isAssignableFrom(value.getClass())) {
+		            cb.called((R) value);
+		        } else if (result.getClass().equals(Address.class) && returnType.equals(String.class)) {
+		        	cb.called((R) result.toString());  // cast isn't necessary
+		        } else {
+		            throw new ContractCallException(
+		                    "Unable to convert response: " + value
+		                            + " to expected type: " + returnType.getSimpleName());
+		        }
+			}    		
+    	});
+    }
+
 
     protected List<Type> executeCallMultipleValueReturn(
             Function function) throws ContractCallException {
         return executeCall(function);
+    }
+    
+    protected void executeCallMultipleValueReturn(Function function,Callback<List<Type>> cb)
+    		throws ContractCallException {
+        executeCall(function,cb);
     }
 
     protected Contract executeTransaction(
@@ -230,10 +300,19 @@ public abstract class Contract extends Submit{
         return executeCallSingleValueReturn(function, returnType);
     }
 
+    protected <T> void executeRemoteCallSingleValueReturn(
+            Function function,Class<T> returnType,final Callback<T> cb) throws ContractCallException {
+        executeCallSingleValueReturn(function,returnType, cb);
+    }
+    
     protected List<Type> executeRemoteCallMultipleValueReturn(Function function) throws ContractCallException {
         return executeCallMultipleValueReturn(function);
     }
-
+    
+    protected void executeRemoteCallMultipleValueReturn(Function function,Callback<List<Type>> cb) throws ContractCallException {
+        executeCallMultipleValueReturn(function,cb);
+    }
+    
     protected Contract executeRemoteCallTransaction(Function function) {
         return executeTransaction(function);
     }

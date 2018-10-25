@@ -202,7 +202,8 @@ public abstract class Submit {
         }        
         
         if(sync){
-        	if(submit_state == SubmitState.submit_error){
+        	if(submit_state == SubmitState.submit_error || 
+        		(submit_state == SubmitState.send_success && condition == SyncCond.send_success)){
         		return submitRes;
         	}else{
         		count = sync_maxtime / wait_milli;
@@ -253,7 +254,7 @@ public abstract class Submit {
 	
 	private void onSubmitSuccess(Response res){
         JSONObject obj = new JSONObject();
-        obj.put("status", "success");
+        obj.put("status", "send_success");
         JSONObject tx_json = (JSONObject) res.result.get("tx_json");
         obj.put("tx_hash", tx_json.get("hash").toString());
         

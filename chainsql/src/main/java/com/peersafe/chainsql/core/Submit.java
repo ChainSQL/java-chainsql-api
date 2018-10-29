@@ -21,8 +21,8 @@ import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
+import com.peersafe.chainsql.manager.EventManager;
 import com.peersafe.chainsql.net.Connection;
-import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
@@ -229,6 +229,8 @@ public abstract class Submit {
 	    			if(!data.getString("status").equals("success"))
 	    				cb.called((JSONObject)data);
 	    		}else if(sync){
+	    			if(!data.has("transaction"))
+	    				return;
 	    			JSONObject obj = (JSONObject)data;
 	    			JSONObject res = new JSONObject();
 	    			JSONObject tx = (JSONObject) obj.get("transaction");

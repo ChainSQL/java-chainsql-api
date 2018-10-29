@@ -31,7 +31,7 @@ import com.peersafe.chainsql.contract.exception.ContractCallException;
 import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit;
-import com.peersafe.chainsql.util.EventManager;
+import com.peersafe.chainsql.manager.EventManager;
 import com.peersafe.chainsql.util.Util;
 
 /**
@@ -52,7 +52,7 @@ public abstract class Contract extends Submit{
 		}
 	};
     //https://www.reddit.com/r/ethereum/comments/5g8ia6/attention_miners_we_recommend_raising_gas_limit/
-    public static final BigInteger GAS_LIMIT = BigInteger.valueOf(30_000_000);
+    public static final BigInteger GAS_LIMIT = BigInteger.valueOf(3_000_000);
     public static final BigInteger INITIAL_DROPS = BigInteger.valueOf(5_000_000);
 
     public static final String FUNC_DEPLOY = "deploy";

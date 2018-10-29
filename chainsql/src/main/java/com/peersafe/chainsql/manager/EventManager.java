@@ -1,4 +1,4 @@
-package com.peersafe.chainsql.util;
+package com.peersafe.chainsql.manager;
 
 import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
@@ -19,6 +19,7 @@ import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
+import com.peersafe.chainsql.util.Util;
 
 public class EventManager {
 	public Connection connection;

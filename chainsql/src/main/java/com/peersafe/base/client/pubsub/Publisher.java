@@ -3,10 +3,14 @@ package com.peersafe.base.client.pubsub;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.peersafe.base.client.responses.Response;
+import com.peersafe.chainsql.manager.CallbackManager;
 
 public class Publisher<CompatHack extends Publisher.Callback> {
     static final Logger logger = Logger.getLogger(Publisher.class.getName());
@@ -119,9 +123,16 @@ public class Publisher<CompatHack extends Publisher.Callback> {
      */
     @SuppressWarnings("unchecked")
     public static void execute(Object args, ContextedCallback pair) {
-        pair.callback.called(args);
+//    	pair.callback.called(args);
+    	CallbackManager.instance().runRunnable(new Runnable() {
+            @Override
+            public void run() {
+            	pair.callback.called(args);
+            }
+        });
     }
 
+ 
     private static class ContextedCallback {
         CallbackContext context;
         Callback callback;

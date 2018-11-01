@@ -15,7 +15,6 @@ public class CallbackManager {
 	}
 	
     protected ExecutorService service = Executors.newCachedThreadPool();
-    protected Thread publishThread;
     public CallbackManager() {
     }
     

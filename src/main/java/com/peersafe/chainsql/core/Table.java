@@ -22,6 +22,7 @@ import com.peersafe.chainsql.util.Validate;
 public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
+	private String field = "";
 	private String exec;
 
 	/**
@@ -54,6 +55,25 @@ public class Table extends Submit{
 		
 	}
 	
+	/**
+	 * Insert data to a table.
+	 * @param orgs Insert parameters.
+	 * @param sAutoFillField set auto fill Field such as txHash
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table insert(List<String> orgs, String sAutoFillField){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
+		}
+		if(!sAutoFillField.isEmpty())
+			this.field = sAutoFillField;
+	    this.exec = "r_insert";
+	    return dealWithTransaction();
+	}
+
 	/**
 	 * Update table data.
 	 * @param orgs Update parameters.
@@ -203,6 +223,8 @@ public class Table extends Submit{
 		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		json.put("StrictMode", this.strictMode);
+		if(!this.field.isEmpty())
+			json.put("AutoFillField", Util.toHexString(this.field));
 		return json;
 	}
 	

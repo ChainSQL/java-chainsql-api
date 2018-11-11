@@ -39,7 +39,7 @@ public class TestContractTableTxs {
 	public static String sUserSec = sSec[2];
 
 	public static String grantAddr = "zzzzzzzzzzzzzzzzzzzzBZbvji";
-	public static String flag = "{ insert: true, update: true }";
+	public static String flag = "{\"insert\":true,\"update\":true,\"delete\":true,\"select\":true}";
 
 	public static String sTableName = "table";
 	public static String sTableNameNew = "table_new";
@@ -80,9 +80,14 @@ public class TestContractTableTxs {
 		c.as(rootAddress, rootSecret);
 		//
 		/**************************************/
-		// userOperation = user;
-		String contractAddr = "zp2cD3rWCZftTPfXX2Ya822LgYsLLL4nSP";
-		tagStep nStep = tagStep.table_drop;
+
+		/*
+		sUserOper = sUser;
+		sUserOperSec = sUserSec;
+		// */
+		String contractAddr = "zc6kNuC9HaN14ic3csSySmzkkFLuCrHLLZ";
+		tagStep nStep = tagStep.active;
+		sTableName = sTableNameNew;
 		//
 		if (nStep != tagStep.active && nStep != tagStep.deployContract) {
 			myContract = TableTxsContract.load(c, contractAddr, Contract.GAS_LIMIT);
@@ -126,7 +131,7 @@ public class TestContractTableTxs {
 		c.as(rootAddress, rootSecret);
 		System.out.print("activate >>>>>>>>>>>>>>>\n");
 		JSONObject jsonObj = c.pay(sOwner, "20000").submit(SyncCond.validate_success);
-		System.out.print("     gateWay:" + jsonObj + "\n");
+		System.out.print("     sOwner:" + jsonObj + "\n");
 		jsonObj = c.pay(sUser, "20000").submit(SyncCond.validate_success);
 		System.out.print("     user:" + jsonObj + "\n");
 		System.out.print("activate <<<<<<<<<<<<<<<\n");
@@ -187,9 +192,15 @@ public class TestContractTableTxs {
 	}
 	public static void table_insert() {
 		c.as(sUserOper, sUserOperSec);
-		c.use(sOwner);
 		try {
-			myContract.insert(sTableName, rawInsert/*, "txHash"*/).send(); //no support autoFillField
+			if(sUserOper != sOwner)
+			{
+				myContract.insert(sOwner, sTableName, rawInsert/*, "txHash"*/).send(); //no support autoFillField
+			}
+			else
+			{
+				myContract.insert(sTableName, rawInsert/*, "txHash"*/).send(); //no support autoFillField
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -198,9 +209,15 @@ public class TestContractTableTxs {
 		System.out.print("    no support in this version");
 		/*
 		c.as(sUserOper, sUserOperSec);
-		c.use(sOwner);
 		try {
-			myContract.insert(sTableName, rawInsert).send();
+			if(sUserOper != sOwner)
+			{
+				myContract.insert(sOwner, sTableName, rawInsert).send(); //no support autoFillField
+			}
+			else
+			{
+				myContract.insert(sTableName, rawInsert).send(); //no support autoFillField
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -208,9 +225,15 @@ public class TestContractTableTxs {
 	}
 	public static void table_delete() {
 		c.as(sUserOper, sUserOperSec);
-		c.use(sOwner);
 		try {
-			myContract.deletex(sTableName, rawDelete).send();
+			if(sUserOper != sOwner)
+			{
+				myContract.deletex(sOwner, sTableName, rawDelete).send();
+			}
+			else
+			{
+				myContract.deletex(sTableName, rawDelete).send();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -233,10 +256,16 @@ public class TestContractTableTxs {
 					);
 			int length = arrayRawGet.size();
 			if (i < length) {
-				System.out.print("update " + i + "\n");
 				rawUpdate = arrayRawUpdate.get(i);
 				rawGet = arrayRawGet.get(i);
-				myContract.update(sTableName, rawUpdate, rawGet).send();
+				if(sUserOper != sOwner)
+				{
+					System.out.print("update " + i + " Res: " + myContract.update(sOwner, sTableName, rawUpdate, rawGet).send());
+				}
+				else
+				{
+					System.out.print("update " + i + " Res: " + myContract.update(sTableName, rawUpdate, rawGet).send());
+				}
 				tableUpdate(i+1);
 			}
 		} catch (Exception e) {
@@ -245,14 +274,20 @@ public class TestContractTableTxs {
 	}
 	public static void table_update() {
 		c.as(sUserOper, sUserOperSec);
-		c.use(sOwner);
 		tableUpdate(0);
 	}
 	public static void table_get() {
 		c.as(sUserOper, sUserOperSec);
-		c.use(sOwner);
 		try {
-			BigInteger handle = myContract.get(sTableName, "").send();
+			BigInteger handle = BigInteger.valueOf(0);
+			if(sUserOper != sOwner)
+			{
+				handle = myContract.get(sOwner, sTableName, "").send();
+			}
+			else
+			{
+				handle = myContract.get(sTableName, "").send();
+			}
 			if (handle.intValue() != 0) {
 				BigInteger rowSize = myContract.getRowSize(handle).send();
 				BigInteger colSize = myContract.getColSize(handle).send();

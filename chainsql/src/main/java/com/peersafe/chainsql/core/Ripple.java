@@ -91,38 +91,40 @@ public class Ripple extends Submit {
 						lFeeRate = accountData.getLong("TransferRate");
 					}
 					//
-					if(feeMin == feeMax && (!feeMin.isEmpty()))
+					if((null!=feeMin) || (null!=feeMax) || lFeeRate != 0)
 					{
-						value = value.add(new BigDecimal(feeMin));
-					}
-					else if(lFeeRate>1000000000 && 1000000000<=2000000000)
-					{
-						//
-						BigDecimal baseComputeNum = new BigDecimal(1000000000);
-						BigDecimal rate = new BigDecimal(lFeeRate).subtract(baseComputeNum);
-						rate = rate.divide(baseComputeNum);
-						//
-						BigDecimal fee = value.multiply(rate);
-						if (!feeMin.isEmpty()) {
-							if (new BigDecimal(feeMin).compareTo(fee) > 0) {
-								fee = new BigDecimal(feeMin);
-							}
+						if(feeMin.equals(feeMax) && (!feeMin.isEmpty()))
+						{
+							value = value.add(new BigDecimal(feeMin));
 						}
-						if (!feeMax.isEmpty()) {
-							if (fee.compareTo(new BigDecimal(feeMax)) > 0) {
-								fee = new BigDecimal(feeMax);
+						else if(lFeeRate>1000000000 && lFeeRate<=2000000000)
+						{
+							BigDecimal baseComputeNum = new BigDecimal(1000000000);
+							BigDecimal rate = new BigDecimal(lFeeRate).subtract(baseComputeNum);
+							rate = rate.divide(baseComputeNum);
+							//
+							BigDecimal fee = value.multiply(rate);
+							if ((null!=feeMin) && (!feeMin.isEmpty())) {
+								if (new BigDecimal(feeMin).compareTo(fee) > 0) {
+									fee = new BigDecimal(feeMin);
+								}
 							}
+							if ((null!=feeMax) && (!feeMax.isEmpty())) {
+								if (fee.compareTo(new BigDecimal(feeMax)) > 0) {
+									fee = new BigDecimal(feeMax);
+								}
+							}
+							//
+							value = value.add(fee);
 						}
-						//
-						value = value.add(fee);
-					}
-					else
-					{
-						try {
-							throw new Exception("Exception:transfer fee not valid!");
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						else
+						{
+							try {
+								throw new Exception("Exception:transfer fee not valid!");
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 				}

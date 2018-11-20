@@ -22,7 +22,7 @@ import com.peersafe.chainsql.util.Validate;
 public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
-	private String field = "";
+	private String autoFillField = "";
 	private String exec;
 
 	/**
@@ -69,7 +69,7 @@ public class Table extends Submit{
 			}
 		}
 		if(!sAutoFillField.isEmpty())
-			this.field = sAutoFillField;
+			this.autoFillField = sAutoFillField;
 	    this.exec = "r_insert";
 	    return dealWithTransaction();
 	}
@@ -223,8 +223,8 @@ public class Table extends Submit{
 		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		json.put("StrictMode", this.strictMode);
-		if(!this.field.isEmpty())
-			json.put("AutoFillField", Util.toHexString(this.field));
+		if(!this.autoFillField.isEmpty())
+			json.put("AutoFillField", Util.toHexString(this.autoFillField));
 		return json;
 	}
 	

@@ -139,10 +139,11 @@ public abstract class Submit {
 	public boolean isCrossChainArgsSet(){
 		return this.crossChainArgs != null;
 	}
-	
-	protected JSONObject prepareSigned() {
-		return null;
-	}
+
+	abstract protected JSONObject prepareSigned();
+//	protected JSONObject prepareSigned() {
+//		return null;
+//	}
 
 	private JSONObject getError(String err){
 		JSONObject obj = new JSONObject();

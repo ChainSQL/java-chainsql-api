@@ -38,7 +38,7 @@ public class Ripple extends Submit {
 	}
 	
 	@Override
-	JSONObject prepareSigned() {
+	protected JSONObject prepareSigned() {
 		try {
 			if(mTxJson.toString().equals("{}")) {
 				return Util.errorObject("Exception occured");

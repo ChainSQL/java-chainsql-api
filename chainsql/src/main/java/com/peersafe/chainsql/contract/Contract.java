@@ -272,8 +272,9 @@ public abstract class Contract extends Submit{
         
         return this;
     }
-
-	protected JSONObject prepareSigned() {
+    @Override
+	protected
+	JSONObject prepareSigned() {
 		try {
 			
 			if(mTxJson.toString().equals("{}")) {

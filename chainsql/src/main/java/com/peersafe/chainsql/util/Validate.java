@@ -121,6 +121,10 @@ public class Validate {
             }else{
             	throw new Exception("invalid type "+type);
             }
+            
+            if(json.has("AI")) {
+            	throw new Exception("'AI' is deprecated, auto increment not supported now!");
+            }
 //            try {
 //            	int PK =(int) json.getInt("PK");
 //            	if(PK == 1){

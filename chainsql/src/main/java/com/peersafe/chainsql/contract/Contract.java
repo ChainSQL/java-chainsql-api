@@ -350,6 +350,8 @@ public abstract class Contract extends Submit{
                 		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));
                 	else
                 		throw new TransactionException(obj.getString("error_message"));
+                }else {
+                	throw new TransactionException("deploy failed,unknown error");
                 }
             }
      
@@ -404,7 +406,7 @@ public abstract class Contract extends Submit{
             constructor.setAccessible(true);
 
             // we want to use null here to ensure that "to" parameter on message is not populated
-            T contract = constructor.newInstance(chainsql, binary, gasLimit);
+            T contract = constructor.newInstance(chainsql, "", gasLimit);
 
             return create(contract, binary, encodedConstructor, value,null);
         } catch (TransactionException e) {

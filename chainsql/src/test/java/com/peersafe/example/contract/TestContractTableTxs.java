@@ -7,7 +7,7 @@ import java.util.List;
 import org.json.JSONObject;
 
 import com.peersafe.chainsql.contract.Contract;
-import com.peersafe.chainsql.contract.RemoteCall;
+import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
@@ -75,7 +75,7 @@ public class TestContractTableTxs {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://127.0.0.1:6006");
+		c.connect("ws://127.0.0.1:6008");
 		//
 		c.as(rootAddress, rootSecret);
 		//
@@ -85,8 +85,8 @@ public class TestContractTableTxs {
 		sUserOper = sUser;
 		sUserOperSec = sUserSec;
 		// */
-		String contractAddr = "zc6kNuC9HaN14ic3csSySmzkkFLuCrHLLZ";
-		tagStep nStep = tagStep.active;
+		String contractAddr = "zp2cD3rWCZftTPfXX2Ya822LgYsLLL4nSP";
+		tagStep nStep = tagStep.table_create;
 		sTableName = sTableNameNew;
 		//
 		if (nStep != tagStep.active && nStep != tagStep.deployContract) {
@@ -114,15 +114,9 @@ public class TestContractTableTxs {
 		System.exit(1);
 	}
 
-	public static void deployContract() {
+	public static void deployContract() throws TransactionException {
 		c.as(sOwner, sOwnerSec);
-		RemoteCall<TableTxsContract> remoteCallContract = TableTxsContract.deploy(c, Contract.GAS_LIMIT);
-		TableTxsContract contract = null;
-		try {
-			contract = remoteCallContract.send();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		TableTxsContract contract = TableTxsContract.deploy(c, Contract.GAS_LIMIT);
 		String contractAddr = contract.getContractAddress();
 		System.out.print("contract address:" + contractAddr+"\n");
 	}
@@ -130,9 +124,9 @@ public class TestContractTableTxs {
 	public static void active() {
 		c.as(rootAddress, rootSecret);
 		System.out.print("activate >>>>>>>>>>>>>>>\n");
-		JSONObject jsonObj = c.pay(sOwner, "20000").submit(SyncCond.validate_success);
+		JSONObject jsonObj = c.pay(sOwner, "2000").submit(SyncCond.validate_success);
 		System.out.print("     sOwner:" + jsonObj + "\n");
-		jsonObj = c.pay(sUser, "20000").submit(SyncCond.validate_success);
+		jsonObj = c.pay(sUser, "2000").submit(SyncCond.validate_success);
 		System.out.print("     user:" + jsonObj + "\n");
 		System.out.print("activate <<<<<<<<<<<<<<<\n");
 	}
@@ -141,7 +135,8 @@ public class TestContractTableTxs {
 		c.as(sOwner, sOwnerSec);
 		//发交易调用合约
 		try {
-			myContract.create(sTableName, rawTable).send();
+			JSONObject ret = myContract.create(sTableName, rawTable).submit(SyncCond.db_success);
+			System.out.println(ret);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -160,7 +155,7 @@ public class TestContractTableTxs {
 				+ "'operationRule': rule"
 				+ "}");
 		try {
-			myContract.create(sTableName, rawTable, option).send();
+			myContract.create(sTableName, rawTable, option).submit(SyncCond.db_success);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -169,7 +164,7 @@ public class TestContractTableTxs {
 	public static void table_rename() {
 		c.as(sOwner, sOwnerSec);
 		try {
-			myContract.rename(sTableName, sTableNameNew).send();
+			myContract.rename(sTableName, sTableNameNew).submit(SyncCond.db_success);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -177,7 +172,7 @@ public class TestContractTableTxs {
 	public static void table_grant() {
 		c.as(sOwner, sOwnerSec);
 		try {
-			myContract.grant(grantAddr, sTableName, flag).send();
+			myContract.grant(grantAddr, sTableName, flag).submit(SyncCond.db_success);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -185,7 +180,7 @@ public class TestContractTableTxs {
 	public static void table_drop() {
 		c.as(sOwner, sOwnerSec);
 		try {
-			myContract.drop(sTableName).send();
+			myContract.drop(sTableName).submit(SyncCond.db_success);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -195,11 +190,11 @@ public class TestContractTableTxs {
 		try {
 			if(sUserOper != sOwner)
 			{
-				myContract.insert(sOwner, sTableName, rawInsert/*, "txHash"*/).send(); //no support autoFillField
+				myContract.insert(sOwner, sTableName, rawInsert/*, "txHash"*/).submit(SyncCond.db_success); //no support autoFillField
 			}
 			else
 			{
-				myContract.insert(sTableName, rawInsert/*, "txHash"*/).send(); //no support autoFillField
+				myContract.insert(sTableName, rawInsert/*, "txHash"*/).submit(SyncCond.db_success); //no support autoFillField
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -212,11 +207,11 @@ public class TestContractTableTxs {
 		try {
 			if(sUserOper != sOwner)
 			{
-				myContract.insert(sOwner, sTableName, rawInsert).send(); //no support autoFillField
+				myContract.insert(sOwner, sTableName, rawInsert).submit(SyncCond.db_success); //no support autoFillField
 			}
 			else
 			{
-				myContract.insert(sTableName, rawInsert).send(); //no support autoFillField
+				myContract.insert(sTableName, rawInsert).submit(SyncCond.db_success); //no support autoFillField
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -228,11 +223,11 @@ public class TestContractTableTxs {
 		try {
 			if(sUserOper != sOwner)
 			{
-				myContract.deletex(sOwner, sTableName, rawDelete).send();
+				myContract.deletex(sOwner, sTableName, rawDelete).submit(SyncCond.db_success);
 			}
 			else
 			{
-				myContract.deletex(sTableName, rawDelete).send();
+				myContract.deletex(sTableName, rawDelete).submit(SyncCond.db_success);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -260,11 +255,11 @@ public class TestContractTableTxs {
 				rawGet = arrayRawGet.get(i);
 				if(sUserOper != sOwner)
 				{
-					System.out.print("update " + i + " Res: " + myContract.update(sOwner, sTableName, rawUpdate, rawGet).send());
+					System.out.print("update " + i + " Res: " + myContract.update(sOwner, sTableName, rawUpdate, rawGet).submit(SyncCond.db_success));
 				}
 				else
 				{
-					System.out.print("update " + i + " Res: " + myContract.update(sTableName, rawUpdate, rawGet).send());
+					System.out.print("update " + i + " Res: " + myContract.update(sTableName, rawUpdate, rawGet).submit(SyncCond.db_success));
 				}
 				tableUpdate(i+1);
 			}
@@ -279,22 +274,11 @@ public class TestContractTableTxs {
 	public static void table_get() {
 		c.as(sUserOper, sUserOperSec);
 		try {
-			BigInteger handle = BigInteger.valueOf(0);
-			if(sUserOper != sOwner)
-			{
-				handle = myContract.get(sOwner, sTableName, "").send();
-			}
-			else
-			{
-				handle = myContract.get(sTableName, "").send();
-			}
-			if (handle.intValue() != 0) {
-				BigInteger rowSize = myContract.getRowSize(handle).send();
-				BigInteger colSize = myContract.getColSize(handle).send();
-				String value = myContract.getValueByKey(handle, BigInteger.valueOf(rowSize.intValue() - 1), "email").send();
-				String value1 = myContract.getValueByIndex(handle, BigInteger.valueOf(rowSize.intValue() - 1), BigInteger.valueOf(colSize.intValue() - 1)).send();
-				System.out.print("    handle:" + handle + "rowSize: " + rowSize + ";colSize: " + colSize + ";id value: " + value + ";last value: " + value1);
-			}
+			String res = myContract.get(sOwner, sTableName, "");
+			System.out.println("get result:" + res);
+			
+			res = myContract.get(sOwner, sTableName, "","txHash");
+			System.out.println("get result:" + res);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -302,7 +286,7 @@ public class TestContractTableTxs {
 	public static void table_transaction() {
 		c.as(sOwner, sOwnerSec);
 		try {
-			myContract.sqlTransaction(sTableName).send();
+			myContract.sqlTransaction(sTableName).submit(SyncCond.db_success);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

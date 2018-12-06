@@ -255,6 +255,10 @@ public abstract class Submit {
     	});
 	}
 	
+	private void unSubscribeTx(String txId) {
+		EventManager.instance().unsubscribeTx(txId,null);
+	}
+	
 	private void onSubmitSuccess(Response res){
         JSONObject obj = new JSONObject();
         obj.put("status", "send_success");
@@ -277,11 +281,13 @@ public abstract class Submit {
         if(res.result.has("engine_result_code")){
         	obj.put("error_code", res.result.getInt("engine_result_code"));
         }
-        if(res.result.has("")){
-        	JSONObject tx_json = (JSONObject) res.result.get("tx_json");
-        	obj.put("tx_hash", tx_json.getString("hash"));
+        if(res.result.has("tx_json")){
+        	obj.put("tx_json", res.result.getJSONObject("tx_json"));
         }
-        
+        if(cb != null) {
+        	cb.called(obj);
+        	unSubscribeTx(signed.hash.toString());
+        }
         submitRes = obj;
         submit_state = SubmitState.submit_error;
     }

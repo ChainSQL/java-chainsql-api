@@ -243,8 +243,9 @@ public class EventManager {
 			obj.put("result", "have not subscribe the tx:" + id);
 			obj.put("type", "response");
 		}
-		
-		cb.called(obj);
+		if(cb != null){
+			cb.called(obj);
+		}
 	}
 
 	private void onChainsqlMessage(final JSONObject data,final String key,final String owner,final String name) {
@@ -323,14 +324,17 @@ public class EventManager {
 //			makeCallback(key,data);	
 //		}
 		makeCallback(key,data);	
-		JSONObject tx = data.getJSONObject("transaction");
-		TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
-		if(Util.isChainsqlType(type)) {
-			if(!("validate_success".equals(data.getString("status")))){
+		if(data.has("transaction") && data.getJSONObject("transaction").has("TransactionType"))
+		{
+			JSONObject tx = data.getJSONObject("transaction");
+			TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
+			if(Util.isChainsqlType(type)) {
+				if(!("validate_success".equals(data.getString("status")))){
+					mapCache.remove(key);
+				}
+			}else {
 				mapCache.remove(key);
 			}
-		}else {
-			mapCache.remove(key);
 		}
 	}
 	

@@ -41,7 +41,7 @@ public class TestContractTableTxs {
 	public static String grantAddr = "zzzzzzzzzzzzzzzzzzzzBZbvji";
 	public static String flag = "{\"insert\":true,\"update\":true,\"delete\":true,\"select\":true}";
 
-	public static String sTableName = "table";
+	public static String sTableName = "table5555";
 	public static String sTableNameNew = "table_new";
 	public static String rawTable = "["
 			+ "{ \"field\": \"id\", \"type\": \"int\" },"
@@ -62,7 +62,7 @@ public class TestContractTableTxs {
 	public static String rawDelete = "{\"id\":1}";
 	public static String rawUpdate = "{ \"account\": \"134\" }";
 	public static String rawGet = "{\"id\": 2}";
-	static TableTxsContract myContract = null;
+	static DBTest myContract = null;
 
 	//
 	public enum tagStep {
@@ -75,7 +75,8 @@ public class TestContractTableTxs {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://127.0.0.1:6008");
+//		c.connect("ws://127.0.0.1:6008");
+		c.connect("ws://10.100.0.90:6005");
 		//
 		c.as(rootAddress, rootSecret);
 		//
@@ -85,12 +86,12 @@ public class TestContractTableTxs {
 		sUserOper = sUser;
 		sUserOperSec = sUserSec;
 		// */
-		String contractAddr = "zp2cD3rWCZftTPfXX2Ya822LgYsLLL4nSP";
-		tagStep nStep = tagStep.table_create;
-		sTableName = sTableNameNew;
+		String contractAddr = "zPZYoPDRwfRP3LPQ3KYzWz5otGivbTBXpT";
+		tagStep nStep = tagStep.table_get;
+//		sTableName = sTableNameNew;
 		//
 		if (nStep != tagStep.active && nStep != tagStep.deployContract) {
-			myContract = TableTxsContract.load(c, contractAddr, Contract.GAS_LIMIT);
+			myContract = DBTest.load(c, contractAddr, Contract.GAS_LIMIT);
 		}
 		System.out.print("start >>>>>>\n");
 		switch (nStep) {
@@ -116,7 +117,7 @@ public class TestContractTableTxs {
 
 	public static void deployContract() throws TransactionException {
 		c.as(sOwner, sOwnerSec);
-		TableTxsContract contract = TableTxsContract.deploy(c, Contract.GAS_LIMIT);
+		DBTest contract = DBTest.deploy(c, Contract.GAS_LIMIT);
 		String contractAddr = contract.getContractAddress();
 		System.out.print("contract address:" + contractAddr+"\n");
 	}
@@ -277,7 +278,7 @@ public class TestContractTableTxs {
 			String res = myContract.get(sOwner, sTableName, "");
 			System.out.println("get result:" + res);
 			
-			res = myContract.get(sOwner, sTableName, "","txHash");
+			res = myContract.get(sOwner, sTableName, "","name");
 			System.out.println("get result:" + res);
 		} catch (Exception e) {
 			e.printStackTrace();

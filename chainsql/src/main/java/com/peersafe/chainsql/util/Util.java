@@ -305,7 +305,8 @@ public class Util {
 	public static boolean isChainsqlType(TransactionType type) {
 		if(type == TransactionType.TableListSet || 
 		   type == TransactionType.SQLStatement || 
-		   type == TransactionType.SQLTransaction) {
+		   type == TransactionType.SQLTransaction ||
+		   type == TransactionType.Contract) {
 			return true;
 		}
 		return false;

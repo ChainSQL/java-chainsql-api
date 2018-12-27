@@ -1,14 +1,21 @@
 package com.peersafe.chainsql.util;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.chainsql.crypto.EncryptCommon;
@@ -280,10 +287,10 @@ public class Util {
 	public static byte[] intToBytes( int value )   
 	{   
 	    byte[] src = new byte[4];  
-	    src[3] =  (byte) ((value>>24) & 0xFF);  
-	    src[2] =  (byte) ((value>>16) & 0xFF);  
-	    src[1] =  (byte) ((value>>8) & 0xFF);    
-	    src[0] =  (byte) (value & 0xFF);                  
+	    src[0] =  (byte) ((value>>24) & 0xFF);  
+	    src[1] =  (byte) ((value>>16) & 0xFF);  
+	    src[2] =  (byte) ((value>>8) & 0xFF);    
+	    src[3] =  (byte) (value & 0xFF);                  
 	    return src;   
 	}  
 	/**  
@@ -295,10 +302,10 @@ public class Util {
 	    */    
 	public static int bytesToInt(byte[] src) {  
 	    int value;    
-	    value = (int) ((src[0] & 0xFF)   
-	            | ((src[1] & 0xFF)<<8)   
-	            | ((src[2] & 0xFF)<<16)   
-	            | ((src[3] & 0xFF)<<24));  
+	    value = (int) ((src[3] & 0xFF)   
+	            | ((src[2] & 0xFF)<<8)   
+	            | ((src[1] & 0xFF)<<16)   
+	            | ((src[0] & 0xFF)<<24));  
 	    return value;  
 	} 
 	
@@ -333,12 +340,44 @@ public class Util {
 	
 	public static String getNewAccountFromTx(JSONObject tx) {
     	JSONArray nodes = tx.getJSONObject("meta").getJSONArray("AffectedNodes");
+    	List<String> listAddr = new ArrayList<String>();
     	for(int i=0; i<nodes.length(); i++) {
     		JSONObject node = nodes.getJSONObject(i);
     		if(node.has("CreatedNode")) {
-    			return node.getJSONObject("CreatedNode").getJSONObject("NewFields").getString("Account");
+    			if(node.getJSONObject("CreatedNode").getJSONObject("NewFields").has("ContractCode")) {
+    				listAddr.add(node.getJSONObject("CreatedNode").getJSONObject("NewFields").getString("Account")); 
+    			}
     		}
     	}
-    	return null;
+    	if(listAddr.size() == 1) {
+    		return listAddr.get(0);
+    	}else {
+    		AccountID account = AccountID.fromAddress(tx.getString("Account"));
+    		byte[] account_bytes = account.toBytes();
+ 
+    		byte[] accountBytes = new byte[account_bytes.length + 4];
+    		System.arraycopy(account_bytes, 0, accountBytes, 0, account_bytes.length);
+    		byte[] sequence = intToBytes(tx.getInt("Sequence") + 1);
+    		System.arraycopy(sequence, 0, accountBytes, account_bytes.length, 4);
+    		
+			SHA256Digest sha = new SHA256Digest();
+			sha.update(accountBytes, 0, accountBytes.length);
+		    byte[] result = new byte[sha.getDigestSize()];
+		    sha.doFinal(result, 0);
+		    
+    		byte[] o;
+			RIPEMD160Digest d = new RIPEMD160Digest();
+		    d.update (result, 0, result.length);
+		    o = new byte[d.getDigestSize()];
+		    d.doFinal (o, 0);
+		    
+		    String address = getB58IdentiferCodecs().encodeAddress(o);		    
+		    for(String addr : listAddr) {
+		    	if(addr.equals(address)) {
+		    		return addr;
+		    	}
+		    }
+		    return null;
+    	}
 	}
 }

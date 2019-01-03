@@ -41,7 +41,7 @@ public class TestContractTableTxs {
 	public static String grantAddr = "zzzzzzzzzzzzzzzzzzzzBZbvji";
 	public static String flag = "{\"insert\":true,\"update\":true,\"delete\":true,\"select\":true}";
 
-	public static String sTableName = "table5555";
+	public static String sTableName = "table888777";
 	public static String sTableNameNew = "table_new";
 	public static String rawTable = "["
 			+ "{ \"field\": \"id\", \"type\": \"int\" },"
@@ -75,8 +75,8 @@ public class TestContractTableTxs {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-//		c.connect("ws://127.0.0.1:6008");
-		c.connect("ws://10.100.0.90:6005");
+		c.connect("ws://127.0.0.1:6008");
+//		c.connect("ws://10.100.0.90:6005");
 		//
 		c.as(rootAddress, rootSecret);
 		//
@@ -86,8 +86,8 @@ public class TestContractTableTxs {
 		sUserOper = sUser;
 		sUserOperSec = sUserSec;
 		// */
-		String contractAddr = "zPZYoPDRwfRP3LPQ3KYzWz5otGivbTBXpT";
-		tagStep nStep = tagStep.table_get;
+		String contractAddr = "zB8seQf5tcPVUrofG3J8TbAbT75kyNhHF1";
+		tagStep nStep = tagStep.table_update;
 //		sTableName = sTableNameNew;
 		//
 		if (nStep != tagStep.active && nStep != tagStep.deployContract) {
@@ -187,9 +187,10 @@ public class TestContractTableTxs {
 		}
 	}
 	public static void table_insert() {
-		c.as(sUserOper, sUserOperSec);
+//		c.as(sUser, sUserSec);
+		c.as(sOwner, sOwnerSec);
 		try {
-			if(sUserOper != sOwner)
+			if(!sUserOper.equals(sOwner))
 			{
 				myContract.insert(sOwner, sTableName, rawInsert/*, "txHash"*/).submit(SyncCond.db_success); //no support autoFillField
 			}
@@ -222,7 +223,7 @@ public class TestContractTableTxs {
 	public static void table_delete() {
 		c.as(sUserOper, sUserOperSec);
 		try {
-			if(sUserOper != sOwner)
+			if(!sUserOper.equals(sOwner))
 			{
 				myContract.deletex(sOwner, sTableName, rawDelete).submit(SyncCond.db_success);
 			}
@@ -254,12 +255,14 @@ public class TestContractTableTxs {
 			if (i < length) {
 				rawUpdate = arrayRawUpdate.get(i);
 				rawGet = arrayRawGet.get(i);
-				if(sUserOper != sOwner)
+				if(sUserOper.equals(sOwner))
 				{
+					System.out.println("not owner");
 					System.out.print("update " + i + " Res: " + myContract.update(sOwner, sTableName, rawUpdate, rawGet).submit(SyncCond.db_success));
 				}
 				else
 				{
+					System.out.println("same owner");
 					System.out.print("update " + i + " Res: " + myContract.update(sTableName, rawUpdate, rawGet).submit(SyncCond.db_success));
 				}
 				tableUpdate(i+1);
@@ -269,7 +272,7 @@ public class TestContractTableTxs {
 		}
 	}
 	public static void table_update() {
-		c.as(sUserOper, sUserOperSec);
+		c.as(sUser, sUserSec);
 		tableUpdate(0);
 	}
 	public static void table_get() {
@@ -278,8 +281,8 @@ public class TestContractTableTxs {
 			String res = myContract.get(sOwner, sTableName, "");
 			System.out.println("get result:" + res);
 			
-			res = myContract.get(sOwner, sTableName, "","name");
-			System.out.println("get result:" + res);
+//			res = myContract.get(sOwner, sTableName, "","name");
+//			System.out.println("get result:" + res);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

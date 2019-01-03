@@ -357,7 +357,7 @@ public class Util {
  
     		byte[] accountBytes = new byte[account_bytes.length + 4];
     		System.arraycopy(account_bytes, 0, accountBytes, 0, account_bytes.length);
-    		byte[] sequence = intToBytes(tx.getInt("Sequence") + 1);
+    		byte[] sequence = intToBytes(tx.getInt("Sequence"));
     		System.arraycopy(sequence, 0, accountBytes, account_bytes.length, 4);
     		
 			SHA256Digest sha = new SHA256Digest();

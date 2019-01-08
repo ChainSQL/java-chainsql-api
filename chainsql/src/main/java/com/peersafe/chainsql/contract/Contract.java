@@ -283,7 +283,6 @@ public abstract class Contract extends Submit{
 			mTxJson.put("Account",this.connection.address);
 	    	
 	    	Transaction tx = toTransaction(mTxJson,TransactionType.Contract);
-			
 			signed = tx.sign(this.connection.secret);
 			
 			return Util.successObject();
@@ -361,6 +360,8 @@ public abstract class Contract extends Submit{
 
 				@Override
 				public void called(JSONObject obj){
+					if(!obj.has("transaction"))
+						return;
 					String hash = obj.getJSONObject("transaction").getString("hash");
 					if(obj.getString("status").equals("validate_success")) {
 						try {
@@ -372,6 +373,7 @@ public abstract class Contract extends Submit{
 									}else{
 										String contractAddress = Util.getNewAccountFromTx(tx);
 						            	contract.setContractAddress(contractAddress);
+						            	contract.cb = null;
 						            	cb.called(contract);
 									}
 								}			

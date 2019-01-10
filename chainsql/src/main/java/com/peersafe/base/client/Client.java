@@ -904,7 +904,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     private void subscribe(JSONObject subscription) {
         Request request = newRequest(Command.subscribe);
-
+        
         request.json(subscription);
         request.on(Request.OnSuccess.class, new Request.OnSuccess() {
             @Override
@@ -1405,7 +1405,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     private JSONObject getResult(Response response) {
     	if(response != null) {
-    		return response.result;
+    		if(response.result != null) {
+    			return response.result;	
+    		}else if(response.message != null) {
+    			return response.message;
+    		}else {
+    			return new JSONObject();
+    		}
+    		
     	}else {
     		return new JSONObject();
     	}
@@ -1541,8 +1548,82 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		request.json("account", address);
 		request.request();
 		waiting(request);
-		return request.response.result;
+		return getResult(request.response);
 	}
+	
+
+	public JSONObject getTableAuth(String owner,String tableName) {
+		Request request = newRequest(Command.table_auth);
+		request.json("owner", owner);
+		request.json("tablename", tableName);
+		request.request();
+		waiting(request);
+		return getResult(request.response);
+	}
+	
+	public void getTableAuth(final String owner,final String tableName,final Callback<JSONObject> cb) {
+       	makeManagedRequest(Command.table_auth, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("owner", owner);
+        		request.json("tablename", tableName);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return getResult(response);
+            }
+        });
+    }
+	
+	public JSONObject getAccountTables(String address,boolean bGetDetail) {
+		Request request = newRequest(Command.g_accountTables);
+		request.json("account", address);
+		if(bGetDetail) {
+    		request.json("detail",true);
+    	}
+		request.request();
+		waiting(request);
+		return getResult(request.response);
+	}
+	
+    public void getAccountTables(final String address,final boolean bGetDetail,final Callback<JSONObject> cb) {
+       	makeManagedRequest(Command.g_accountTables, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("account", address);
+            	
+            	if(bGetDetail) {
+            		request.json("detail",true);
+            	}
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return getResult(response);
+            }
+        });
+    }
 	
     /**
      * contractCall asynchronously

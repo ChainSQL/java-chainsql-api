@@ -720,7 +720,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Start a payment transaction, can be used to activate account 
 	 * @param accountId The Address of an account.
-	 * @param value		Count of coins to transfer,max value:1e11.
+	 * @param value		Count of coins to transfer,Unit:ZXC,max value:1e11.
 	 * @return You can use this to call other Ripple functions continually.
 	 */
 	public Ripple pay(String accountId, String value)
@@ -759,10 +759,10 @@ public class Chainsql extends Submit {
 	/**
 	 * 
 	 * @param sDestAddr Address to receive escrowed amount
-	 * @param value Amounts to escrow
-	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
-	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
-	 * @return You can use this to call other Ripple functions continually.
+	 * @param value Amounts to escrow,Unit:ZXC.
+	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed ZXC can be released to the recipient,use "" if not set.
+	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires,use "" if not set.
+	 * @return You can use this to call other Chainsql functions continually.
 	 * @throws Exception
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
@@ -777,9 +777,9 @@ public class Chainsql extends Submit {
 	 * @param value Amounts to escrow
 	 * @param sCurrency  Arbitrary code for currency.
 	 * @param sIssuer currency Issuer
-	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
-	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires.
-	 * @return You can use this to call other Ripple functions continually.
+	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed coin can be released to the recipient,use "" if not set.
+	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires,use "" if not set.
+	 * @return You can use this to call other Chainsql functions continually.
 	 * @throws Exception
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String sCurrency, String sIssuer, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
@@ -1285,7 +1285,9 @@ public class Chainsql extends Submit {
 	 * @return Commit result.
 	 */
 	public JSONObject commit(SyncCond cond){
-		return doCommit(cond);
+		JSONObject obj = doCommit(cond);
+		endTran();
+		return obj;
 	}
 	/**
 	 * Commit sql-transactoin asynchronously.
@@ -1293,7 +1295,9 @@ public class Chainsql extends Submit {
 	 * @return Commit result.
 	 */
 	public JSONObject commit(Callback<?> cb){
-		return doCommit(cb);
+		JSONObject obj = doCommit(cb);
+		endTran();
+		return obj;
 	}
 	
 	/**
@@ -1322,5 +1326,45 @@ public class Chainsql extends Submit {
 	public String decrypt(String cipher,String secret) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
 		return Ecies.decryptText(cipherBytes, secret);
+	}
+	
+	/**
+	 * 获取账户建的表
+	 * @param address 账户地址
+	 * @param bGetDetail 是否获取详细信息（建表的raw字段）
+	 * @return 用户建的表（数组）
+	 */
+	public JSONObject getAccountTables(String address,boolean bGetDetail) {
+		return connection.client.getAccountTables(address,bGetDetail);
+	}
+	
+	/**
+	 * 获取账户建的表
+	 * @param address 账户地址
+	 * @param bGetDetail 是否获取详细信息（建表的raw字段）
+	 * @param cb 回调函数
+	 */
+	public void getAccountTables(String address,boolean bGetDetail,Callback<JSONObject> cb) {
+		connection.client.getAccountTables(address, bGetDetail, cb);
+	}
+	
+	/**
+	 * 获取表授权列表
+	 * @param owner 表的拥有者地址
+	 * @param tableName 表名
+	 * @return 授权列表
+	 */
+	public JSONObject getTableAuth(String owner,String tableName) {
+		return connection.client.getTableAuth(owner, tableName);
+	}
+	
+	/**
+	 * 获取表授权列表
+	 * @param owner 表的拥有者地址
+	 * @param tableName 表名
+	 * @param cb 回调函数
+	 */
+	public void getTableAuth(String owner,String tableName,Callback<JSONObject> cb) {
+		connection.client.getTableAuth(owner, tableName, cb);
 	}
 }

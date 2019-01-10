@@ -15,6 +15,8 @@ public enum Command {
     get_counts,
     g_dbname,
     g_userToken,
+    g_accountTables,
+    table_auth,
     internal,
     ledger,
     ledger_accept,

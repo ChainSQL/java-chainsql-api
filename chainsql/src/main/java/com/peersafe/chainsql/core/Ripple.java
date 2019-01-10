@@ -197,18 +197,31 @@ public class Ripple extends Submit {
 	 */
 	private Ripple escrowCreate(String sDestAddr, Amount amount, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
-		long diffFinish = RippleDate.secondsSinceRippleEpoch(dateFormatTMFinish);
-		long diffCancel = RippleDate.secondsSinceRippleEpoch(dateFormatTMCancel);
-		if(diffFinish >= diffCancel)
+		
+		long diffFinish = 0;
+		if(!dateFormatTMFinish.equals("")) {
+			diffFinish = RippleDate.secondsSinceRippleEpoch(dateFormatTMFinish);
+		}
+		long diffCancel = 0;
+		if(!dateFormatTMCancel.equals("")) {
+			diffCancel = RippleDate.secondsSinceRippleEpoch(dateFormatTMCancel);
+		}
+		if(diffFinish != 0 && diffCancel != 0 && diffFinish >= diffCancel)
 		{
 			throw new Exception("\"CancelAfter\" must be after \"FinishAfter\" for EscrowCreate!");
+		}else if(diffFinish == 0 && diffCancel == 0) {
+			throw new Exception("Either \"CancelAfter\" or \"FinishAfter\" should be valid for EscrowCreate!");
 		}
 		mTxJson = new JSONObject();
 		mTxJson.put("Account", this.connection.address);
 		mTxJson.put("Destination", sDestAddr);
 		mTxJson.put("Amount", amount.toJSON());
-		mTxJson.put("FinishAfter", diffFinish);
-		mTxJson.put("CancelAfter", diffCancel);
+		if(diffFinish != 0) {
+			mTxJson.put("FinishAfter", diffFinish);	
+		}
+		if(diffCancel != 0) {
+			mTxJson.put("CancelAfter", diffCancel);	
+		}
 		mTxJson.put("TransactionType", "EscrowCreate");
 		return this;
 	}

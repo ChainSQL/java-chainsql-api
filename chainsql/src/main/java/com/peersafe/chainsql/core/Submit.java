@@ -171,6 +171,14 @@ public abstract class Submit {
 	    TransactionManager tm = account.transactionManager();
 	    ManagedTxn tx = new ManagedTxn(signed);
         
+        //subscribe tx
+        if(sync || cb != null){
+        	if(tx == null || tx.hash == null){
+    			return getError("Submit failed,transaction hash is null.");
+        	}
+        	subscribeTx(tx.hash.toString());
+        }
+        
         tm.submitSigned(tx.onSubmitSuccess(new OnSubmitSuccess(){
 			@Override
 			public void called(Response args) {
@@ -182,14 +190,6 @@ public abstract class Submit {
 				onSubmitError(args);
 			}
         })); 
-       
-        //subscribe tx
-        if(sync || cb != null){
-        	if(tx == null || tx.hash == null){
-    			return getError("Submit failed,transaction hash is null.");
-        	}
-        	subscribeTx(tx.hash.toString());
-        }
         
         //wait until submit return
         int count = submit_wait / wait_milli;

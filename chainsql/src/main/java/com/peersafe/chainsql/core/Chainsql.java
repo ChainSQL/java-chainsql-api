@@ -55,8 +55,6 @@ public class Chainsql extends Submit {
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
 	
-	public static EventManager event = EventManager.instance();
-	
 	/**
 	 * Assigning the operating user.
 	 * @param address Account address,start with a lower case 'z'.
@@ -123,7 +121,7 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url);
-		EventManager.instance().init(this.connection);
+		this.eventManager.init(this.connection);
 		connection.client.onConnected(new Client.OnConnected() {
 			@Override
 			public void called(Client args) {
@@ -164,7 +162,7 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url,serverCertPath,storePass);
-		EventManager.instance().init(this.connection);
+		this.eventManager.init(this.connection);
 
 		connection.client.onConnected(new Client.OnConnected() {
 			@Override
@@ -193,7 +191,7 @@ public class Chainsql extends Submit {
 			}
 		}
 		System.out.println("connect success");
-		EventManager.instance().init(this.connection);
+		this.eventManager.init(this.connection);
 		//jdk1.8
 //		this.connection.client.onReconnecting(this::onReconnecting);
 //		this.connection.client.onReconnected(this::onReconnected);
@@ -249,7 +247,7 @@ public class Chainsql extends Submit {
 		if(reconnectedCB != null){
 			reconnectedCB.called(cb);
 		}
-		EventManager.instance().reSubscribe();
+		this.eventManager.reSubscribe();
 	}
 	/**
 	 * Disconnect the websocket connection.
@@ -274,6 +272,7 @@ public class Chainsql extends Submit {
 		tab.strictMode = this.strictMode;
 		tab.connection = this.connection;
 		tab.setCrossChainArgs(this.crossChainArgs);
+		tab.eventManager = this.eventManager;
 		return tab;
 	}
 	

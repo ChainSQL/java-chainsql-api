@@ -41,6 +41,8 @@ public abstract class Submit {
 	
 	protected CrossChainArgs crossChainArgs = null;
 	
+	protected EventManager eventManager = new EventManager();
+	
 	//事务相关
 	protected List<JSONObject> cache = new ArrayList<JSONObject>();	
 	protected Map<GenericPair<String,String>,String> mapToken = 
@@ -151,6 +153,11 @@ public abstract class Submit {
 		obj.put("error_message", err);
 		return obj;
 	}
+	
+	public EventManager eventManager() {
+		return eventManager;
+	}
+	
 	protected JSONObject doSubmit(){
 		JSONObject obj = prepareSigned();
 		if(obj.getString("status").equals("error") || obj.has("final_result")){
@@ -223,7 +230,7 @@ public abstract class Submit {
 	}
 	
 	private void subscribeTx(String txId){
-    	EventManager.instance().subscribeTx(txId,new Callback<JSONObject>(){
+    	this.eventManager.subscribeTx(txId,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
 	    		if(cb != null){
@@ -256,7 +263,7 @@ public abstract class Submit {
 	}
 	
 	private void unSubscribeTx(String txId) {
-		EventManager.instance().unsubscribeTx(txId,null);
+		this.eventManager.unsubscribeTx(txId,null);
 	}
 	
 	private void onSubmitSuccess(Response res){

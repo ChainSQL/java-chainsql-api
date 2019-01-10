@@ -32,14 +32,14 @@ public class EventManager {
 	private HashMap<String,Map<Event,Callback>> mapContractEvents;
 	public JSONObject result;
 	
-	private static EventManager single = new EventManager();
-	
-	private EventManager() {
-	}
-	
-	public static EventManager instance() {
-		return single;
-	}
+//	private static EventManager single = new EventManager();
+//	
+//	private EventManager() {
+//	}
+//	
+//	public static EventManager instance() {
+//		return single;
+//	}
 	/**
 	 * Constructor
 	 * @param connection connection object.

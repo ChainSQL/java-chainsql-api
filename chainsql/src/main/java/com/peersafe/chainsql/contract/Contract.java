@@ -75,6 +75,8 @@ public abstract class Contract extends Submit{
         this.gasLimit = gasLimit;
         
         this.connection = chainsql.connection;
+        
+        this.eventManager = chainsql.eventManager();
     }
 
 
@@ -499,7 +501,7 @@ public abstract class Contract extends Submit{
     }
     
     protected void on(Event event,Callback<EventValues> cb) {
-    	EventManager.instance().subscribeContract(contractAddress, event, new Callback<JSONObject>() {
+    	this.eventManager.subscribeContract(contractAddress, event, new Callback<JSONObject>() {
 
 			@Override
 			public void called(JSONObject args) {

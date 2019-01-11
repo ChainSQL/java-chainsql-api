@@ -77,6 +77,7 @@ public class Chainsql extends Submit {
 	}
 
 	public static final Chainsql c = new Chainsql();
+	public final EventManager event = eventManager;
 
 	/**
 	 * Connect to a websocket url.

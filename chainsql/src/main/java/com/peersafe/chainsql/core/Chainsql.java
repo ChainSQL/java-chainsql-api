@@ -406,8 +406,6 @@ public class Chainsql extends Submit {
 			
 	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
 	    	if(tx_json.getString("status").equals("error")){
-	    		//throw new Exception(tx_json.getString("error_message"));
-	    		//System.out.println(tx_json.getString("error_message"));
 	    		return tx_json;
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");	    			
@@ -1355,7 +1353,18 @@ public class Chainsql extends Submit {
 	 * @return 授权列表
 	 */
 	public JSONObject getTableAuth(String owner,String tableName) {
-		return connection.client.getTableAuth(owner, tableName);
+		return connection.client.getTableAuth(owner, tableName,null);
+	}
+	
+	/**
+	 * 获取表授权列表
+	 * @param owner 表的拥有者地址
+	 * @param tableName 表名
+	 * @param accounts 指定账户地址列表，只查这个列表中相关地址的授权
+	 * @return 授权列表
+	 */
+	public JSONObject getTableAuth(String owner,String tableName,List<String> accounts) {
+		return connection.client.getTableAuth(owner, tableName,accounts);
 	}
 	
 	/**
@@ -1365,6 +1374,17 @@ public class Chainsql extends Submit {
 	 * @param cb 回调函数
 	 */
 	public void getTableAuth(String owner,String tableName,Callback<JSONObject> cb) {
-		connection.client.getTableAuth(owner, tableName, cb);
+		connection.client.getTableAuth(owner, tableName, null,cb);
+	}
+	
+	/**
+	 * 获取表授权列表
+	 * @param owner 表的拥有者地址
+	 * @param tableName 表名
+	 * @param accounts 指定账户地址列表，只查这个列表中相关地址的授权
+	 * @param cb 回调函数
+	 */
+	public void getTableAuth(String owner,String tableName,List<String> accounts,Callback<JSONObject> cb) {
+		connection.client.getTableAuth(owner, tableName, accounts,cb);
 	}
 }

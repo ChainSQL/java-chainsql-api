@@ -69,6 +69,19 @@ public class Util {
     }
     
     /**
+     * Transform list to JSONArray
+     * @param accounts
+     * @return JSONArray object
+     */
+    public static  JSONArray listToJSONArray(List<String> accounts) {
+    	JSONArray arr = new JSONArray();
+    	for(String obj:accounts) {
+    		arr.put(obj);
+    	}    	
+    	return arr;
+    }
+    
+    /**
      * Get random byte array.
      * @param length Random array length.
      * @return Byte array.

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -1532,10 +1533,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	}
 	    request.request();
 	    waiting(request);
-	    if(request.response.result != null)
-	    	return request.response.result;
-	    else
-	    	return request.response.message;
+	    return getResult(request.response);
     }
 
     /**
@@ -1552,16 +1550,19 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	}
 	
 
-	public JSONObject getTableAuth(String owner,String tableName) {
+	public JSONObject getTableAuth(String owner,String tableName,List<String> accounts) {
 		Request request = newRequest(Command.table_auth);
 		request.json("owner", owner);
 		request.json("tablename", tableName);
+		if(accounts != null && accounts.size() != 0) {
+			request.json("accounts",Util.listToJSONArray(accounts));
+		}
 		request.request();
 		waiting(request);
 		return getResult(request.response);
 	}
 	
-	public void getTableAuth(final String owner,final String tableName,final Callback<JSONObject> cb) {
+	public void getTableAuth(final String owner,final String tableName,final List<String> accounts,final Callback<JSONObject> cb) {
        	makeManagedRequest(Command.table_auth, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1577,6 +1578,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             public void beforeRequest(Request request) {
             	request.json("owner", owner);
         		request.json("tablename", tableName);
+        		if(accounts != null && accounts.size() != 0) {
+        			request.json("accounts",Util.listToJSONArray(accounts));
+        		}
             }
 
             @Override

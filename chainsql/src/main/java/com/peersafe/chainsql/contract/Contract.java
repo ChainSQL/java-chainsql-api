@@ -52,7 +52,7 @@ public abstract class Contract extends Submit{
 		}
 	};
     //https://www.reddit.com/r/ethereum/comments/5g8ia6/attention_miners_we_recommend_raising_gas_limit/
-    public static final BigInteger GAS_LIMIT = BigInteger.valueOf(3_000_000);
+    public static final BigInteger GAS_LIMIT = BigInteger.valueOf(3_000_00);
     public static final BigInteger INITIAL_DROPS = BigInteger.valueOf(5_000_000);
 
     public static final String FUNC_DEPLOY = "deploy";
@@ -115,11 +115,8 @@ public abstract class Contract extends Submit{
     	JSONObject objTx = prepareCallParam(function);
         
         JSONObject ret = this.chainsql.connection.client.contractCall(objTx);
-        if(ret.has("error_message")){
-           	if(ret.has("error_code"))
-        		throw new ContractCallException(ret.getString("error_message"),ret.getInt("error_code"));
-        	else
-        		throw new ContractCallException(ret.getString("error_message"));
+        if(ret.has("error")){
+        	throw new ContractCallException(ret.getString("error"));
         }
         return FunctionReturnDecoder.decode(ret.getString("contract_call_result"), function.getOutputParameters());
     }
@@ -131,11 +128,8 @@ public abstract class Contract extends Submit{
 
 			@Override
 			public void called(JSONObject ret) {
-				if(ret.has("error_message")){
-		           	if(ret.has("error_code"))
-		        		throw new ContractCallException(ret.getString("error_message"),ret.getInt("error_code"));
-		        	else
-		        		throw new ContractCallException(ret.getString("error_message"));
+				if(ret.has("error")){
+		        	throw new ContractCallException(ret.getString("error"));
 		        }
 				cb.called(FunctionReturnDecoder.decode(ret.getString("contract_call_result"), function.getOutputParameters()));
 			}        	

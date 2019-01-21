@@ -85,6 +85,9 @@ public class Validate {
 		if(name.isEmpty()) {
 			throw new Exception("Table name can not be empty.");
 		}
+		if(name.length() > 64) {
+			throw new Exception("Table name can not be longer than 64");
+		}
 //		boolean isHavePk = false;
 		for (int i = 0; i < strraw.size(); i++) {	
 			JSONObject json = strraw.get(i);
@@ -109,7 +112,7 @@ public class Validate {
 
             }else if("decimal".equals(type)){
 
-            }else if("varchar".equals(type)){
+            }else if("varchar".equals(type) || "char".equals(type)){
             	try {
     				int length = (int) json.getInt("length");
     				if(length == 0){

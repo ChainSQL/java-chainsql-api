@@ -1404,6 +1404,24 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    	 	}
     }
     
+    private JSONObject getResult(Request request) {
+    	Response response = request.response;
+    	if(response != null) {
+    		if(response.result != null) {
+    			return response.result;	
+    		}else if(response.message != null) {
+    			return response.message;
+    		}else {
+    			return new JSONObject();
+    		}
+    		
+    	}else {
+    		JSONObject ret = new JSONObject();
+    		ret.put("error", "command " + request.cmd.toString() + " timeout");
+    		return ret;
+    	}
+    }
+    
     private JSONObject getResult(Response response) {
     	if(response != null) {
     		if(response.result != null) {
@@ -1415,14 +1433,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     		}
     		
     	}else {
-    		return new JSONObject();
+    		return  new JSONObject();
     	}
     }
+    
     public JSONObject getLedgerVersion() {
     	Request request = newRequest(Command.ledger_current);
 	    request.request();
 	    waiting(request);
-	    return getResult(request.response);
+	    return getResult(request);
     }
     
     /**
@@ -1433,7 +1452,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Request request = newRequest(Command.tx_count);
 	    request.request();
 	    waiting(request);
-	    return getResult(request.response);
+	    return getResult(request);
     }
     
     /**
@@ -1444,7 +1463,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Request request = newRequest(Command.server_info);
         request.request();
         waiting(request);
-        return getResult(request.response);
+        return getResult(request);
     }
 
     /**
@@ -1455,7 +1474,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Request request = newRequest(Command.unl_list);
         request.request();
         waiting(request);
-        return getResult(request.response);
+        return getResult(request);
     }
     /**
      * Get user_token for table,if token got not null, it is a confidential table.
@@ -1475,7 +1494,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
          request.request();
          waiting(request);
 
-         return getResult(request.response);	
+         return getResult(request);	
     }
     
     public void getUserToken(final String owner,final String user,final String name,final Callback<JSONObject> cb) {
@@ -1533,7 +1552,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	}
 	    request.request();
 	    waiting(request);
-	    return getResult(request.response);
+	    return getResult(request);
     }
 
     /**
@@ -1546,7 +1565,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		request.json("account", address);
 		request.request();
 		waiting(request);
-		return getResult(request.response);
+		return getResult(request);
 	}
 	
 
@@ -1559,7 +1578,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		}
 		request.request();
 		waiting(request);
-		return getResult(request.response);
+		return getResult(request);
 	}
 	
 	public void getTableAuth(final String owner,final String tableName,final List<String> accounts,final Callback<JSONObject> cb) {
@@ -1585,7 +1604,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return getResult(response);
+                return getResult(response);            
             }
         });
     }
@@ -1598,7 +1617,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	}
 		request.request();
 		waiting(request);
-		return getResult(request.response);
+		return getResult(request);
 	}
 	
     public void getAccountTables(final String address,final boolean bGetDetail,final Callback<JSONObject> cb) {

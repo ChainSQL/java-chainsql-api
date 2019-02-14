@@ -141,7 +141,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
 			@Override
 			public void called(Response response) {
-				//System.out.println("response:" + response.message.toString());
+//				System.out.println("Request.OnSuccess response:" + response.message.toString());
 
 				handleSubmitSuccess(txn, response);
 			}
@@ -388,7 +388,8 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 			return;
 		}
 
-		//System.out.println("handleSubmitSuccess" + res.message);
+//		System.out.println("handleSubmitSuccess,res.message:" + res.message);
+		
 		EngineResult ter = EngineResult.tesSUCCESS;
 		try{
 			ter = res.engineResult();

@@ -1,6 +1,8 @@
 package com.peersafe.chainsql.core;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -198,6 +200,8 @@ public abstract class Submit {
 			}
         })); 
         
+//        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+//        System.out.println("time start waiting:" + df.format(new Date()));// new Date()为获取当前系统时间
         //wait until submit return
         int count = submit_wait / wait_milli;
         while(submit_state == SubmitState.waiting_submit){
@@ -239,6 +243,7 @@ public abstract class Submit {
 	    		}else if(sync){
 	    			if(!data.has("transaction"))
 	    				return;
+//	    			System.out.println("subscribe called :" + data);
 	    			JSONObject obj = (JSONObject)data;
 	    			JSONObject res = new JSONObject();
 	    			JSONObject tx = (JSONObject) obj.get("transaction");
@@ -256,6 +261,7 @@ public abstract class Submit {
 	    			if(!res.isNull("status")){
 	        			syncRes = res;
 	        			sync_state = SyncState.sync_response;
+	        			submit_state = SubmitState.send_success;
 	    			}
 	    		}
 			}

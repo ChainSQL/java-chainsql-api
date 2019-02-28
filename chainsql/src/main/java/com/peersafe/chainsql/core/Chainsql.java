@@ -29,8 +29,10 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.K256KeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.manager.EventManager;
@@ -1386,5 +1388,25 @@ public class Chainsql extends Submit {
 	 */
 	public void getTableAuth(String owner,String tableName,List<String> accounts,Callback<JSONObject> cb) {
 		connection.client.getTableAuth(owner, tableName, accounts,cb);
+	}
+	
+	/**
+	 * 签名接口
+	 * @param message 要签名的内容
+	 * @param secret 签名私钥
+	 * @return 签名
+	 */
+	public byte[] sign(byte[] message,String secret) {
+		return Util.sign(message, secret);
+	}
+	/**
+	 * 验证签名接口
+	 * @param message 被签名的内容
+	 * @param signature 签名
+	 * @param publicKey 签名公钥
+	 * @return 是否验签成功
+	 */
+	public boolean verify(byte[] message,byte[] signature,String publicKey) {
+		return Util.verify(message, signature, publicKey);
 	}
 }

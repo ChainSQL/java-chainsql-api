@@ -15,6 +15,20 @@ public class TestSign {
 		testSignForTrustSet();
 		testSignSignerListSet();
 		testSignPathset();
+		
+		//签名任意数据
+		testSignSimple();
+	}
+	
+	private static void testSignSimple() {
+		String hello = "helloworld";
+		byte[] signature = c.sign(hello.getBytes(), "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
+		if(c.verify(hello.getBytes(), signature, "cBQG8RQArjx1eTKFEAQXz2gS4utaDiEC9wmi7pfUPTi27VCchwgw"))
+		{
+			System.out.println("verify success");
+		}else {
+			System.out.println("verify failed");
+		}
 	}
 	
 	private static void testSignPayment(){

@@ -18,6 +18,11 @@ import org.json.JSONObject;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.serialized.enums.TransactionType;
+import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.K256KeyPair;
+import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 
 
@@ -392,5 +397,34 @@ public class Util {
 		    }
 		    return null;
     	}
+	}
+	
+	/**
+	 * 签名接口
+	 * @param message 要签名的内容
+	 * @param secret 签名私钥
+	 * @return 签名
+	 */
+	public static byte[] sign(byte[] message,String secret) {
+		IKeyPair keyPair = Seed.getKeyPair(secret);
+		return keyPair.signMessage(message);
+	}
+	/**
+	 * 验证签名接口
+	 * @param message 被签名的内容
+	 * @param signature 签名
+	 * @param publicKey 签名公钥
+	 * @return 是否验签成功
+	 */
+	public static boolean verify(byte[] message,byte[] signature,String publicKey) {
+		byte[] pubBytes = null;
+		if(publicKey.length() == 66) {
+			pubBytes = Util.hexToBytes(publicKey);
+		}else {
+			pubBytes = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		}
+        
+        K256KeyPair keyPair = new K256KeyPair(null,Utils.uBigInt(pubBytes));
+        return keyPair.verifySignature(message, signature);
 	}
 }

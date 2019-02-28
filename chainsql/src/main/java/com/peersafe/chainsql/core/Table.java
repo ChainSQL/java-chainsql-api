@@ -311,22 +311,6 @@ public class Table extends Submit{
 		}
 		AccountID account = AccountID.fromAddress(connection.address);
 		AccountID owner = AccountID.fromAddress(connection.scope);
-		Request req = connection.client.select(account,owner,name,query.toString());
-		
-		return getSelectRes(req.response);
-	}
-	
-	private JSONObject getSelectRes(Response response){
-		JSONObject obj = new JSONObject();
-		obj.put("status", response.status);
-		if( !"error".equals(response.status)){
-			//this.data = response.result.get("lines");
-			obj.put("final_result", true);
-			obj.put("lines", response.result.get("lines"));
-			obj.put("diff", response.result.getInt("diff"));
-		}else{
-			obj.put("error_message", response.error);
-		}
-		return obj;
+		return connection.client.select(this.connection.secret,account,owner,name,query.toString(),cb);
 	}
 }

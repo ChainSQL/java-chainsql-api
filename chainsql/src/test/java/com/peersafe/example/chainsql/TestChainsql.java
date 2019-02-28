@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.chainsql.core.Chainsql;
+import com.peersafe.chainsql.core.Ripple;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
-import com.peersafe.chainsql.core.Ripple;
 
 public class TestChainsql {
 	public static final Chainsql c = Chainsql.c;
@@ -18,9 +19,9 @@ public class TestChainsql {
 	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 	
 	public static void main(String[] args) {
-		c.connect("ws://139.198.11.189:6006");
+		c.connect("ws://127.0.0.1:6008");
 		
-		sTableName = "tTable1";
+		sTableName = "wifi";
 		sTableName2 = "tTable2";
 		sReName = "tTable3";
 
@@ -28,10 +29,10 @@ public class TestChainsql {
 		c.as(rootAddress, rootSecret);
 
 
-		testAccount();
+//		testAccount();
 		testChainSql();
 
-		c.disconnect();
+//		c.disconnect();
 	}
 	
 	private static void testChainSql() {
@@ -56,6 +57,12 @@ public class TestChainsql {
 		test.grant();
 		//授权后使用被授权账户插入数据
 		test.insertAfterGrant();
+		
+		//根据sql语句查询，有签名检测
+		test.testGetBySqlUser();
+		
+		//根据sql语句查询，admin权限，无签名检测
+		test.testGetBySqlAdmin();
 	}
 	
 	private static void testAccount() {
@@ -198,7 +205,63 @@ public class TestChainsql {
 		 JSONObject obj = c.table(sTableName).get().submit();
 		 System.out.println("get result:" + obj);
 	}
+	
+	public void testGetBySqlAdmin() {
+		JSONObject ret = c.getTableNameInDB(rootAddress, sTableName);
+		if(ret.has("nameInDB")) {
+			JSONObject obj = c.getBySqlAdmin("select * from t_" + ret.getString("nameInDB"));
+			System.out.println("get_sql_admin sync result:" + obj);
+		}
+		
+		c.getTableNameInDB(rootAddress, sTableName, new Callback<JSONObject>(){
 
+			@Override
+			public void called(JSONObject args) {
+				if(ret.has("nameInDB")) {
+					String sql = "select * from t_" + ret.getString("nameInDB");
+					c.getBySqlAdmin(sql,new Callback<JSONObject>() {
+
+						@Override
+						public void called(JSONObject args) {
+							System.out.println("get_sql_admin async result:" + args);
+						}
+						
+					});
+					
+				}
+			}
+			
+		});
+	}
+	
+	public void testGetBySqlUser() {
+		JSONObject ret = c.getTableNameInDB(rootAddress, sTableName);
+		if(ret.has("nameInDB")) {
+			JSONObject obj = c.getBySqlUser("select * from t_" + ret.getString("nameInDB"));
+			System.out.println("get_sql_user sync result:" + obj);
+		}
+		
+		c.getTableNameInDB(rootAddress, sTableName, new Callback<JSONObject>(){
+
+			@Override
+			public void called(JSONObject args) {
+				if(ret.has("nameInDB")) {
+					String sql = "select * from t_" + ret.getString("nameInDB");
+					c.getBySqlUser(sql,new Callback<JSONObject>() {
+
+						@Override
+						public void called(JSONObject args) {
+							System.out.println("get_sql_user async result:" + args);
+						}
+						
+					});
+					
+				}
+			}
+			
+		});
+	}
+	
 	public void grant() {
 		JSONObject obj = new JSONObject();
 		obj = c.grant(sTableName, sNewAccountId, "{insert:true,update:true,delete:true}")

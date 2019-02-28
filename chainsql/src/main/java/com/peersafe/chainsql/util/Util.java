@@ -427,4 +427,11 @@ public class Util {
         K256KeyPair keyPair = new K256KeyPair(null,Utils.uBigInt(pubBytes));
         return keyPair.verifySignature(message, signature);
 	}
+	
+	public static String getPublicHexFromSecret(String secret) {
+		Seed seed = Seed.fromBase58(secret);
+		IKeyPair keyPair = seed.keyPair();
+		byte[] pubBytes = keyPair.canonicalPubBytes();
+		return bytesToHex(pubBytes);
+	}
 }

@@ -1409,4 +1409,56 @@ public class Chainsql extends Submit {
 	public boolean verify(byte[] message,byte[] signature,String publicKey) {
 		return Util.verify(message, signature, publicKey);
 	}
+	
+	/**
+	 * 根据sql语句查询，admin接口，同步调用
+	 * @param sql 要查询的sql语句
+	 * @return 返回格式：
+	 * {
+	 * 	 "lines":[...]
+	 * 	 "status":"..."
+	 * }
+	 */
+	public JSONObject getBySqlAdmin(String sql) {
+		return c.connection.client.getBySqlAdmin(sql);
+	}
+	
+	/**
+	 * 根据sql语句查询，admin接口，异步调用
+	 * @param sql 要查询的sql语句
+	 * @param cb 查询结果回调
+	 */
+	public void getBySqlAdmin(String sql,Callback<JSONObject> cb) {
+		c.connection.client.getBySqlAdmin(sql, cb);
+	}
+	
+	/**
+	 * 根据sql语句查询，普通用户接口，需签名验证
+	 * @param sql 要查询的sql语句
+	 * @return 返回格式：
+	 * {
+	 * 	 "lines":[...]
+	 * 	 "status":"..."
+	 * }
+	 */
+	public JSONObject getBySqlUser(String sql) {
+		return c.connection.client.getBySqlUser(c.connection.secret, c.connection.address, sql);
+	}
+	
+	/**
+	 * 根据sql语句查询，普通用户接口，异步调用
+	 * @param sql 要查询的sql语句
+	 * @param cb 查询结果回调
+	 */
+	public void getBySqlUser(String sql,Callback<JSONObject> cb) {
+		c.connection.client.getBySqlUser(c.connection.secret, c.connection.address, sql,cb);
+	}
+	
+	public JSONObject getTableNameInDB(String owner,String tableName) {
+		return c.connection.client.getNameInDB(owner, tableName);
+	}
+	
+	public void getTableNameInDB(String owner,String tableName,Callback<JSONObject> cb) {
+		c.connection.client.getNameInDB(owner, tableName, cb);
+	}
 }

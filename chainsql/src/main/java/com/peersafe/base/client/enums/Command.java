@@ -40,6 +40,8 @@ public enum Command {
     random,
     ripple_path_find,
     r_get,
+    r_get_sql_admin,
+    r_get_sql_user,
     server_info,
     server_state,
     sign,

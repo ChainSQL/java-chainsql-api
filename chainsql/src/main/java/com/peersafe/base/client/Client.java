@@ -27,6 +27,7 @@ import com.peersafe.base.client.enums.Command;
 import com.peersafe.base.client.enums.Message;
 import com.peersafe.base.client.enums.RPCErr;
 import com.peersafe.base.client.pubsub.Publisher;
+import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.client.requests.Request.Manager;
 import com.peersafe.base.client.responses.Response;
@@ -1227,28 +1228,225 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param raw Raw data.
      * @return Request data.
      */
-	public Request select(AccountID account, AccountID owner, String name, String raw) {
+	public JSONObject select(final String secret,final AccountID account, final AccountID owner, final String name, final String raw,final Callback<JSONObject> cb) {
 		String tablestr = "{\"Table\":{\"TableName\":\"" + name+ "\"}}";
 		JSONArray tableArray =  Util.strToJSONArray(tablestr);
-		Request request = newRequest(Command.r_get);
 		JSONObject txjson = new JSONObject();
 		txjson.put("Account", account);
 		txjson.put("Owner", owner);
 		txjson.put("Tables", tableArray);
 		txjson.put("Raw", raw);
-		txjson.put("OpType", 7);
+
+		if(cb != null) {
+        	getLedgerVersion(new Callback<JSONObject>() {
+				@Override
+				public void called(JSONObject args) {
+					if(args.has("ledger_current_index")) {
+						txjson.put("LedgerIndex", args.getInt("ledger_current_index") - 1);
+					}
+					selectASync(Command.r_get,secret,txjson,cb);
+				}
+        	});
+			JSONObject obj = new JSONObject();
+			obj.put("final_result", true);
+			obj.put("status", "success");
+			return obj;
+		}else {
+			return selectSync(secret,txjson);
+		}
+	}
+	private void prepareRequestForSelect(Request request,final String secret,final JSONObject txjson) {
+		String signData = txjson.toString();
+		byte[] signature = Util.sign(signData.getBytes(), secret);
 		request.json("tx_json", txjson);
+		request.json("publicKey",Util.getPublicHexFromSecret(secret));
+		request.json("signature",Util.bytesToHex(signature));
+		request.json("signingData",signData);
+	}
+	private JSONObject selectSync(final String secret,final JSONObject txjson) {
+		JSONObject ledger = getLedgerVersion();
+		if(ledger.has("ledger_current_index")) {
+			txjson.put("LedgerIndex", ledger.getInt("ledger_current_index") - 1);
+		}else {
+			JSONObject ret = new JSONObject();
+			ret.put("error_message", "Get current ledger index failed");
+			return ret;
+		}
+
+		Request request = newRequest(Command.r_get);
+		prepareRequestForSelect(request,secret,txjson);
 		request.request();
 		waiting(request);
-		return request;
+		JSONObject res = getResult(request);
+		return getSelectRes(res);
 	}
-    
+	
+
+	private void selectASync(Command command,final String secret,final JSONObject txjson,final Callback<JSONObject> cb) {
+		makeManagedRequest(command, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	prepareRequestForSelect(request,secret,txjson);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+            	JSONObject res = getResponseResult(response);
+        		return getSelectRes(res);
+            }
+        });
+	}
+	
+	private JSONObject getResponseResult(Response response) {
+		JSONObject res = new JSONObject();
+    	if(response != null) {
+    		if(response.result != null) {
+    			res = response.result;	
+    		}else if(response.message != null) {
+    			res = response.message;
+    		}            		
+    	}else {
+    		res.put("error", "request timeout");
+    	}
+    	return res;
+	}
+	private JSONObject getSelectRes(JSONObject result){
+		JSONObject obj = new JSONObject();
+		if(!result.has("error")){
+			//this.data = response.result.get("lines");
+			obj.put("status", "success");
+			obj.put("final_result", true);
+			obj.put("lines", result.get("lines"));
+			if(result.has("diff")) {
+				obj.put("diff", result.getInt("diff"));
+			}			
+		}else{
+			obj.put("status", "error");
+			obj.put("error_message", result.getString("error"));
+		}
+		return obj;
+	}
+
+	public JSONObject getBySqlUser(String secret,String accountID,String sql) {
+		JSONObject tx_json = new JSONObject();
+		tx_json.put("Account", accountID);
+		tx_json.put("Sql", sql);
+		JSONObject ledger = getLedgerVersion();
+		if(ledger.has("ledger_current_index")) {
+			tx_json.put("LedgerIndex", ledger.getInt("ledger_current_index") - 1);
+		}else {
+			JSONObject ret = new JSONObject();
+			ret.put("error_message", "Get current ledger index failed");
+			return ret;
+		}
+
+		Request request = newRequest(Command.r_get_sql_user);
+		prepareRequestForSelect(request,secret,tx_json);
+		request.request();
+		waiting(request);
+		JSONObject res = getResult(request);
+		return getSelectRes(res);
+	}
+	
+	public void getBySqlUser(String secret,String accountID,String sql,Callback<JSONObject> cb) {
+		getLedgerVersion(new Callback<JSONObject>() {
+			@Override
+			public void called(JSONObject args) {
+				JSONObject tx_json = new JSONObject();
+				tx_json.put("Account", accountID);
+				tx_json.put("Sql", sql);
+				if(args.has("ledger_current_index")) {
+					tx_json.put("LedgerIndex", args.getInt("ledger_current_index") - 1);
+				}
+				selectASync(Command.r_get_sql_user,secret,tx_json,cb);
+			}
+    	});
+		
+	}	
+	
+	public JSONObject getBySqlAdmin(String sql) {
+		Request request = newRequest(Command.r_get_sql_admin);
+		request.json("sql", sql);
+		request.request();
+		waiting(request);
+		JSONObject res = getResult(request);
+		return getSelectRes(res);
+	}
+	
+	public void getBySqlAdmin(String sql,Callback<JSONObject> cb) {
+		makeManagedRequest(Command.r_get_sql_admin, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("sql", sql);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+            	JSONObject res = getResponseResult(response);
+        		return getSelectRes(res);
+            }
+        });
+	}
+	
+	public JSONObject getNameInDB(String owner,String tableName) {
+		Request request = newRequest(Command.g_dbname);
+		request.json("account", owner);
+		request.json("tablename", tableName);
+		request.request();
+		waiting(request);
+		return getResult(request);
+	}
+	
+	public void getNameInDB(String owner,String tableName,Callback<JSONObject> cb) {
+		makeManagedRequest(Command.g_dbname, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("account", owner);
+       		 	request.json("tablename", tableName);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
+	}
     /**
      * Request for ledger data.
      * @param option Ledger options.
      * @param cb Callback.
      */
-    public  void getLedger(final JSONObject option,final Callback<JSONObject> cb){  
+    public void getLedger(final JSONObject option,final Callback<JSONObject> cb){  
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1274,33 +1472,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
-    /**
-     * Request for newest published ledger_index.
-     * @param cb Callback.
-     */
-    public  void getLedgerVersion(final Callback<JSONObject> cb){   	
-    	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
-            @Override
-            public boolean retryOnUnsuccessful(Response r) {
-            	return false;
-            }
-
-            @Override
-            public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
-            }
-        }, new Request.Builder<JSONObject>() {
-            @Override
-            public void beforeRequest(Request request) {
-            }
-
-            @Override
-            public JSONObject buildTypedResponse(Response response) {
-                return response.result;
-            }
-        });
-     }    
-    
     /**
      * Request for transaction information.
      * @param address Account address.
@@ -1446,6 +1617,29 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	    return getResult(request);
     }
     
+    public void getLedgerVersion(final Callback<JSONObject> cb) {
+    	makeManagedRequest(Command.ledger_current, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+	       	   	 
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
+    }
     /**
      * Get transaction count on chain.
      * @return Transaction account data.

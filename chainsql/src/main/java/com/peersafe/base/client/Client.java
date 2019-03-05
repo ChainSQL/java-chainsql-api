@@ -1322,17 +1322,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	}
 	private JSONObject getSelectRes(JSONObject result){
 		JSONObject obj = new JSONObject();
-		if(!result.has("error")){
-			//this.data = response.result.get("lines");
+		if(result.has("status") && result.getString("status").equals("success")) {
 			obj.put("status", "success");
 			obj.put("final_result", true);
 			obj.put("lines", result.get("lines"));
 			if(result.has("diff")) {
 				obj.put("diff", result.getInt("diff"));
-			}			
-		}else{
-			obj.put("status", "error");
-			obj.put("error_message", result.getString("error"));
+			}
+		}else {
+			obj = result;
 		}
 		return obj;
 	}

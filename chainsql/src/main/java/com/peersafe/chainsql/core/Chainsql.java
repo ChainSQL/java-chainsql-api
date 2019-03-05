@@ -1454,6 +1454,22 @@ public class Chainsql extends Submit {
 		c.connection.client.getBySqlUser(c.connection.secret, c.connection.address, sql,cb);
 	}
 	
+	/**
+	 * 获取表的NameInDB字符串
+	 * @param owner 表的拥有者地址
+	 * @param tableName 表名
+	 * @return 
+	 * success:
+	 * {
+	 *   "status":"success"
+	 *   "nameInDB":"xxx"
+	 * }
+	 * failed:
+	 * {
+	 *   "status":"error"
+	 *   "error_message":"xxx"
+	 * }
+	 */
 	public JSONObject getTableNameInDB(String owner,String tableName) {
 		return c.connection.client.getNameInDB(owner, tableName);
 	}

@@ -243,7 +243,6 @@ public abstract class Submit {
 	    		}else if(sync){
 	    			if(!data.has("transaction"))
 	    				return;
-//	    			System.out.println("subscribe called :" + data);
 	    			JSONObject obj = (JSONObject)data;
 	    			JSONObject res = new JSONObject();
 	    			JSONObject tx = (JSONObject) obj.get("transaction");
@@ -258,7 +257,7 @@ public abstract class Submit {
 	    				if(obj.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
 	    			}
-	    			if(!res.isNull("status")){
+	    			if(!res.isNull("status") && sync_state == SyncState.waiting_sync){
 	        			syncRes = res;
 	        			sync_state = SyncState.sync_response;
 	        			submit_state = SubmitState.send_success;

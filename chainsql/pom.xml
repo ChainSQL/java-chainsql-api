@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>1.4.4</version>
+	<version>1.5.0</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
 	<url>https://github.com/chainsql/java-chainsql-api</url>
@@ -135,7 +135,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.8</version>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <phase>verify</phase>

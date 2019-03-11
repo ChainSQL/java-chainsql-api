@@ -84,7 +84,7 @@ public class RippleDate extends Date {
 
 	/**
      * local时间转换成UTC时间
-     * @param UTC milliseconds
+     * @param milliseconds UTC milliseconds.
      * @return localTime 
      */
     public static String utcToLocal(long milliseconds)

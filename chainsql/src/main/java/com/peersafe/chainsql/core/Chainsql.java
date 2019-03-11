@@ -763,7 +763,7 @@ public class Chainsql extends Submit {
 	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed ZXC can be released to the recipient,use "" if not set.
 	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires,use "" if not set.
 	 * @return You can use this to call other Chainsql functions continually.
-	 * @throws Exception
+	 * @throws Exception 
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
@@ -780,7 +780,7 @@ public class Chainsql extends Submit {
 	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed coin can be released to the recipient,use "" if not set.
 	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires,use "" if not set.
 	 * @return You can use this to call other Chainsql functions continually.
-	 * @throws Exception
+	 * @throws Exception Exceptions.
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String sCurrency, String sIssuer, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{

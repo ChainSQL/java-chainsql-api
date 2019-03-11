@@ -1222,10 +1222,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * Select data from chain.
+     * @param secret Account seed.
      * @param account Account address.
      * @param owner Table owner address.
      * @param name  Table name.
      * @param raw Raw data.
+     * @param cb Callback function.
      * @return Request data.
      */
 	public JSONObject select(final String secret,final AccountID account, final AccountID owner, final String name, final String raw,final Callback<JSONObject> cb) {
@@ -1751,8 +1753,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /**
      * GetAccountLines synchronously
-     * @param address
-     * @return
+     * @param address Address to get trust lines.
+     * @return account trustlines
      */
 	public JSONObject GetAccountLines(String address){
 		Request request = newRequest(Command.account_lines);
@@ -1881,8 +1883,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     /**
      * getTransaction synchronously
-     * @param hash
-     * @return
+     * @param hash Transaction hash.
+     * @return Transaction details.
      */
     public JSONObject getTransaction(String hash) {
     	Request request = newRequest(Command.tx);

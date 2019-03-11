@@ -194,7 +194,7 @@ public class Ripple extends Submit {
 	 * @param dateFormatTMFinish The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @param dateFormatTMCancel The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @return You can use this to call other Ripple functions continually.
-	 * @throws Exception
+	 * @throws Exception Exceptions.
 	 */
 	private Ripple escrowCreate(String sDestAddr, Amount amount, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
@@ -234,7 +234,7 @@ public class Ripple extends Submit {
 	 * @param dateFormatTMFinish The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @param dateFormatTMCancel The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @return You can use this to call other Ripple functions continually.
-	 * @throws Exception
+	 * @throws Exception Exceptions.
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
@@ -252,7 +252,7 @@ public class Ripple extends Submit {
 	 * @param dateFormatTMFinish The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @param dateFormatTMCancel The local time(format:yyyy-MM-dd HH:mm:ss)
 	 * @return You can use this to call other Ripple functions continually.
-	 * @throws Exception
+	 * @throws Exception Exceptions.
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String sCurrency, String sIssuer, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
@@ -293,7 +293,7 @@ public class Ripple extends Submit {
 
 	/**
 	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setFlag or clearFlag
-	 * @param flag accountSet flag which can be enabled or disabled for an account
+	 * @param nFlag accountSet flag which can be enabled or disabled for an account
 	 * @param bSet true:SetFlag; false:ClearFlag
 	 * @return You can use this to call other Ripple functions continually.
 	 */
@@ -311,19 +311,10 @@ public class Ripple extends Submit {
 	}
 	
 	/**
-	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setTransferFee<p/>
-	 *
-	 * 1. transferRate>1.0 && transferRate<=2.0 && 0<=transferFeeMin && transferFeeMin<transferFeeMax <br/><br/>
-	 * &nbsp&nbsp&nbsp&nbsp			fee = min( max(transferFeeMin, amount*transferRate), transferFeeMax ); <br/>
-	 * 2. transferRate == 1.0 || transferRate == 0 <br/>
-	 * &nbsp&nbsp&nbsp&nbsp		1) transferFeeMin and transferFeeMax are both not set <br/>
-	 * &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp			no fee <br/>
-	 * &nbsp&nbsp&nbsp&nbsp		2) transferFeeMin == transferFeeMax <br/>
-	 * &nbsp&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp&nbsp		fee = transferFeeMin <br/>
-	 * 
-	 * @param transferRate    decimal number string <br/>
-	 * &nbsp                  (1.0 - 2.0] : set transferRate <br/>
-	 * &nbsp&nbsp              0/1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
+	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setTransferFee.
+	 * @param transferRate    decimal number string
+	 * (1.0 - 2.0] : set transferRate
+	 * 0/1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
 	 * @param transferFeeMin  decimal number string
 	 * @param transferFeeMax  decimal number string
 	 * @return You can use this to call other Ripple functions continually.

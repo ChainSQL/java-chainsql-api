@@ -1013,6 +1013,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     logRetry(request, "Request timed out");
                     request.clearAllListeners();
                     queueRetry(50, cmd, manager, builder,depth);
+                }else {
+                	JSONObject msg = new JSONObject();
+                	msg.put("status", "error");
+                	msg.put("error", "timeOutError");
+                	msg.put("error_message","Request for command:" + cmd.toString() + " time out!");
+                	Response response = new Response(request,msg);
+                	manager.cb(response, null);
                 }
             }
         });
@@ -1119,31 +1126,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * Request for account_lines.
-     * @param addy account id.
-     * @param manager Callback.
-     */
-    public void requestAccountLines(final AccountID addy, final Manager<ArrayList<AccountLine>> manager) {
-        makeManagedRequest(Command.account_lines, manager, new Request.Builder<ArrayList<AccountLine>>() {
-            @Override
-            public void beforeRequest(Request request) {
-                request.json("account", addy);
-            }
-
-            @Override
-            public ArrayList<AccountLine> buildTypedResponse(Response response) {
-                ArrayList<AccountLine> lines = new ArrayList<AccountLine>();
-                JSONArray array = response.result.optJSONArray("lines");
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject line = array.optJSONObject(i);
-                    lines.add(AccountLine.fromJSON(addy, line));
-                }
-                return lines;
-            }
-        });
-    }
-
-    /**
      * Request for book_offers.
      * @param ledger_index Ledger's index.
      * @param get Get.
@@ -1198,26 +1180,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param account Account address.
      * @return Request data.
      */
-    public Request accountInfo(AccountID account) {
+    public JSONObject accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
 
         request.request();
         waiting(request);
-   		return request;
-    }
-    
-    /**
-     * 
-     * @param messageTx Message Transaction.
-     * @return Request data.
-     */
-    public Request messageTx(JSONObject messageTx){
-    	 Request request = newRequest(Command.subscribe);
-    	 request.json("tx_json", messageTx);
-         request.request();
-         waiting(request);
-         return request;
+   		return getResult(request);
     }
     
     /**
@@ -1251,7 +1220,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	});
 			JSONObject obj = new JSONObject();
 			obj.put("final_result", true);
-			obj.put("status", "success");
 			return obj;
 		}else {
 			return selectSync(secret,txjson);
@@ -1270,9 +1238,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		if(ledger.has("ledger_current_index")) {
 			txjson.put("LedgerIndex", ledger.getInt("ledger_current_index") - 1);
 		}else {
-			JSONObject ret = new JSONObject();
-			ret.put("error_message", "Get current ledger index failed");
-			return ret;
+			return ledger;
 		}
 
 		Request request = newRequest(Command.r_get);
@@ -1293,7 +1259,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1303,30 +1274,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-            	JSONObject res = getResponseResult(response);
-        		return getSelectRes(res);
+        		return getSelectRes(response.result);
             }
         });
 	}
 	
-	private JSONObject getResponseResult(Response response) {
-		JSONObject res = new JSONObject();
-    	if(response != null) {
-    		if(response.result != null) {
-    			res = response.result;	
-    		}else if(response.message != null) {
-    			res = response.message;
-    		}            		
-    	}else {
-    		res.put("error", "request timeout");
-    	}
-    	return res;
-	}
 	private JSONObject getSelectRes(JSONObject result){
 		JSONObject obj = new JSONObject();
-		if(result.has("status") && result.getString("status").equals("success")) {
-			obj.put("status", "success");
-			obj.put("final_result", true);
+		if(!result.has("error")) {
 			obj.put("lines", result.get("lines"));
 			if(result.has("diff")) {
 				obj.put("diff", result.getInt("diff"));
@@ -1334,6 +1289,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		}else {
 			obj = result;
 		}
+		obj.put("final_result", true);
 		return obj;
 	}
 
@@ -1345,9 +1301,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		if(ledger.has("ledger_current_index")) {
 			tx_json.put("LedgerIndex", ledger.getInt("ledger_current_index") - 1);
 		}else {
-			JSONObject ret = new JSONObject();
-			ret.put("error_message", "Get current ledger index failed");
-			return ret;
+			return ledger;
 		}
 
 		Request request = newRequest(Command.r_get_sql_user);
@@ -1392,7 +1346,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1402,7 +1361,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-            	JSONObject res = getResponseResult(response);
+            	JSONObject res = getResult(response.request);
         		return getSelectRes(res);
             }
         });
@@ -1412,7 +1371,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		Request request = newRequest(Command.g_dbname);
 		request.json("account", owner);
 		request.json("tablename", tableName);
+		
 		request.request();
+		
 		waiting(request);
 		return getResult(request);
 	}
@@ -1426,7 +1387,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1437,16 +1403,30 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return response.result;
+                return getResult(response.request);
             }
         });
+	}
+	
+	public JSONObject getLedger(JSONObject option) {
+		Request request = newRequest(Command.ledger);
+
+		request.json("ledger_index", option.get("ledger_index"));
+	 	request.json("expand", false);
+	 	request.json("transactions",true);
+	 	request.json("accounts",false );
+
+	 	request.request();
+	 	
+		waiting(request);
+		return getResult(request);	 	
 	}
     /**
      * Request for ledger data.
      * @param option Ledger options.
      * @param cb Callback.
      */
-    public void getLedger(final JSONObject option,final Callback<JSONObject> cb){  
+    public void getLedger(final JSONObject option,final Callback<JSONObject> cb){
     	makeManagedRequest(Command.ledger, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1455,7 +1435,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1468,10 +1453,37 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return response.result;
+                return getResult(response.request);
             }
         });
     }
+    
+    private void UnhexResult(Response response) {
+    	if(response != null && response.result != null && response.result.has("transactions")) {
+    		JSONArray txs = (JSONArray)response.result.get("transactions");
+        	for(int i=0; i<txs.length(); i++){
+        		JSONObject tx = (JSONObject)txs.get(i);
+        		Util.unHexData(tx.getJSONObject("tx"));
+        		if(tx.has("meta")){
+        			tx.remove("meta");
+        		}
+        	}
+    	}
+    }
+    public JSONObject getTransactions(String address,int limit) {
+    	Request request = newRequest(Command.account_tx);
+    	request.json("account", address);
+      	request.json("ledger_index_min", -1);
+      	request.json("ledger_index_max", -1);
+      	request.json("limit", limit);
+      	 
+      	request.request();
+      	
+ 		waiting(request);
+ 		UnhexResult(request.response); 		
+ 		return getResult(request);	
+    }
+    
     /**
      * Request for transaction information.
      * @param address Account address.
@@ -1497,7 +1509,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1513,19 +1530,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-            	JSONArray txs = (JSONArray)response.result.get("transactions");
-            	for(int i=0; i<txs.length(); i++){
-            		JSONObject tx = (JSONObject)txs.get(i);
-            		Util.unHexData(tx.getJSONObject("tx"));
-            		if(tx.has("meta")){
-            			tx.remove("meta");
-            		}
-            	}
-            	
-                return response.result;
+            	UnhexResult(response);            	
+                return getResult(response.request);
             }
         });
     }
+    
     /**
      * Request for transaction information.
      * @param hash Tx hash ,if "" it will find first tx on this chain.
@@ -1542,7 +1552,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1554,15 +1569,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-            	JSONArray txs = (JSONArray)response.result.get("transactions");
-            	for(int i=0; i<txs.length(); i++){
-            		JSONObject tx = (JSONObject)txs.get(i);
-            		Util.unHexData(tx.getJSONObject("tx"));
-            		if(tx.has("meta")){
-            			tx.remove("meta");
-            		}
-            	}
-            	
+            	UnhexResult(response);            	
                 return response.result;
             }
         });
@@ -1590,23 +1597,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     		
     	}else {
     		JSONObject ret = new JSONObject();
-    		ret.put("error", "command " + request.cmd.toString() + " timeout");
+    		ret.put("error", "timeOutError");
+    		ret.put("error_message", "request for command:" + request.cmd.toString() + " timeout");
     		return ret;
-    	}
-    }
-    
-    private JSONObject getResult(Response response) {
-    	if(response != null) {
-    		if(response.result != null) {
-    			return response.result;	
-    		}else if(response.message != null) {
-    			return response.message;
-    		}else {
-    			return new JSONObject();
-    		}
-    		
-    	}else {
-    		return  new JSONObject();
     	}
     }
     
@@ -1626,7 +1619,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1636,7 +1634,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return response.result;
+                return getResult(response.request);
             }
         });
     }
@@ -1702,7 +1700,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1716,7 +1719,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return response.result;
+                return getResult(response.request);
             }
         });
     }
@@ -1726,12 +1729,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param txjson tx_json with fields and value a transaction needed.
      * @return Prepared tx_json.
      */
-    public Request tablePrepare(JSONObject txjson){
+    public JSONObject tablePrepare(JSONObject txjson){
     	Request request = newRequest(Command.t_prepare);
 	   	request.json("tx_json", txjson);
 	    request.request();
 	    waiting(request);
-	    return request;	
+	    return getResult(request);	
    }
     /**
      * contractCall synchronously
@@ -1765,6 +1768,40 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	}
 	
 
+    /**
+     * Request for account_lines.
+     * @param addy account id.
+     * @param manager Callback.
+     */
+    public void GetAccountLines(final AccountID addy,final Callback<JSONObject> cb) {
+        makeManagedRequest(Command.account_lines, new Manager<JSONObject>() {
+        	 @Override
+             public boolean retryOnUnsuccessful(Response r) {
+             	return false;
+             }
+
+             @Override
+             public void cb(Response response, JSONObject jsonObject) throws JSONException {
+             	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
+             }
+         	}, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+                request.json("account", addy);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+               return response.result;
+            }
+        });
+    }
+
 	public JSONObject getTableAuth(String owner,String tableName,List<String> accounts) {
 		Request request = newRequest(Command.table_auth);
 		request.json("owner", owner);
@@ -1786,7 +1823,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1800,7 +1842,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return getResult(response);            
+                return getResult(response.request);            
             }
         });
     }
@@ -1825,7 +1867,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1839,7 +1886,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-                return getResult(response);
+                return getResult(response.request);
             }
         });
     }
@@ -1858,7 +1905,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1873,10 +1925,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public JSONObject buildTypedResponse(Response response) {
-            	if(response.result != null)
-            		return response.result;
-            	else
-            		return response.message;
+            	return getResult(response.request);
             }
         });
     }
@@ -1891,7 +1940,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	request.json("transaction", hash);
 	    request.request();
 	    waiting(request);
-	    return request.response.result;
+	    return getResult(request);
     }
     
     /**
@@ -1909,7 +1958,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
             @Override
             public void cb(Response response, JSONObject jsonObject) throws JSONException {
-            	cb.called(jsonObject);
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
             }
         }, new Request.Builder<JSONObject>() {
             @Override
@@ -1923,7 +1977,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 //    				response.result.remove("meta");
 //    			}
     			Util.unHexData(response.result);
-                return response.result;
+                return getResult(response.request);
             }
         });
     }

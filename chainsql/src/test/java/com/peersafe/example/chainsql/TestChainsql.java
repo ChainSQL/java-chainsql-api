@@ -18,19 +18,24 @@ public class TestChainsql {
 	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
 	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 	
+	public static String userSecret = "xnnUqirFepEKzVdsoBKkMf577upwT";
+	public static String userAddress = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
+	
+	
 	public static void main(String[] args) {
+//		c.connect("ws://101.201.40.124:5006");
 		c.connect("ws://127.0.0.1:6008");
 		
-		sTableName = "wifi";
+		sTableName = "c1235";
 		sTableName2 = "tTable2";
 		sReName = "tTable3";
 
-
+		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
 		c.as(rootAddress, rootSecret);
 
 
-//		testAccount();
-		testChainSql();
+		testRipple();
+//		testChainSql();
 
 //		c.disconnect();
 	}
@@ -38,47 +43,66 @@ public class TestChainsql {
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-		test.testCreateTable();
+//		test.testCreateTable();
 		//建表，用于重命名，删除
-		test.testCreateTable1();
-		//插入数据
-		test.testinsert();
-		//更新表数据
-		test.testUpdateTable();
-		//删除表数据
-		test.testdelete();
-		//重命名表
-		test.testrename();
-		//查询表数据
-		test.testget();
-		//删除表
-		test.testdrop();
-		//授权
-		test.grant();
-		//授权后使用被授权账户插入数据
-		test.insertAfterGrant();
+//		test.testCreateTable1();
+//		//插入数据
+//		test.testinsert();
+//		//更新表数据
+//		test.testUpdateTable();
+//		//删除表数据
+//		test.testdelete();
+//		//重命名表
+//		test.testrename();
+//		//查询表数据
+//		test.testget();
+//		//删除表
+//		test.testdrop();
+//		//授权
+//		test.grant();
+//		//授权后使用被授权账户插入数据
+//		test.insertAfterGrant();
 		
 		//根据sql语句查询，有签名检测
-		test.testGetBySqlUser();
+//		test.testGetBySqlUser();
 		
 		//根据sql语句查询，admin权限，无签名检测
-		test.testGetBySqlAdmin();
+//		test.testGetBySqlAdmin();
 	}
 	
-	private static void testAccount() {
+	private static void testRipple() {
 		TestChainsql test = new TestChainsql();
 //		//查询根账户余额
 //		test.getAccountBalance();
-		//生成新账户
-		test.generateAccount();
-		//给新账户打钱
-		test.activateAccount(sNewAccountId);
+//		//生成新账户
+//		test.generateAccount();
+//		//给新账户打钱
+//		test.activateAccount(sNewAccountId);
 		
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		test.getTransactions();
+//		test.getTransaction();
+		
+//		System.out.println(c.getLedger());
+//		System.out.println(c.getLedger(100));
+//		System.out.println(c.getLedgerVersion());
+		
+//		System.out.println(c.getChainInfo());
+		
+//		System.out.println(c.getAccountTables(rootAddress, true));
+		
+//		System.out.println(c.getTableNameInDB(rootAddress, "123"));
+		
+//		System.out.println(c.getTableAuth(rootAddress, sTableName));
+//		
+//		c.getTableAuth(userAddress, sTableName,new Callback<JSONObject>() {
+//
+//			@Override
+//			public void called(JSONObject args) {
+//				System.out.println(args);
+//				
+//			}
+//			
+//		});
 	}
 	
 	public void generateAccount() {
@@ -97,6 +121,16 @@ public class TestChainsql {
 	public void getAccountBalance() {
 		String balance = c.getAccountBalance(rootAddress);
 		System.out.println(balance);
+	}
+	
+	public void getTransactions() {
+		JSONObject obj = c.getTransactions(rootAddress, 20);
+		System.out.println(obj);
+	}
+	
+	public void getTransaction() {
+		JSONObject obj = c.getTransaction("6B20CCA67F70F6CCECD26376EE6913E86B9B0DADD2D14CD4E7E6DF31F910EF03");
+		System.out.println(obj);
 	}
 	
 	// 创建表
@@ -152,7 +186,7 @@ public class TestChainsql {
 	}
 
 	public void testCreateTable() {
-		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
@@ -160,15 +194,28 @@ public class TestChainsql {
 	}
 
 	public void testinsert() {
-		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
-		JSONObject obj;
-		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
-		System.out.println("insert result:" + obj);
+//		List<String> orgs = Util.array("{'id':1,'age': 333,'name':'hello'}","{'id':2,'age': 444,'name':'sss'}","{'id':3,'age': 555,'name':'rrr'}");
+//		JSONObject obj;
+//		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//		System.out.println("insert result:" + obj);
+		for(int i= 0; i<1; i++) {
+			List<String> orgs = Util.array("{'id':1,'age': 333,'name':'hello'}");
+			JSONObject obj;
+			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+			System.out.println("insert result:" + obj);
+			orgs = Util.array("{'id':2,'age': 444,'name':'sss'}");
+			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+			System.out.println("insert result:" + obj);
+			orgs = Util.array("{'id':3,'age': 555,'name':'rrr'}");
+			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+			System.out.println("insert result:" + obj);
+		}
+		
 	}
 
 	public void insertAfterGrant(){
 		c.as(sNewAccountId, sNewSecret);
-		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+		List<String> orgs = Util.array("{'id':100,'age': 333,'name':'hello'}","{'id':101,'age': 444,'name':'sss'}","{'id':102,'age': 555,'name':'rrr'}");
 		JSONObject obj;
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert after grant result:" + obj);
@@ -184,9 +231,9 @@ public class TestChainsql {
 	}
 
 	public void testdelete() {
-		List<String> arr = Util.array("{'id': '3'}");
+//		List<String> arr = c.array("{'id': 3}");
 		JSONObject obj;
-		obj = c.table(sTableName).get(arr).delete().submit(SyncCond.db_success);
+		obj = c.table(sTableName).get(c.array("{'id': " + 3 + "}")).delete().submit(SyncCond.db_success);
 		System.out.println("delete result:" + obj);
 	}
 	
@@ -202,23 +249,33 @@ public class TestChainsql {
 //		 JSONObject obj = c.table(sTableName).get(Util.array("{id:1}")).withFields("[]").submit();
 		
 		//查询所有数据
-		 JSONObject obj = c.table(sTableName).get().submit();
+		 JSONObject obj = c.table(sTableName).get(Util.array("{name:hello}")).submit();
+		 System.out.println("get result:" + obj);
+		 
+		 String name = "sss";
+		 obj = c.table(sTableName).get(Util.array("{name:" + name + "}")).submit();
+		 System.out.println("get result:" + obj);
+		 
+		 name = "rrr";
+		 obj = c.table(sTableName).get(Util.array("{'name':'" + name + "'}")).submit();
 		 System.out.println("get result:" + obj);
 	}
 	
 	public void testGetBySqlAdmin() {
-		JSONObject ret = c.getTableNameInDB(rootAddress, sTableName);
-		if(ret.has("nameInDB")) {
-			JSONObject obj = c.getBySqlAdmin("select * from t_" + ret.getString("nameInDB"));
-			System.out.println("get_sql_admin sync result:" + obj);
-		}
-		
+//		JSONObject ret = c.getTableNameInDB(userAddress, sTableName);
+//		if(ret.has("nameInDB")) {
+//			JSONObject obj = c.getBySqlAdmin("select * from t_" + ret.getString("nameInDB"));
+//			System.out.println("get_sql_admin sync result:" + obj);
+//		}else {
+//			System.out.println(ret);
+//		}
 		c.getTableNameInDB(rootAddress, sTableName, new Callback<JSONObject>(){
 
 			@Override
 			public void called(JSONObject args) {
-				if(ret.has("nameInDB")) {
-					String sql = "select * from t_" + ret.getString("nameInDB");
+				System.out.println(args);
+				if(args.has("nameInDB")) {
+					String sql = "select * from t_" + args.getString("nameInDB");
 					c.getBySqlAdmin(sql,new Callback<JSONObject>() {
 
 						@Override
@@ -238,34 +295,35 @@ public class TestChainsql {
 		JSONObject ret = c.getTableNameInDB(rootAddress, sTableName);
 		if(ret.has("nameInDB")) {
 			JSONObject obj = c.getBySqlUser("select * from t_" + ret.getString("nameInDB"));
+//			JSONObject obj = c.getBySqlUser("insert into t_" + ret.getString("nameInDB") + " values()");
 			System.out.println("get_sql_user sync result:" + obj);
 		}
 		
-		c.getTableNameInDB(rootAddress, sTableName, new Callback<JSONObject>(){
-
-			@Override
-			public void called(JSONObject args) {
-				if(ret.has("nameInDB")) {
-					String sql = "select * from t_" + ret.getString("nameInDB");
-					c.getBySqlUser(sql,new Callback<JSONObject>() {
-
-						@Override
-						public void called(JSONObject args) {
-							System.out.println("get_sql_user async result:" + args);
-						}
-						
-					});
-					
-				}
-			}
-			
-		});
+//		c.getTableNameInDB(rootAddress, sTableName, new Callback<JSONObject>(){
+//
+//			@Override
+//			public void called(JSONObject args) {
+//				if(ret.has("nameInDB")) {
+//					String sql = "select * from t_" + ret.getString("nameInDB");
+//					c.getBySqlUser(sql,new Callback<JSONObject>() {
+//
+//						@Override
+//						public void called(JSONObject args) {
+//							System.out.println("get_sql_user async result:" + args);
+//						}
+//						
+//					});
+//					
+//				}
+//			}
+//			
+//		});
 	}
 	
 	public void grant() {
 		JSONObject obj = new JSONObject();
-		obj = c.grant(sTableName, sNewAccountId, "{insert:true,update:true,delete:true}")
-				   .submit(SyncCond.db_success);
+		obj = c.grant(sTableName, sNewAccountId, "{insert:true,update:true}")
+				   .submit(SyncCond.validate_success);
 		System.out.println("grant result:" + obj.toString());
 	}
 

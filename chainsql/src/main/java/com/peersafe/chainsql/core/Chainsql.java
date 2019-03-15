@@ -406,8 +406,8 @@ public class Chainsql extends Submit {
 				crossChainArgs = null;
 			}
 			
-	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
-	    	if(tx_json.getString("status").equals("error")){
+	    	JSONObject tx_json = this.connection.client.tablePrepare(mTxJson);
+	    	if(tx_json.has("error")){
 	    		return tx_json;
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");	    			
@@ -945,27 +945,7 @@ public class Chainsql extends Submit {
 			option.put("ledger_index",  ledger_index);
 		}
 		
-		mRetJson = null;
-		this.connection.client.getLedger(option,new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
-			}
-		});
-		while(mRetJson == null){
-			Util.waiting();
-		}
-		
-		if(mRetJson.has("ledger")){
-			return mRetJson;
-		}else{
-			return null;
-		}
-		
+		return this.connection.client.getLedger(option);		
 	}
 	/**
 	 * An asynchronous api to get the ledger identified by ledger_index.
@@ -1010,26 +990,7 @@ public class Chainsql extends Submit {
 	 * @return Result.
 	 */
 	public JSONObject getTransactions(String address,int limit){
-		mRetJson = null;
-		this.connection.client.getTransactions(address,limit,new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
-			}
-		});
-		while(mRetJson == null){
-			Util.waiting();
-		}
-		
-		if(mRetJson.has("transactions")){
-			return mRetJson;
-		}else{
-			return null;
-		}
+		return this.connection.client.getTransactions(address,limit);
 	}
 	/**
 	 * Get transactions from chain
@@ -1094,26 +1055,7 @@ public class Chainsql extends Submit {
 	 * @return Transaction information.
 	 */
 	public JSONObject getTransaction(String hash){
-		mRetJson = null;
-		this.connection.client.getTransaction(hash,new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
-			}			
-		});
-		while(mRetJson == null){
-			Util.waiting();
-		}
-		
-		if(mRetJson.has("ledger_index")){
-			return mRetJson;
-		}else{
-			return null;
-		}
+		return this.connection.client.getTransaction(hash);
 	}
 	/**
 	 * Get transaction by hash asynrhonously.
@@ -1223,12 +1165,17 @@ public class Chainsql extends Submit {
 		return connection;
 	}
 	
+	public JSONObject getAccountInfo(String address) {
+		AccountID account = AccountID.fromAddress(address);
+		return connection.client.accountInfo(account);
+	}
+	
 	public String getAccountBalance(String address){
 		try{
 			AccountID account = AccountID.fromAddress(address);
-			Request request = connection.client.accountInfo(account);
-			if(request.response.result!=null){
-				String balance = request.response.result.optJSONObject("account_data").getString("Balance");
+			JSONObject result = connection.client.accountInfo(account);
+			if(!result.has("error")){
+				String balance = result.optJSONObject("account_data").getString("Balance");
 				BigInteger bal = new BigInteger(balance);
 				BigInteger zxc = bal.divide(BigInteger.valueOf(1000000));
 				BigInteger mod = bal.mod(BigInteger.valueOf(1000000));
@@ -1237,9 +1184,11 @@ public class Chainsql extends Submit {
 				finalZxc += mod.toString();
 				return finalZxc;
 			}else {
+				System.err.println(result.get("error_message"));
 				return null;
 			}
 		}catch(Exception e){
+			e.printStackTrace();
 			return null;
 		}
 	}

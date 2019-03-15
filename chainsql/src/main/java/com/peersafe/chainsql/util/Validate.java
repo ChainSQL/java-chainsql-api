@@ -42,39 +42,6 @@ public class Validate {
         return stArr;
     }
 	
-	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
-		Request request = client.tablePrepare(tx_json);
-		if(request.response == null) {
-			JSONObject obj = new JSONObject();
-			obj.put("error_message", "No response from server,request:\n" + request.toJSON());
-			return obj;
-		}else if(request.response.result != null)
-			return request.response.result;
-		else {
-			JSONObject obj = new JSONObject();
-			obj.put("status", request.response.status);
-			if(request.response.error_message != null)
-				obj.put("error_message", request.response.error_message);
-			else
-				obj.put("error_message", request.response.error);
-			return obj;
-		}		
-	}
-
-	public static Map<String,Object> rippleRes(Client client,AccountID account){
-		HashMap<String,Object> map = new HashMap<String,Object>();
-		Request request = client.accountInfo(account);
-		if(request.response == null) {
-			map.put("error_message", "No response from server,request:\n" + request.toJSON());
-		}else if(request.response.result!=null){
-			Integer sequence = (Integer)request.response.result.optJSONObject("account_data").get("Sequence");
-			map.put("Sequence", sequence);
-		}else if(request.response.message.has("error")){
-			map.put("error_message", request.response.message.getString("error_message"));
-		}
-		return map;
-	}
-	
     /**
      * Check fields
      * @param strraw Raw data list.

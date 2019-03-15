@@ -75,10 +75,10 @@ public class Ripple extends Submit {
 		mTxJson.put("Account", this.connection.address);
 		if(amount.currency() != Currency.ZXC)
 		{
-			Request request = this.connection.client.accountInfo(amount.issuer());
-			if(request.response.result!=null){
+			JSONObject result = this.connection.client.accountInfo(amount.issuer());
+			if(!result.has("error")){
 				BigDecimal value = amount.value();
-				JSONObject accountData = request.response.result.optJSONObject("account_data");
+				JSONObject accountData = result.optJSONObject("account_data");
 				if(accountData != null)
 				{
 					String feeMin = null, feeMax = null;
@@ -131,6 +131,8 @@ public class Ripple extends Submit {
 				}
 				Amount maxAmount = new Amount(value, amount.currency(), amount.issuer());
 				mTxJson.put("SendMax", maxAmount.toJSON());
+			}else {
+				System.err.println(result.get("error_message"));
 			}
 		}
 		mTxJson.put("Destination", accountId);

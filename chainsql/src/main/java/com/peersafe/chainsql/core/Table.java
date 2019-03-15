@@ -273,10 +273,11 @@ public class Table extends Submit{
 			crossChainArgs = null;
 		}
 		
-		JSONObject result = Validate.tablePrepare(this.connection.client, txjson);
-		if(result.getString("status").equals("error")){
-			return result;
-		}
+		JSONObject result = this.connection.client.tablePrepare(txjson);
+    	if(result.has("error")){
+    		return result;
+    	}
+    	
 		JSONObject tx_json = result.getJSONObject("tx_json");
 		Transaction payment;
 		

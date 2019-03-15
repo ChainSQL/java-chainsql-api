@@ -162,7 +162,7 @@ public abstract class Submit {
 	
 	protected JSONObject doSubmit(){
 		JSONObject obj = prepareSigned();
-		if(obj.getString("status").equals("error") || obj.has("final_result")){
+		if(obj.has("final_result") || obj.has("error")){
 			return obj;
 		}		
 		return doSubmitNoPrepare();
@@ -347,12 +347,13 @@ public abstract class Submit {
 		tx.as(Amount.Fee, fee);
 		
   		AccountID account = AccountID.fromAddress(this.connection.address);
- 		Map<String,Object> map = Validate.rippleRes(this.connection.client, account);
- 		if(mapError(map)){
- 			throw new Exception((String)map.get("error_message"));
- 		}else{
- 			tx.as(UInt32.Sequence, map.get("Sequence"));
- 		}
+  		JSONObject obj = connection.client.accountInfo(account);
+  		if(obj.has("error")) {
+  			throw new Exception(obj.getString("error_message"));
+  		}else {
+  			tx.as(UInt32.Sequence, obj.getJSONObject("account_data").getInt("Sequence"));
+  		}
+ 		
 		try {  
 		   tx.parseFromJson(json);
 		} catch (JSONException e) {  

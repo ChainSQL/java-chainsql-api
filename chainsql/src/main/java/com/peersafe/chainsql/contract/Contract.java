@@ -283,7 +283,12 @@ public abstract class Contract extends Submit{
 			
 			return Util.successObject();
 		} catch (Exception e) {
-			return Util.errorObject(e.getMessage());
+			if(!e.getMessage().equals("")) {
+				return Util.errorObject(e.getMessage());
+			}else {
+				e.printStackTrace();
+				return Util.errorObject("Exception occured");
+			}
 		}
 	}
 	

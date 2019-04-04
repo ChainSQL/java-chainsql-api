@@ -291,7 +291,7 @@ public class Util {
 	
 	public static JSONObject errorObject(String errMsg){
 		JSONObject obj = new JSONObject();
-		obj.put("error", "error");
+		obj.put("error", "internalError");
 		obj.put("error_message", errMsg);
 		return obj;
 	}

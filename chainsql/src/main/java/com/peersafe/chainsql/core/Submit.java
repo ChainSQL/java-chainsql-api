@@ -1,8 +1,6 @@
 package com.peersafe.chainsql.core;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,6 @@ import com.peersafe.chainsql.manager.EventManager;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
-import com.peersafe.chainsql.util.Validate;
 
 public abstract class Submit {
 	public Connection connection;
@@ -271,7 +268,7 @@ public abstract class Submit {
 		this.eventManager.unsubscribeTx(txId,null);
 	}
 	
-	private void onSubmitSuccess(Response res){
+	private void onSubmitSuccess(Response res){    	
         JSONObject obj = new JSONObject();
         obj.put("status", "send_success");
         JSONObject tx_json = (JSONObject) res.result.get("tx_json");
@@ -289,6 +286,10 @@ public abstract class Submit {
         	obj.put("error_message", res.result.getString("engine_result_message"));
         if(res.result.has("engine_result_message_detail"))
         	obj.put("error_message",res.result.getString("engine_result_message_detail"));
+        
+        if(res.result.has("engine_result")) {
+        	obj.put("error", res.result.getString("engine_result"));
+        }
         
         if(res.result.has("engine_result_code")){
         	obj.put("error_code", res.result.getInt("engine_result_code"));

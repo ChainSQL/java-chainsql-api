@@ -58,7 +58,7 @@ public class Ripple extends Submit {
 			
 			return Util.successObject();
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			return Util.errorObject(e.getMessage());
 		}
 	}

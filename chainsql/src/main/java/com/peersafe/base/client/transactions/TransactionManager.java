@@ -3,6 +3,7 @@ package com.peersafe.base.client.transactions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -387,7 +388,6 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		if (txn.finalizedOrResponseIsToPriorSubmission(res)) {
 			return;
 		}
-
 //		System.out.println("handleSubmitSuccess,res.message:" + res.message);
 		
 		EngineResult ter = EngineResult.tesSUCCESS;
@@ -404,36 +404,36 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		case telNormalFailure:
 			txn.emit(ManagedTxn.OnSubmitError.class, res);
 			return;
-		case tefPAST_SEQ:
-			resubmitWithNewSequence(txn);
-			break;
-		case tefMAX_LEDGER:
-			resubmit(txn, submitSequence);
-			break;
-		case terPRE_SEQ:
-			on(OnValidatedSequence.class, new OnValidatedSequence() {
-				@Override
-				public void called(UInt32 sequence) {
-					if (txn.finalizedOrResponseIsToPriorSubmission(res)) {
-						removeListener(OnValidatedSequence.class, this);
-					} else {
-						if (sequence.equals(submitSequence)) {
-							// resubmit:
-							resubmit(txn, submitSequence);
-							removeListener(OnValidatedSequence.class, this);
-						}
-					}
-				}
-			});
-			break;
-		case telINSUF_FEE_P:
-			resubmit(txn, submitSequence);
-			break;
-		case tefALREADY:
-			// We only get this if we are submitting with exact same
-			// transactionID
-			// Do nothing, the transaction has already been submitted
-			break;
+//		case tefPAST_SEQ:
+//			resubmitWithNewSequence(txn);
+//			break;
+//		case tefMAX_LEDGER:
+//			resubmit(txn, submitSequence);
+//			break;
+//		case terPRE_SEQ:
+//			on(OnValidatedSequence.class, new OnValidatedSequence() {
+//				@Override
+//				public void called(UInt32 sequence) {
+//					if (txn.finalizedOrResponseIsToPriorSubmission(res)) {
+//						removeListener(OnValidatedSequence.class, this);
+//					} else {
+//						if (sequence.equals(submitSequence)) {
+//							// resubmit:
+//							resubmit(txn, submitSequence);
+//							removeListener(OnValidatedSequence.class, this);
+//						}
+//					}
+//				}
+//			});
+//			break;
+//		case telINSUF_FEE_P:
+//			resubmit(txn, submitSequence);
+//			break;
+//		case tefALREADY:
+//			// We only get this if we are submitting with exact same
+//			// transactionID
+//			// Do nothing, the transaction has already been submitted
+//			break;
 		default:
 			txn.emit(ManagedTxn.OnSubmitError.class, res);
 //			switch (ter.resultClass()) {

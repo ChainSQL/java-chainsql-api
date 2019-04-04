@@ -65,9 +65,6 @@ public class Chainsql extends Submit {
 	public void as(String address, String secret) {
 		this.connection.address = address;
 		this.connection.secret = secret;
-		if (this.connection.scope == null) {
-			this.connection.scope = address;
-		}
 	}
 
 	/**
@@ -425,7 +422,7 @@ public class Chainsql extends Submit {
 			
 			return Util.successObject();
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			return Util.errorObject(e.getMessage());
 		}
 	}

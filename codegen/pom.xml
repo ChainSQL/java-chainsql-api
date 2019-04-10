@@ -71,7 +71,7 @@
 		<dependency>
 		    <groupId>com.peersafe</groupId>
 		    <artifactId>chainsql</artifactId>
-		    <version>${chainsql.version}</version>
+		    <version>1.5.0</version>
 		</dependency>		
   </dependencies>
 </project>

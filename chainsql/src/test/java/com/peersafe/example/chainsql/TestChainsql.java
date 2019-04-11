@@ -2,6 +2,7 @@ package com.peersafe.example.chainsql;
 
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.client.pubsub.Publisher.Callback;
@@ -64,7 +65,8 @@ public class TestChainsql {
 //		test.insertAfterGrant();
 		
 		//根据sql语句查询，有签名检测
-//		test.testGetBySqlUser();
+
+		test.testGetBySqlUser();
 		
 		//根据sql语句查询，admin权限，无签名检测
 //		test.testGetBySqlAdmin();
@@ -188,9 +190,25 @@ public class TestChainsql {
 	public void testCreateTable() {
 		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+		
+//		List<String> args = Util.array("{'field':'id','type':'decimal','length':1}");
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
+//		int number = 3;
+//		while(true) {
+//			List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
+//					"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+//			JSONObject obj;
+//			obj = c.createTable(sTableName + number++,args,false).submit();
+//			System.out.println("create result:" + obj);
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 	public void testinsert() {
@@ -247,7 +265,7 @@ public class TestChainsql {
 		
 //		//查询单条数据
 //		 JSONObject obj = c.table(sTableName).get(Util.array("{id:1}")).withFields("[]").submit();
-		
+		c.use(rootAddress);
 		//查询所有数据
 		 JSONObject obj = c.table(sTableName).get(Util.array("{name:hello}")).submit();
 		 System.out.println("get result:" + obj);
@@ -298,26 +316,6 @@ public class TestChainsql {
 //			JSONObject obj = c.getBySqlUser("insert into t_" + ret.getString("nameInDB") + " values()");
 			System.out.println("get_sql_user sync result:" + obj);
 		}
-		
-//		c.getTableNameInDB(rootAddress, sTableName, new Callback<JSONObject>(){
-//
-//			@Override
-//			public void called(JSONObject args) {
-//				if(ret.has("nameInDB")) {
-//					String sql = "select * from t_" + ret.getString("nameInDB");
-//					c.getBySqlUser(sql,new Callback<JSONObject>() {
-//
-//						@Override
-//						public void called(JSONObject args) {
-//							System.out.println("get_sql_user async result:" + args);
-//						}
-//						
-//					});
-//					
-//				}
-//			}
-//			
-//		});
 	}
 	
 	public void grant() {

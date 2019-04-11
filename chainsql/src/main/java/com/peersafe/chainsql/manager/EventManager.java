@@ -257,8 +257,8 @@ public class EventManager {
    	 		connection.client.getUserToken(owner,connection.address,name,new Callback<JSONObject>(){
    				@Override
    				public void called(JSONObject res) {
-   					if(res.get("status").equals("error")){
-   						System.out.println(res.getString("error_message"));
+   					if(res.has("error")){
+   						System.err.println(res);
 						mapPass.put(key, null);
 						Util.decryptData(mapPass.get(key), tx);
 						makeCallback(key,data);

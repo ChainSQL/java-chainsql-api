@@ -3,6 +3,9 @@ package com.peersafe.chainsql.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -56,6 +59,7 @@ public class Validate {
 			throw new Exception("Table name can not be longer than 64");
 		}
 //		boolean isHavePk = false;
+		Set set = new HashSet();
 		for (int i = 0; i < strraw.size(); i++) {	
 			JSONObject json = strraw.get(i);
 			String field, type;
@@ -65,6 +69,10 @@ public class Validate {
 			} catch (Exception e) {
 				throw new Exception("Raw must have  field and type");
 				// TODO: handle exception
+			}
+
+	    	if( !set.add(field)){
+				throw new Exception(" Duplicate column name `"+field+"`");
 			}
 
     		if (field==null || type==null) {

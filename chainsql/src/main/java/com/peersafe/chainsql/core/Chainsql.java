@@ -640,8 +640,8 @@ public class Chainsql extends Submit {
 			token = mapToken.get(pair);
 		}else {
 			JSONObject res = this.connection.client.getUserToken(this.connection.address,connection.address,name);
-			if(res.has("status") && res.get("status").equals("error")){
-				System.out.println(res.getString("error_message"));
+			if(res.has("error")){
+				System.err.println(res.getString("error_message"));
 				return this;
 			}
 			if(res.has("token"))

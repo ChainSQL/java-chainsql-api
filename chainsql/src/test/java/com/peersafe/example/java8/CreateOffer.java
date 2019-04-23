@@ -28,7 +28,7 @@ import com.peersafe.chainsql.core.Chainsql;
  * own issue.
  */
 public class CreateOffer {
-	public static final Chainsql c = Chainsql.c;
+	public static final Chainsql c = new Chainsql();
     public static void main(String[] args) {
         // We need a valid seed
 

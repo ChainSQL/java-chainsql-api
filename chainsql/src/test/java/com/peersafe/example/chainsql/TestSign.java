@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import com.peersafe.chainsql.core.Chainsql;
 
 public class TestSign {
-	public static final Chainsql c = Chainsql.c;
+	public static final Chainsql c = new Chainsql();
 	public static void main(String[] args) {
 		testSignPayment();
 		testSignTrustSet();

@@ -14,7 +14,7 @@ import com.peersafe.chainsql.util.Util;
 
 public class TestContractTableTxs {
 
-	public static final Chainsql c = Chainsql.c;
+	public static final Chainsql c = new Chainsql();
 	//
 	//account,secret
 	private static String[] sAddr = {
@@ -41,7 +41,7 @@ public class TestContractTableTxs {
 	public static String grantAddr = "zzzzzzzzzzzzzzzzzzzzBZbvji";
 	public static String flag = "{\"insert\":true,\"update\":true,\"delete\":true,\"select\":true}";
 
-	public static String sTableName = "table888777";
+	public static String sTableName = "hello1221";
 	public static String sTableNameNew = "table_new";
 	public static String rawTable = "["
 			+ "{ \"field\": \"id\", \"type\": \"int\" },"
@@ -75,8 +75,8 @@ public class TestContractTableTxs {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://127.0.0.1:6008");
-//		c.connect("ws://10.100.0.90:6005");
+//		c.connect("ws://127.0.0.1:6008");
+		c.connect("ws://192.168.29.90:6005");
 		//
 		c.as(rootAddress, rootSecret);
 		//
@@ -86,8 +86,8 @@ public class TestContractTableTxs {
 		sUserOper = sUser;
 		sUserOperSec = sUserSec;
 		// */
-		String contractAddr = "zB8seQf5tcPVUrofG3J8TbAbT75kyNhHF1";
-		tagStep nStep = tagStep.table_update;
+		String contractAddr = "zNh9nUsC5R7yBA2J29n2TkNVjTQCCeRFti";
+		tagStep nStep = tagStep.table_create;
 //		sTableName = sTableNameNew;
 		//
 		if (nStep != tagStep.active && nStep != tagStep.deployContract) {
@@ -117,7 +117,7 @@ public class TestContractTableTxs {
 
 	public static void deployContract() throws TransactionException {
 		c.as(sOwner, sOwnerSec);
-		DBTest contract = DBTest.deploy(c, Contract.GAS_LIMIT);
+		DBTest contract = DBTest.deploy(c, Contract.GAS_LIMIT.multiply(BigInteger.valueOf(10)));
 		String contractAddr = contract.getContractAddress();
 		System.out.print("contract address:" + contractAddr+"\n");
 	}
@@ -133,11 +133,13 @@ public class TestContractTableTxs {
 	}
 
 	public static void table_create() {
-		c.as(sOwner, sOwnerSec);
+		c.as(sUser, sUserSec);
 		//发交易调用合约
 		try {
-			JSONObject ret = myContract.create(sTableName, rawTable).submit(SyncCond.db_success);
-			System.out.println(ret);
+			for(int i=5; i<100; i++) {
+				JSONObject ret = myContract.create(sTableName + i + 1000, rawTable).submit(SyncCond.db_success);
+				System.out.println("time is :" + System.currentTimeMillis() + "the " + i + "th tx:" + ret);
+			}			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -187,12 +189,13 @@ public class TestContractTableTxs {
 		}
 	}
 	public static void table_insert() {
-//		c.as(sUser, sUserSec);
-		c.as(sOwner, sOwnerSec);
+		c.as(sUser, sUserSec);
+//		c.as(sOwner, sOwnerSec);
 		try {
-			if(!sUserOper.equals(sOwner))
+			if(!sUser.equals(sOwner))
 			{
-				myContract.insert(sOwner, sTableName, rawInsert/*, "txHash"*/).submit(SyncCond.db_success); //no support autoFillField
+				JSONObject obj = myContract.insert(sOwner, sTableName, rawInsert/*, "txHash"*/).submit(SyncCond.db_success); //no support autoFillField
+				System.out.println(obj);
 			}
 			else
 			{
@@ -276,13 +279,13 @@ public class TestContractTableTxs {
 		tableUpdate(0);
 	}
 	public static void table_get() {
-		c.as(sUserOper, sUserOperSec);
+		c.as(sUser, sUserSec);
 		try {
 			String res = myContract.get(sOwner, sTableName, "");
 			System.out.println("get result:" + res);
 			
-//			res = myContract.get(sOwner, sTableName, "","name");
-//			System.out.println("get result:" + res);
+			res = myContract.get(sOwner, sTableName, "","name");
+			System.out.println("get result:" + res);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

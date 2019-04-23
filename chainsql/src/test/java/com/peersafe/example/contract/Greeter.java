@@ -9,6 +9,7 @@ import com.peersafe.abi.datatypes.Type;
 import com.peersafe.abi.datatypes.Utf8String;
 import com.peersafe.base.client.pubsub.Publisher;
 import com.peersafe.chainsql.contract.Contract;
+import com.peersafe.chainsql.contract.exception.ContractCallException;
 import com.peersafe.chainsql.contract.exception.TransactionException;
 import com.peersafe.chainsql.core.Chainsql;
 import java.math.BigInteger;
@@ -58,11 +59,23 @@ public class Greeter extends Contract {
         return executeRemoteCallTransaction(function);
     }
 
-    public String greet() {
+    public String greet() throws ContractCallException {
         final Function function = new Function(FUNC_GREET, 
                 Arrays.<Type>asList(), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
+    }
+
+    public void greet(Publisher.Callback<String> cb) throws ContractCallException {
+        final Function function = new Function(FUNC_GREET, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+        executeCallSingleValueReturn(function, String.class,new Publisher.Callback<String>() {
+            @Override
+            public void called(String args) {
+                cb.called(args);
+            }
+        });
     }
 
     public static Greeter deploy(Chainsql chainsql, BigInteger gasLimit, BigInteger initialDropsValue, String _greeting) throws TransactionException {
@@ -70,7 +83,7 @@ public class Greeter extends Contract {
         return deployRemoteCall(Greeter.class,chainsql, gasLimit, BINARY, encodedConstructor, initialDropsValue);
     }
 
-    public static void deploy(Chainsql chainsql, BigInteger gasLimit, BigInteger initialDropsValue, String _greeting, Publisher.Callback<Greeter> cb) throws TransactionException {
+    public static void deploy(Chainsql chainsql, BigInteger gasLimit, BigInteger initialDropsValue, Publisher.Callback<Greeter> cb, String _greeting) throws TransactionException {
         String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new com.peersafe.abi.datatypes.Utf8String(_greeting)));
         deployRemoteCall(Greeter.class,chainsql, gasLimit, BINARY, encodedConstructor, initialDropsValue, cb);
     }

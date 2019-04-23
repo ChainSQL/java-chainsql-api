@@ -10,7 +10,7 @@ import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.example.contract.Greeter.ModifiedEventResponse;
 
 public class ContractTester {
-	public static final Chainsql c = Chainsql.c;
+	public static final Chainsql c = new Chainsql();
 	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
 	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 

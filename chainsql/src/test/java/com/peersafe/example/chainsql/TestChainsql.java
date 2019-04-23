@@ -12,7 +12,7 @@ import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
 
 public class TestChainsql {
-	public static final Chainsql c = Chainsql.c;
+	public static final Chainsql c = new Chainsql();
 	public static String sTableName,sTableName2,sReName;
 	public static String sNewAccountId,sNewSecret;
 
@@ -126,7 +126,7 @@ public class TestChainsql {
 	}
 	
 	public void getTransactions() {
-		JSONObject obj = c.getTransactions(rootAddress, 20);
+		JSONObject obj = c.getAccountTransactions(rootAddress, 20);
 		System.out.println(obj);
 	}
 	
@@ -177,10 +177,9 @@ public class TestChainsql {
 	public void testts() {
 		c.beginTran();
 
-		 List<String> args =
-		 Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
-		 "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
-		 );
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+				"{'field':'name','type':'varchar','length':50,'default':null}",
+				"{'field':'balance','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
 		c.table(sTableName).get(Util.array("{'id': 1}")).update("{'age':244}");
 		JSONObject obj = c.commit(SyncCond.db_success);
@@ -190,25 +189,10 @@ public class TestChainsql {
 	public void testCreateTable() {
 		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
-		
-//		List<String> args = Util.array("{'field':'id','type':'decimal','length':1}");
+
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
-//		int number = 3;
-//		while(true) {
-//			List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
-//					"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
-//			JSONObject obj;
-//			obj = c.createTable(sTableName + number++,args,false).submit();
-//			System.out.println("create result:" + obj);
-//			try {
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
 	}
 
 	public void testinsert() {

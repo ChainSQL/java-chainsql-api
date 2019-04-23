@@ -9,7 +9,7 @@ import com.peersafe.chainsql.core.Submit.SyncCond;
 
 public class TestRipple {
 	
-	public static final Chainsql c = Chainsql.c;
+	public static final Chainsql c = new Chainsql();
 	//
 	//account,secret
 	private static String[] sAddr = {

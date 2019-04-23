@@ -75,7 +75,6 @@ public class Chainsql extends Submit {
 		this.connection.scope = address;
 	}
 
-	public static final Chainsql c = new Chainsql();
 	public final EventManager event = eventManager;
 
 	/**
@@ -986,7 +985,7 @@ public class Chainsql extends Submit {
 	 * @param limit Max transaction count to get.
 	 * @return Result.
 	 */
-	public JSONObject getTransactions(String address,int limit){
+	public JSONObject getAccountTransactions(String address,int limit){
 		return this.connection.client.getTransactions(address,limit);
 	}
 	/**
@@ -1026,15 +1025,15 @@ public class Chainsql extends Submit {
 	 * @param address Account address.
 	 * @return Result.
 	 */
-	public JSONObject getTransactions(String address){
-		return getTransactions(address,DEFAULT_TX_LIMIT);
+	public JSONObject getAccountTransactions(String address){
+		return getAccountTransactions(address,DEFAULT_TX_LIMIT);
 	}
 	/**
 	 * Get trasactions submitted by notified account,asynchronous.
 	 * @param address Account address.
 	 * @param cb Callback.
 	 */
-	public void getTransactions(String address,Callback<JSONObject> cb){
+	public void getAccountTransactions(String address,Callback<JSONObject> cb){
 		this.connection.client.getTransactions(address,DEFAULT_TX_LIMIT,cb);	
 	}
 	/**
@@ -1043,8 +1042,8 @@ public class Chainsql extends Submit {
 	 * @param limit Max transaction count to get.
 	 * @param cb Callback.
 	 */
-	public void getTransactions(String address,int limit,Callback<JSONObject> cb){
-		getTransactions(address,limit,cb);	
+	public void getAccountTransactions(String address,int limit,Callback<JSONObject> cb){
+		getAccountTransactions(address,limit,cb);	
 	}
 	/**
 	 * Get transaction identified by hash.
@@ -1366,7 +1365,7 @@ public class Chainsql extends Submit {
 	 * }
 	 */
 	public JSONObject getBySqlAdmin(String sql) {
-		return c.connection.client.getBySqlAdmin(sql);
+		return connection.client.getBySqlAdmin(sql);
 	}
 	
 	/**
@@ -1375,7 +1374,7 @@ public class Chainsql extends Submit {
 	 * @param cb 查询结果回调
 	 */
 	public void getBySqlAdmin(String sql,Callback<JSONObject> cb) {
-		c.connection.client.getBySqlAdmin(sql, cb);
+		connection.client.getBySqlAdmin(sql, cb);
 	}
 	
 	/**
@@ -1388,7 +1387,7 @@ public class Chainsql extends Submit {
 	 * }
 	 */
 	public JSONObject getBySqlUser(String sql) {
-		return c.connection.client.getBySqlUser(c.connection.secret, c.connection.address, sql);
+		return connection.client.getBySqlUser(connection.secret, connection.address, sql);
 	}
 	
 	/**
@@ -1397,7 +1396,7 @@ public class Chainsql extends Submit {
 	 * @param cb 查询结果回调
 	 */
 	public void getBySqlUser(String sql,Callback<JSONObject> cb) {
-		c.connection.client.getBySqlUser(c.connection.secret, c.connection.address, sql,cb);
+		connection.client.getBySqlUser(connection.secret, connection.address, sql,cb);
 	}
 	
 	/**
@@ -1417,10 +1416,10 @@ public class Chainsql extends Submit {
 	 * }
 	 */
 	public JSONObject getTableNameInDB(String owner,String tableName) {
-		return c.connection.client.getNameInDB(owner, tableName);
+		return connection.client.getNameInDB(owner, tableName);
 	}
 	
 	public void getTableNameInDB(String owner,String tableName,Callback<JSONObject> cb) {
-		c.connection.client.getNameInDB(owner, tableName, cb);
+		connection.client.getNameInDB(owner, tableName, cb);
 	}
 }

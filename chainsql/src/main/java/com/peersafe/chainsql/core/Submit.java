@@ -243,8 +243,16 @@ public abstract class Submit {
 	    			JSONObject obj = (JSONObject)data;
 	    			JSONObject res = new JSONObject();
 	    			JSONObject tx = (JSONObject) obj.get("transaction");
-	    			res.put("tx_hash", tx.get("hash").toString());
+	    			String hash = tx.get("hash").toString();
 	    			
+	    			//only deal with subscribed tx
+	    			if(!hash.equals(txId)) {
+	    				return;
+	    			}
+	    			
+	    			res.put("tx_hash", hash);
+	    			
+	    			boolean bUnsubcribe = true;
 	    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
 	    				res.put("status", "validate_success");
 	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
@@ -253,7 +261,15 @@ public abstract class Submit {
 	    				res.put("status", obj.get("status"));
 	    				if(obj.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
+	    			}else {
+	    				bUnsubcribe = false;
 	    			}
+	    			
+	    			//unsubscribe tx
+	    			if(bUnsubcribe) {
+	    				unSubscribeTx(hash);
+	    			}
+    				
 	    			if(!res.isNull("status") && sync_state == SyncState.waiting_sync){
 	        			syncRes = res;
 	        			sync_state = SyncState.sync_response;
@@ -297,10 +313,13 @@ public abstract class Submit {
         if(res.result.has("tx_json")){
         	obj.put("tx_json", res.result.getJSONObject("tx_json"));
         }
-        if(cb != null) {
-        	cb.called(obj);
+        if(sync || cb != null) {
         	unSubscribeTx(signed.hash.toString());
+            if(cb != null) {
+            	cb.called(obj);
+            }
         }
+        
         submitRes = obj;
         submit_state = SubmitState.submit_error;
     }

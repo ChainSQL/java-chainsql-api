@@ -71,6 +71,19 @@ public class EventManager {
 			
 			this.connection.client.subscriptions.addMessage(messageTx);
 		}
+		
+		
+		for(String address : mapContractEvents.keySet()){
+
+			JSONObject contractEv = new JSONObject();
+			contractEv.put("command", "subscribe");
+			JSONArray arrAdd = new JSONArray();
+			arrAdd.put(address);
+			contractEv.put("accounts_contract", arrAdd);
+
+			this.connection.client.subscriptions.addMessage(contractEv);
+		}
+		
 	}
 	private void onChainsqlSubRet() {
 		this.connection.client.OnSubChainsqlRet(new Client.OnChainsqlSubRet() {

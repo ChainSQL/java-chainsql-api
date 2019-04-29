@@ -65,6 +65,7 @@ public class Chainsql extends Submit {
 	public void as(String address, String secret) {
 		this.connection.address = address;
 		this.connection.secret = secret;
+		this.connection.scope = address;
 	}
 
 	/**

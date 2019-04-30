@@ -760,7 +760,7 @@ public class Chainsql extends Submit {
 	 * @param dateFormatTMFinish The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when the escrowed ZXC can be released to the recipient,use "" if not set.
 	 * @param dateFormatTMCancel The time(format:yyyy-MM-dd HH:mm:ss), in seconds since the Ripple Epoch, when this escrow expires,use "" if not set.
 	 * @return You can use this to call other Chainsql functions continually.
-	 * @throws Exception 
+	 * @throws Exception Exceptions.
 	 */
 	public Ripple escrowCreate(String sDestAddr, String value, String dateFormatTMFinish, String dateFormatTMCancel) throws Exception
 	{
@@ -1044,7 +1044,7 @@ public class Chainsql extends Submit {
 	 * @param cb Callback.
 	 */
 	public void getAccountTransactions(String address,int limit,Callback<JSONObject> cb){
-		getAccountTransactions(address,limit,cb);	
+		this.connection.client.getTransactions(address,limit,cb);
 	}
 	/**
 	 * Get transaction identified by hash.

@@ -1776,7 +1776,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     /**
      * Request for account_lines.
      * @param addy account id.
-     * @param manager Callback.
+     * @param cb Callback.
      */
     public void GetAccountLines(final AccountID addy,final Callback<JSONObject> cb) {
         makeManagedRequest(Command.account_lines, new Manager<JSONObject>() {

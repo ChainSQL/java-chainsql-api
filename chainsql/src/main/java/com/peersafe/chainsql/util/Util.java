@@ -75,7 +75,7 @@ public class Util {
     
     /**
      * Transform list to JSONArray
-     * @param accounts
+     * @param accounts accounts
      * @return JSONArray object
      */
     public static  JSONArray listToJSONArray(List<String> accounts) {

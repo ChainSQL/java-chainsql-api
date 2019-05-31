@@ -94,7 +94,7 @@ public class Ripple extends Submit {
 					//
 					if((null!=feeMin) || (null!=feeMax) || lFeeRate != 0)
 					{
-						if(feeMin.equals(feeMax) && (!feeMin.isEmpty()))
+						if( (!feeMin.isEmpty()) && feeMin.equals(feeMax) )
 						{
 							value = value.add(new BigDecimal(feeMin));
 						}

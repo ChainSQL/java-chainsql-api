@@ -326,9 +326,10 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		Amount fee = client.serverInfo.transactionFee(txn.txn);
 		// Inside prepare we check if Fee and Sequence are the same, and if so
 		// we don't recreate tx_blob, or resign ;)
-		
+		int drops_per_byte = client.serverInfo.drops_per_byte;
+
 		JSONObject txJson = new JSONObject(txn.txn.prettyJSON());
-		Amount extraFee = Util.getExtraFee(txJson, TransactionType.valueOf(txJson.getString("TransactionType")));
+		Amount extraFee = Util.getExtraFee(txJson,drops_per_byte, TransactionType.valueOf(txJson.getString("TransactionType")));
 		fee = fee.add(extraFee);
 		
 		long currentLedgerIndex = client.serverInfo.ledger_index;

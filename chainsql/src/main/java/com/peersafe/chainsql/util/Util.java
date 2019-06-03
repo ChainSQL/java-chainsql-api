@@ -336,21 +336,32 @@ public class Util {
 		}
 		return false;
 	}
-	
-	public static Amount getExtraFee(JSONObject json,TransactionType type) {
+
+
+	/**
+	 *   获取交易的额外的费用
+	 *
+	 * @param json
+	 *            交易json
+	 * @param drops_per_byte
+	 *		每字节消耗多少drops
+	 * @param type
+	 * 	   交易类别
+	 * @return  额外的费用
+	 */
+	public static Amount getExtraFee(JSONObject json,int drops_per_byte,TransactionType type) {
 	   	if(isChainsqlType(type)) {
-    		int zxcDrops = 1000000;
-    		double multiplier = 0.001;
+    		int zxcDrops = 0;
     		if(json.has("Raw")) {
         		String rawHex = json.getString("Raw");
         		int rawSize = rawHex.length()/2;
-        		multiplier += rawSize / 1024.0;
+				zxcDrops = rawSize * drops_per_byte;
     		}else if(json.has("Statements")) {
     			String statementsHex = json.getString("Statements");
     			int stateSize = statementsHex.length()/2;
-    			multiplier += stateSize / 1024.0;
+				zxcDrops = stateSize * drops_per_byte;
     		}
-    		return Amount.fromString(String.valueOf((int)(multiplier * zxcDrops)));
+    		return Amount.fromString(String.valueOf( zxcDrops));
     	}else {
     		return Amount.fromString("0");
     	}

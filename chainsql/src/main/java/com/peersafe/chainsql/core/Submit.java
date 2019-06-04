@@ -347,7 +347,7 @@ public abstract class Submit {
 	protected Transaction toTransaction(JSONObject json,TransactionType type) throws Exception{
     	Transaction tx = new Transaction(type);
     	Amount fee;
-    	int drops_per_byte = 1024;
+    	int drops_per_byte = 1000;
     	if(connection.client.serverInfo.primed()) {
 			drops_per_byte = connection.client.serverInfo.drops_per_byte;
     		fee = connection.client.serverInfo.transactionFee(tx);

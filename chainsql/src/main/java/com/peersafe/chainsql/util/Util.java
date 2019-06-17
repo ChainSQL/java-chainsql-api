@@ -351,15 +351,16 @@ public class Util {
 	 */
 	public static Amount getExtraFee(JSONObject json,int drops_per_byte,TransactionType type) {
 	   	if(isChainsqlType(type)) {
-    		int zxcDrops = 0;
+    		int zxcDrops = 1000;
+
     		if(json.has("Raw")) {
         		String rawHex = json.getString("Raw");
         		int rawSize = rawHex.length()/2;
-				zxcDrops = rawSize * drops_per_byte;
+				zxcDrops += rawSize * drops_per_byte;
     		}else if(json.has("Statements")) {
     			String statementsHex = json.getString("Statements");
     			int stateSize = statementsHex.length()/2;
-				zxcDrops = stateSize * drops_per_byte;
+				zxcDrops +=  stateSize * drops_per_byte;
     		}
     		return Amount.fromString(String.valueOf( zxcDrops));
     	}else {

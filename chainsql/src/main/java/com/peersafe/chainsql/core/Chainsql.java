@@ -68,6 +68,11 @@ public class Chainsql extends Submit {
 		this.connection.scope = address;
 	}
 
+
+	public void useCert(String caPem) {
+		this.connection.caPem = caPem;
+	}
+
 	/**
 	 * Assigning table owner.
 	 * @param address Address of table owner.

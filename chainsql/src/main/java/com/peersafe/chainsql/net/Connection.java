@@ -14,6 +14,8 @@ public class Connection implements Closeable {
 	public String scope;
 	public Client client;
 
+	public String caPem; //certificate
+
 	/**
 	 * Connect to a websocket address.
 	 * @param url Websocket url.

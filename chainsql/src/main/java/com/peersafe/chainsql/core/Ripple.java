@@ -7,14 +7,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.logging.Level;
 
+import com.peersafe.base.core.coretypes.*;
+import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONObject;
 
 import com.peersafe.base.client.Client;
 import com.peersafe.base.client.requests.Request;
-import com.peersafe.base.core.coretypes.AccountID;
-import com.peersafe.base.core.coretypes.Amount;
-import com.peersafe.base.core.coretypes.Currency;
-import com.peersafe.base.core.coretypes.RippleDate;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.util.Util;
@@ -44,7 +42,12 @@ public class Ripple extends Submit {
 			if(mTxJson.toString().equals("{}")) {
 				return Util.errorObject("Exception occured");
 			}
+
+
 			mTxJson.put("Account",this.connection.address);
+
+			String sRaw = Util.toHexString(this.connection.caPem);
+			mTxJson.put("Certificate",sRaw);
 
 			String sType = mTxJson.get("TransactionType").toString();
 			if(sType.isEmpty()) {
@@ -53,8 +56,12 @@ public class Ripple extends Submit {
 			//
 			TransactionType type = TransactionType.translate.fromString(sType);
 	    	Transaction payment = toTransaction(mTxJson, type);
+
+
 			
 			signed = payment.sign(this.connection.secret);
+
+			//signed.ca_pem  =
 			
 			return Util.successObject();
 		} catch (Exception e) {

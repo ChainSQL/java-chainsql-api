@@ -137,6 +137,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		final Request req = client.newRequest(Command.submit);
 		// tx_blob is a hex string, right o' the bat
 		req.json("tx_blob", txn.tx_blob);
+		req.json("ca_pem",txn.ca_pem);
 
 		//System.out.println("before request");
 		req.once(Request.OnSuccess.class, new Request.OnSuccess() {

@@ -298,21 +298,30 @@ public abstract class Submit {
         JSONObject obj = new JSONObject();
         
         obj.put("status", "error");
-        if(res.result.has("engine_result_message"))
-        	obj.put("error_message", res.result.getString("engine_result_message"));
-        if(res.result.has("engine_result_message_detail"))
-        	obj.put("error_message",res.result.getString("engine_result_message_detail"));
-        
-        if(res.result.has("engine_result")) {
-        	obj.put("error", res.result.getString("engine_result"));
-        }
-        
-        if(res.result.has("engine_result_code")){
-        	obj.put("error_code", res.result.getInt("engine_result_code"));
-        }
-        if(res.result.has("tx_json")){
-        	obj.put("tx_json", res.result.getJSONObject("tx_json"));
-        }
+
+
+        if(res.result == null){
+        	res.result = res.message.getJSONObject("result");
+		}
+
+		if(res.result.has("engine_result_message"))
+			obj.put("error_message", res.result.getString("engine_result_message"));
+		if(res.result.has("engine_result_message_detail"))
+			obj.put("error_message",res.result.getString("engine_result_message_detail"));
+
+		if(res.result.has("engine_result")) {
+			obj.put("error", res.result.getString("engine_result"));
+		}
+
+		if(res.result.has("engine_result_code")){
+			obj.put("error_code", res.result.getInt("engine_result_code"));
+		}
+		if(res.result.has("tx_json")){
+			obj.put("tx_json", res.result.getJSONObject("tx_json"));
+		}
+
+
+
         if(sync || cb != null) {
         	unSubscribeTx(signed.hash.toString());
             if(cb != null) {

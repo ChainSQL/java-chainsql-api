@@ -339,8 +339,8 @@ public abstract class Contract extends Submit{
         if(cb == null) {
             JSONObject obj = contract.submit(SyncCond.validate_success);
             String contractAddress = null;
-
-            if(obj.getString("status").equals("validate_success")) {
+            System.out.println(obj);
+            if(obj.has("status") && obj.getString("status").equals("validate_success")) {
             	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
             	contractAddress = Util.getNewAccountFromTx(tx);
                 contract.setContractAddress(contractAddress);
@@ -364,7 +364,7 @@ public abstract class Contract extends Submit{
 					if(!obj.has("transaction"))
 						return;
 					String hash = obj.getJSONObject("transaction").getString("hash");
-					if(obj.getString("status").equals("validate_success")) {
+					if(obj.has("status") && obj.getString("status").equals("validate_success")) {
 						try {
 							c.connection.client.getTransaction(hash,new Callback<JSONObject>(){
 								@Override

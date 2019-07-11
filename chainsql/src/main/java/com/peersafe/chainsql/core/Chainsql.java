@@ -1176,9 +1176,19 @@ public class Chainsql extends Submit {
 				BigInteger bal = new BigInteger(balance);
 				BigInteger zxc = bal.divide(BigInteger.valueOf(1000000));
 				BigInteger mod = bal.mod(BigInteger.valueOf(1000000));
+
+				// sMod's length must be 6  ( 1ZXC =  10^6 drops )
+				String sMod = mod.toString();
+				int addNum =  6 - sMod.length() ;
+				while( addNum > 0 ){
+
+					sMod = "0" + sMod;
+					addNum--;
+				}
+
 				String finalZxc = zxc.toString();
 				finalZxc += ".";
-				finalZxc += mod.toString();
+				finalZxc += sMod;
 				return finalZxc;
 			}else {
 				System.err.println(result.get("error_message"));

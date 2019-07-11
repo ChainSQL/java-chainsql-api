@@ -16,7 +16,7 @@ public class ServerInfo {
 
     public int fee_base;
     public int fee_ref;
-    public int drops_per_byte;
+    public int drops_per_byte = (int) Math.ceil(1000000.0/1024);
     public int reserve_base;
     public int reserve_inc;
     public int load_base;

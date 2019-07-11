@@ -339,7 +339,6 @@ public abstract class Contract extends Submit{
         if(cb == null) {
             JSONObject obj = contract.submit(SyncCond.validate_success);
             String contractAddress = null;
-            System.out.println(obj);
             if(obj.has("status") && obj.getString("status").equals("validate_success")) {
             	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
             	contractAddress = Util.getNewAccountFromTx(tx);

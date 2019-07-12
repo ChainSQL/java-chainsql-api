@@ -30,6 +30,7 @@ public class EventManager {
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
+	private HashMap<String,Callback> mapTableCache;
 	private HashMap<String,Map<Event,Callback>> mapContractEvents;
 	public JSONObject result;
 	
@@ -48,6 +49,7 @@ public class EventManager {
 	public void init(Connection connection) {
 		this.connection = connection;
 		this.mapCache = new HashMap<String,Callback>();
+		this.mapTableCache = new HashMap<String,Callback>();
 		mapPass = new HashMap<String,byte[]>();
 		mapContractEvents = new HashMap<String,Map<Event,Callback>>();
 		this.onTbMessage = false;
@@ -61,7 +63,7 @@ public class EventManager {
 	 */
 	public void reSubscribe(){
 		int ownerLen = this.connection.address.length();
-		for(String key : mapCache.keySet()){
+		for(String key : mapTableCache.keySet()){
 			String name = key.substring(0,key.length() - ownerLen);
 			String owner = key.substring(key.length() - ownerLen);
 			
@@ -70,6 +72,14 @@ public class EventManager {
 			messageTx.put("owner", owner);
 			messageTx.put("tablename", name);
 			
+			this.connection.client.subscriptions.addMessage(messageTx);
+		}
+
+		for(String key : mapCache.keySet()){
+
+			JSONObject messageTx = new JSONObject();
+			messageTx.put("command", "subscribe");
+			messageTx.put("transaction", key);
 			this.connection.client.subscriptions.addMessage(messageTx);
 		}
 		
@@ -128,7 +138,7 @@ public class EventManager {
 			onChainsqlSubRet();
 			this.onSubRet = true;
 		}
-		this.mapCache.put(name + owner,cb);
+		this.mapTableCache.put(name + owner,cb);
 	}
 
 	/**
@@ -219,11 +229,11 @@ public class EventManager {
 		String key = name + owner;
 
 		JSONObject obj = new JSONObject();
-		if(this.mapCache.containsKey(key)) {
+		if(this.mapTableCache.containsKey(key)) {
 			obj.put("status", "success");
 			obj.put("result", "unsubscribe table success");
 			obj.put("type", "response");
-			this.mapCache.remove(key);
+			this.mapTableCache.remove(key);
 			this.mapPass.remove(key);
 		}else {
 			obj.put("status", "error");
@@ -269,56 +279,54 @@ public class EventManager {
    	 		makeCallback(key,data);
    	 	}else {
 
-			int opType = -1;
-			if(data.has("transaction") && data.getJSONObject("transaction").has("OpType")) {
+        int opType = -1;
+        if(data.has("transaction") && data.getJSONObject("transaction").has("OpType")) {
 
-				opType = data.getJSONObject("transaction").getInt("OpType");
-			}
-
-
-			if( opType == Constant.opType.get("t_drop") || opType == Constant.opType.get("t_rename") || opType == Constant.opType.get("t_grant")) {
-
-				mapPass.put(key, null);
-				Util.decryptData(mapPass.get(key), tx);
-				makeCallback(key,data);
-
-			}else{
-
-				connection.client.getUserToken(owner,connection.address,name,new Callback<JSONObject>(){
-					@Override
-					public void called(JSONObject res) {
-						if(res.has("error")){
-							System.err.println(res);
-							mapPass.put(key, null);
-							Util.decryptData(mapPass.get(key), tx);
-							makeCallback(key,data);
-						}else {
-							String token = res.getString("token");
-							if(token.length() != 0){
-								try {
-									byte[] seedBytes = null;
-									if(!connection.secret.isEmpty()){
-										seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
-									}
-									byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes);
-									mapPass.put(key, password);
-									Util.decryptData(mapPass.get(key), tx);
-									makeCallback(key,data);
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}else {
-								mapPass.put(key, null);
-								Util.decryptData(mapPass.get(key), tx);
-								makeCallback(key,data);
-							}
-						}
-					}
-				});
-
-			}
+          opType = data.getJSONObject("transaction").getInt("OpType");
+        }
 
 
+        if( opType == Constant.opType.get("t_drop") || opType == Constant.opType.get("t_rename") || opType == Constant.opType.get("t_grant")) {
+
+          mapPass.put(key, null);
+          Util.decryptData(mapPass.get(key), tx);
+          makeCallback(key,data);
+
+        }else{
+
+          connection.client.getUserToken(owner,connection.address,name,new Callback<JSONObject>(){
+            @Override
+            public void called(JSONObject res) {
+              if(res.has("error")){
+                System.err.println(res);
+                mapPass.put(key, null);
+                Util.decryptData(mapPass.get(key), tx);
+                makeCallback(key,data);
+              }else {
+                String token = res.getString("token");
+                if(token.length() != 0){
+                  try {
+                    byte[] seedBytes = null;
+                    if(!connection.secret.isEmpty()){
+                      seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
+                    }
+                    byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes);
+                    mapPass.put(key, password);
+                    Util.decryptData(mapPass.get(key), tx);
+                    makeCallback(key,data);
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+                }else {
+                  mapPass.put(key, null);
+                  Util.decryptData(mapPass.get(key), tx);
+                  makeCallback(key,data);
+                }
+              }
+            }
+          });
+
+        }
    	 	}
 	}
 	/**
@@ -378,5 +386,9 @@ public class EventManager {
 		if (mapCache.containsKey(key)) {
 	    	 mapCache.get(key).called(data);
 	     }
+
+		if (mapTableCache.containsKey(key)) {
+			mapTableCache.get(key).called(data);
+		}
 	}
 }

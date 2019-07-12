@@ -16,6 +16,7 @@ public class ServerInfo {
 
     public int fee_base;
     public int fee_ref;
+    public int drops_per_byte = (int) Math.ceil(1000000.0/1024);
     public int reserve_base;
     public int reserve_inc;
     public int load_base;
@@ -73,7 +74,8 @@ public class ServerInfo {
         // TODO, this might asking for trouble, just assuming certain fields, it should BLOW UP
 
         fee_base          = json.optInt(     "fee_base",          fee_base);
-        txn_count         = json.optInt(     "txn_count",          txn_count);
+        drops_per_byte    = json.optInt(     "drops_per_byte",    drops_per_byte);
+        txn_count         = json.optInt(     "txn_count",         txn_count);
         fee_ref           = json.optInt(     "fee_ref",           fee_ref);
         reserve_base      = json.optInt(     "reserve_base",      reserve_base);
         reserve_inc       = json.optInt(     "reserve_inc",       reserve_inc);

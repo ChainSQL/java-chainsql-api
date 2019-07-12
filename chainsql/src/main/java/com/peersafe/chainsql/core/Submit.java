@@ -347,7 +347,9 @@ public abstract class Submit {
 	protected Transaction toTransaction(JSONObject json,TransactionType type) throws Exception{
     	Transaction tx = new Transaction(type);
     	Amount fee;
+    	int drops_per_byte = 1000;
     	if(connection.client.serverInfo.primed()) {
+			drops_per_byte = connection.client.serverInfo.drops_per_byte;
     		fee = connection.client.serverInfo.transactionFee(tx);
     		if(!json.has(UInt32.LastLedgerSequence.toString())) {
     			tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 5));
@@ -361,7 +363,7 @@ public abstract class Submit {
     	}    		
     	
     	//chainsql type tx needs higher fee
-    	Amount extraFee = Util.getExtraFee(json,type);
+    	Amount extraFee = Util.getExtraFee(json,drops_per_byte,type);
     	fee = fee.add(extraFee);
     	
 		tx.as(Amount.Fee, fee);

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.peersafe.chainsql.resources.Constant;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -277,37 +278,55 @@ public class EventManager {
    	 		Util.decryptData(mapPass.get(key), tx);
    	 		makeCallback(key,data);
    	 	}else {
-   	 		connection.client.getUserToken(owner,connection.address,name,new Callback<JSONObject>(){
-   				@Override
-   				public void called(JSONObject res) {
-   					if(res.has("error")){
-   						System.err.println(res);
-						mapPass.put(key, null);
-						Util.decryptData(mapPass.get(key), tx);
-						makeCallback(key,data);
-   					}else {
-   						String token = res.getString("token");
-   						if(token.length() != 0){
-   							try {
-   								byte[] seedBytes = null;
-   								if(!connection.secret.isEmpty()){
-   									seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
-   								}
-   								byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes);
-   								mapPass.put(key, password);
-   								Util.decryptData(mapPass.get(key), tx);
-   								makeCallback(key,data);//
-   							} catch (Exception e) {
-   								e.printStackTrace();
-   							}
-   						}else {
-   							mapPass.put(key, null);
-							Util.decryptData(mapPass.get(key), tx);
-							makeCallback(key,data);
-   						}
-   					}
-   				}
-   			});
+
+        int opType = -1;
+        if(data.has("transaction") && data.getJSONObject("transaction").has("OpType")) {
+
+          opType = data.getJSONObject("transaction").getInt("OpType");
+        }
+
+
+        if( opType == Constant.opType.get("t_drop") || opType == Constant.opType.get("t_rename") || opType == Constant.opType.get("t_grant")) {
+
+          mapPass.put(key, null);
+          Util.decryptData(mapPass.get(key), tx);
+          makeCallback(key,data);
+
+        }else{
+
+          connection.client.getUserToken(owner,connection.address,name,new Callback<JSONObject>(){
+            @Override
+            public void called(JSONObject res) {
+              if(res.has("error")){
+                System.err.println(res);
+                mapPass.put(key, null);
+                Util.decryptData(mapPass.get(key), tx);
+                makeCallback(key,data);
+              }else {
+                String token = res.getString("token");
+                if(token.length() != 0){
+                  try {
+                    byte[] seedBytes = null;
+                    if(!connection.secret.isEmpty()){
+                      seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
+                    }
+                    byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes);
+                    mapPass.put(key, password);
+                    Util.decryptData(mapPass.get(key), tx);
+                    makeCallback(key,data);
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+                }else {
+                  mapPass.put(key, null);
+                  Util.decryptData(mapPass.get(key), tx);
+                  makeCallback(key,data);
+                }
+              }
+            }
+          });
+
+        }
    	 	}
 	}
 	/**

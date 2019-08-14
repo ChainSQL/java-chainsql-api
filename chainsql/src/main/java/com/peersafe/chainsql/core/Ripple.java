@@ -43,11 +43,12 @@ public class Ripple extends Submit {
 				return Util.errorObject("Exception occured");
 			}
 
-
 			mTxJson.put("Account",this.connection.address);
 
-			String sRaw = Util.toHexString(this.connection.caPem);
-			mTxJson.put("Certificate",sRaw);
+			if (this.connection.userCert != null) {
+				String sCert = Util.toHexString(this.connection.userCert);
+				mTxJson.put("Certificate", sCert);
+			}
 
 			String sType = mTxJson.get("TransactionType").toString();
 			if(sType.isEmpty()) {

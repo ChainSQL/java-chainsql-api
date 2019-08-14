@@ -70,8 +70,8 @@ public class Chainsql extends Submit {
 
 
 
-	public void useCert(String caPem) {
-		this.connection.caPem = caPem;
+	public void useCert(String userCert) {
+		this.connection.userCert = userCert;
 
 	}
 
@@ -401,6 +401,11 @@ public class Chainsql extends Submit {
 				return Util.errorObject("Exception occured");
 			}
 			mTxJson.put("Account",this.connection.address);
+
+			if (this.connection.userCert != null) {
+				String sCert = Util.toHexString(this.connection.userCert);
+				mTxJson.put("Certificate", sCert);
+			}
 
 			//for cross chain
 			if(crossChainArgs != null){

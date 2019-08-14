@@ -301,7 +301,14 @@ public abstract class Submit {
 
 
         if(res.result == null){
-        	res.result = res.message.getJSONObject("result");
+
+			res.result = new JSONObject();
+			if (res.message.has("result")) {
+				res.result = res.message.getJSONObject("result");
+			} else {
+				obj.put("error_message", res.message.getString("error_message"));
+			}
+
 		}
 
 		if(res.result.has("engine_result_message"))

@@ -128,11 +128,7 @@ public class SignedTransaction {
         }
 
         txn.signingPubKey(pubKey);
-
-
-
-        System.out.println("public key "+ Util.bytesToHex(pubKey.toBytes()));
-
+        
         if (Transaction.CANONICAL_FLAG_DEPLOYED) {
             txn.setCanonicalSignatureFlag();
         }

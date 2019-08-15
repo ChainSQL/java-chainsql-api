@@ -30,7 +30,9 @@ public class TestChainsql {
 	public static void main(String[] args) {
 //		c.connect("ws://101.201.40.124:5006");
 
+
 		c.connect("ws://192.168.1.112:6006");
+
 		
 		sTableName = "c1235";
 		sTableName2 = "tTable2";
@@ -40,7 +42,9 @@ public class TestChainsql {
 		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
 		c.as(rootAddress, rootSecret);
 
+
 		String pemContent = readPem("D:\\git\\ca\\user.pem");
+
 		c.useCert(pemContent);
 
 		System.out.println(c.pay("zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","10").submit(SyncCond.validate_success));

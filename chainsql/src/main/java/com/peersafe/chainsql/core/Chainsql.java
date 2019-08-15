@@ -69,7 +69,6 @@ public class Chainsql extends Submit {
 	}
 
 
-
 	public void useCert(String userCert) {
 		this.connection.userCert = userCert;
 

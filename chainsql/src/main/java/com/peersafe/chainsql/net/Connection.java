@@ -14,7 +14,9 @@ public class Connection implements Closeable {
 	public String scope;
 	public Client client;
 
+
 	public String userCert;
+
 
 
 	/**

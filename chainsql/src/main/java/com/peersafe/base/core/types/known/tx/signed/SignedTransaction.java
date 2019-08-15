@@ -128,7 +128,7 @@ public class SignedTransaction {
         }
 
         txn.signingPubKey(pubKey);
-        
+
         if (Transaction.CANONICAL_FLAG_DEPLOYED) {
             txn.setCanonicalSignatureFlag();
         }

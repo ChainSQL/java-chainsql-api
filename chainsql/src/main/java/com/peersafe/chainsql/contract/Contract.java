@@ -349,7 +349,12 @@ public abstract class Contract extends Submit{
             	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
             	contractAddress = Util.getNewAccountFromTx(tx);
                 contract.setContractAddress(contractAddress);
-            }else{
+            }else if(obj.has("status") && obj.getString("status").equals("validate_timeout")){
+
+                System.out.println(obj);
+                throw new TransactionException("deploy validate_timeout");
+            }
+            else{
                 if(obj.has("error_message")){
                 	if(obj.has("error_code"))
                 		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));

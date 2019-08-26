@@ -29,10 +29,7 @@ public class TestChainsql {
 	
 	public static void main(String[] args) {
 //		c.connect("ws://101.201.40.124:5006");
-
-
-		c.connect("ws://192.168.1.112:6006");
-
+		c.connect("ws://192.168.29.69:6005");
 		
 		sTableName = "c1235";
 		sTableName2 = "tTable2";
@@ -42,22 +39,17 @@ public class TestChainsql {
 		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
 		c.as(rootAddress, rootSecret);
 
-
-		String pemContent = readPem("D:\\git\\ca\\user.pem");
-
-		c.useCert(pemContent);
-
-		System.out.println(c.pay("zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","10").submit(SyncCond.validate_success));
+		//String pemContent = readCertFile("D:\\git\\ca\\userCert2.cert");
+	   //c.useCert(pemContent);
 
 
-		//testRipple();
-//		testChainSql();
+		testRipple();
+		testChainSql();
 
-//		c.disconnect();
 	}
 
 
-	private static  String readPem(String pemPath){
+	private static  String readCertFile(String pemPath){
 
 
 		String str="";
@@ -67,9 +59,6 @@ public class TestChainsql {
 		try {
 
 			FileInputStream in=new FileInputStream(file);
-
-			// size  为字串的长度 ，这里一次性读完
-
 			int size=in.available();
 
 			byte[] buffer=new byte[size];

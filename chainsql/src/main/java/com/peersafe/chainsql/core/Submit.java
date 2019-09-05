@@ -261,6 +261,8 @@ public abstract class Submit {
 	    				res.put("status", obj.get("status"));
 	    				if(obj.has("error_message"))
 	    					res.put("error_message", obj.get("error_message"));
+	    				if(obj.has("error"))
+	    					res.put("error", obj.get("error"));
 	    			}else {
 	    				bUnsubcribe = false;
 	    			}

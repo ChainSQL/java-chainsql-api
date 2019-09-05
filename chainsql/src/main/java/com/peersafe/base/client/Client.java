@@ -1413,6 +1413,52 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
 	}
 	
+	public JSONObject getLedgerTxs(Integer ledgerSeq,boolean bIncludeSuccess,boolean bIncludefailure)
+	{
+		Request request = newRequest(Command.ledger_txs);
+
+		request.json("ledger_index", ledgerSeq);
+	 	request.json("include_success", bIncludeSuccess);
+	 	request.json("include_failure",bIncludefailure);
+
+	 	request.request();
+	 	
+		waiting(request);
+		return getResult(request);	
+	}
+	
+
+	 public void getLedgerTxs(final Integer ledgerSeq,final boolean bIncludeSuccess,final boolean bIncludefailure,final Callback<JSONObject> cb){
+	 	makeManagedRequest(Command.ledger_txs, new Manager<JSONObject>() {
+	         @Override
+	         public boolean retryOnUnsuccessful(Response r) {
+	         	return false;
+	         }
+	
+	         @Override
+	         public void cb(Response response, JSONObject jsonObject) throws JSONException {
+	         	if(response.succeeded) {
+	         		cb.called(jsonObject);
+	         	}else {
+	         		JSONObject res = getResult(response.request);
+	         		cb.called(res);
+	         	}
+	         }
+	     }, new Request.Builder<JSONObject>() {
+	         @Override
+	         public void beforeRequest(Request request) {
+	     		request.json("ledger_index", ledgerSeq);
+	    	 	request.json("include_success", bIncludeSuccess);
+	    	 	request.json("include_failure",bIncludefailure);
+	         }
+	
+	         @Override
+	         public JSONObject buildTypedResponse(Response response) {
+	             return getResult(response.request);
+	         }
+	     });
+	}
+	 
 	public JSONObject getLedger(JSONObject option) {
 		Request request = newRequest(Command.ledger);
 

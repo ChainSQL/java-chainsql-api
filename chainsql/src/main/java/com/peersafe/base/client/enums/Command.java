@@ -16,6 +16,7 @@ public enum Command {
     g_dbname,
     g_userToken,
     g_accountTables,
+    ledger_txs,
     table_auth,
     internal,
     ledger,

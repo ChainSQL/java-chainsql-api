@@ -1433,4 +1433,25 @@ public class Chainsql extends Submit {
 	public void getTableNameInDB(String owner,String tableName,Callback<JSONObject> cb) {
 		connection.client.getNameInDB(owner, tableName, cb);
 	}
+	/**
+	 * 获取区块中的交易，在bIncludeSuccess与bIncludefailure都为false的情况下，只返回成功与失败的交易数量
+	 * @param ledgerSeq 要查询的区块号
+	 * @param bIncludeSuccess 查询结果中是否包含成功交易
+	 * @param bIncludefailure 查询结果中是否包含失败交易
+	 */
+	public JSONObject getLedgerTxs(Integer ledgerSeq,boolean bIncludeSuccess,boolean bIncludefailure)
+	{
+		return connection.client.getLedgerTxs(ledgerSeq,bIncludeSuccess,bIncludefailure);
+	}
+	/**
+	 * 获取区块中的交易，在bIncludeSuccess与bIncludefailure都为false的情况下，只返回成功与失败的交易数量
+	 * @param ledgerSeq 要查询的区块号
+	 * @param bIncludeSuccess 查询结果中是否包含成功交易
+	 * @param bIncludefailure 查询结果中是否包含失败交易
+	 * @param cb 查询结果回调
+	 */
+	public void getLedgerTxs(Integer ledgerSeq,boolean bIncludeSuccess,boolean bIncludefailure,Callback<JSONObject> cb)
+	{
+		connection.client.getLedgerTxs(ledgerSeq,bIncludeSuccess,bIncludefailure,cb);
+	}
 }

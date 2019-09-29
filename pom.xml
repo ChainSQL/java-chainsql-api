@@ -12,7 +12,7 @@
     <module>chainsql</module>
     <module>codegen</module>
     <module>abi_chainsql</module>
-    <module>tuples_chainsql</module>
-    <module>utils_chainsql</module>
+    <!--<module>tuples_chainsql</module>-->
+    <!--<module>utils_chainsql</module>-->
   </modules>
 </project>

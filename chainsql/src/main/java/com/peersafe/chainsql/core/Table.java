@@ -220,7 +220,7 @@ public class Table extends Submit{
 			JSONObject res = this.connection.client.getUserToken(this.connection.scope,connection.address,name);
 			if(res.has("error")){
 				if(!this.transaction)
-					System.err.println("Exception: "+res.getString("error_message"));
+					throw new Exception(res.getString("error_message"));
 			}else if(res.has("token")) {
 				token = res.getString("token");
 			}

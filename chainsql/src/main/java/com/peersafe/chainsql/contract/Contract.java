@@ -115,9 +115,12 @@ public abstract class Contract extends Submit{
     	JSONObject objTx = prepareCallParam(function);
         
         JSONObject ret = this.chainsql.connection.client.contractCall(objTx);
-        if(ret.has("error")){
-        	throw new ContractCallException(ret.getString("error"));
+        if(ret.has("error") && ret.has("error_message")){
+            throw new ContractCallException(ret.getString("error"),ret.getString("error_message"));
+        }else if(ret.has("error")){
+            throw new ContractCallException(ret.getString("error"));
         }
+
         return FunctionReturnDecoder.decode(ret.getString("contract_call_result"), function.getOutputParameters());
     }
     

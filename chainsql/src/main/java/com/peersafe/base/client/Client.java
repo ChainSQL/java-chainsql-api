@@ -2055,6 +2055,16 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("accounts", accounts_arr);
         return request;
     }
+
+    public Request unsubscribeAccount(AccountID... accounts){
+        Request request = newRequest(Command.unsubscribe);
+        JSONArray accounts_arr = new JSONArray();
+        for (AccountID acc : accounts) {
+            accounts_arr.put(acc);
+        }
+        request.json("accounts", accounts_arr);
+        return request;
+    }
     
 
     /**

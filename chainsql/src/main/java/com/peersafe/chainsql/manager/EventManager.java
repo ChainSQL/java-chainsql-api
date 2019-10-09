@@ -62,10 +62,13 @@ public class EventManager {
 	 * Resubscribe automatically after reconnected.
 	 */
 	public void reSubscribe(){
-		int ownerLen = this.connection.address.length();
 		for(String key : mapTableCache.keySet()){
-			String name = key.substring(0,key.length() - ownerLen);
-			String owner = key.substring(key.length() - ownerLen);
+			String[] keys = key.split(";");
+			if(keys.length != 2){
+				continue;
+			}
+			String name = keys[0];
+			String owner = keys[1];
 			
 	 		JSONObject messageTx = new JSONObject();
 			messageTx.put("command", "subscribe");
@@ -101,7 +104,7 @@ public class EventManager {
 			@Override
 			public void called(JSONObject args) {
 				if(args.has("owner") && args.has("tablename")) {
-					String key = args.getString("tablename") + args.getString("owner");
+					String key = args.getString("tablename") + ";" + args.getString("owner");
 					makeCallback(key,args.getJSONObject("result"));
 				}
 				if(args.has("transaction")) {
@@ -138,7 +141,7 @@ public class EventManager {
 			onChainsqlSubRet();
 			this.onSubRet = true;
 		}
-		this.mapTableCache.put(name + owner,cb);
+		this.mapTableCache.put(name +";" + owner,cb);
 	}
 
 	/**
@@ -226,7 +229,7 @@ public class EventManager {
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
 	
-		String key = name + owner;
+		String key = name +";" + owner;
 
 		JSONObject obj = new JSONObject();
 		if(this.mapTableCache.containsKey(key)) {

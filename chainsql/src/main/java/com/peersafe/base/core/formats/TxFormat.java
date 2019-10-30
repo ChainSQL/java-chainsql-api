@@ -48,6 +48,7 @@ public class TxFormat extends Format {
         put(Field.Sequence,            Requirement.REQUIRED);
         put(Field.Fee,                 Requirement.REQUIRED);
         put(Field.SigningPubKey,       Requirement.REQUIRED);
+        put(Field.Certificate,         Requirement.OPTIONAL);
 
         put(Field.Flags,               Requirement.OPTIONAL);
         put(Field.SourceTag,           Requirement.OPTIONAL);

@@ -99,6 +99,8 @@ public class Blob implements SerializedType {
     static public BlobField ExpireCode = blobField(Field.ExpireCode);
     static public BlobField CreateCode = blobField(Field.CreateCode);
 
+    static public BlobField Certificate = blobField(Field.Certificate);
+
     static public BlobField MemoType = blobField(Field.MemoType);
     static public BlobField MemoData = blobField(Field.MemoData);
     static public BlobField MemoFormat = blobField(Field.MemoFormat);

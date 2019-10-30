@@ -136,7 +136,7 @@ public enum Field {
     MemoType(12, Type.Blob),
     MemoData(13, Type.Blob),
     MemoFormat(14, Type.Blob),
-    
+    Certificate(15, Type.Blob),
     Fulfillment(16,Type.Blob),  
     Condition(17,Type.Blob),      
     MasterSignature(18,Type.Blob),

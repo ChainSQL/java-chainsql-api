@@ -63,10 +63,24 @@ public class Chainsql extends Submit {
 	 * @param secret  Account secret,start with a lower case 'x'.
 	 */
 	public void as(String address, String secret) {
+
+
+		JSONObject retAddress = generateAddress(secret);
+		if(retAddress.has("address") && !address.equals( retAddress.getString("address") )){
+			System.err.println("Exception: address and secret not match !");
+		}
+
 		this.connection.address = address;
 		this.connection.secret = secret;
 		this.connection.scope = address;
 	}
+
+
+	public void useCert(String userCert) {
+		this.connection.userCert = userCert;
+
+	}
+
 
 	/**
 	 * Assigning table owner.
@@ -393,10 +407,19 @@ public class Chainsql extends Submit {
 				return Util.errorObject("Exception occured");
 			}
 			mTxJson.put("Account",this.connection.address);
+
 			if(mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
 					!this.connection.address.equals(connection.scope)){
 				mTxJson.put("Owner",  connection.scope);
 			}
+
+
+			if (this.connection.userCert != null) {
+				String sCert = Util.toHexString(this.connection.userCert);
+				mTxJson.put("Certificate", sCert);
+			}
+
+
 			//for cross chain
 			if(crossChainArgs != null){
 				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);

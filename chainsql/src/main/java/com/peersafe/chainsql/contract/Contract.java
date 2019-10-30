@@ -280,6 +280,11 @@ public abstract class Contract extends Submit{
 				return Util.errorObject("Exception occured:Json not prepared");
 			}
 			mTxJson.put("Account",this.connection.address);
+
+            if (this.connection.userCert != null) {
+                String sCert = Util.toHexString(this.connection.userCert);
+                mTxJson.put("Certificate", sCert);
+            }
 	    	
 	    	Transaction tx = toTransaction(mTxJson,TransactionType.Contract);
 			signed = tx.sign(this.connection.secret);
@@ -342,11 +347,17 @@ public abstract class Contract extends Submit{
         if(cb == null) {
             JSONObject obj = contract.submit(SyncCond.validate_success);
             String contractAddress = null;
+
             if(obj.has("status") && obj.getString("status").equals("validate_success")) {
             	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
             	contractAddress = Util.getNewAccountFromTx(tx);
                 contract.setContractAddress(contractAddress);
-            }else{
+            }else if(obj.has("status") && obj.getString("status").equals("validate_timeout")){
+
+                System.out.println(obj);
+                throw new TransactionException("deploy validate_timeout");
+            }
+            else{
                 if(obj.has("error_message")){
                 	if(obj.has("error_code"))
                 		throw new TransactionException(obj.getString("error_message"),obj.getInt("error_code"));

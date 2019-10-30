@@ -27,6 +27,7 @@ public class EventManager {
 	public boolean onTbMessage;
 	public boolean onTxMessage;
 	public boolean onContractMessage;
+	//订阅响应
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
@@ -339,7 +340,7 @@ public class EventManager {
 	private void onTBMessage(JSONObject data){
 		String owner = data.getString("owner");
 		String name = data.getString("tablename");
-   	 	String key = name + owner;
+   	 	String key = name + ";" + owner;
    	 	onChainsqlMessage(data,key,owner,name);
 	}
 	

@@ -393,7 +393,10 @@ public class Chainsql extends Submit {
 				return Util.errorObject("Exception occured");
 			}
 			mTxJson.put("Account",this.connection.address);
-
+			if(mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
+					!this.connection.address.equals(connection.scope)){
+				mTxJson.put("Owner",  connection.scope);
+			}
 			//for cross chain
 			if(crossChainArgs != null){
 				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);

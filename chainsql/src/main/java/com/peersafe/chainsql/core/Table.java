@@ -263,13 +263,8 @@ public class Table extends Submit{
 		}
 		
 		txjson.put("Account", this.connection.address);
-
-
-		if (this.connection.userCert != null) {
-			String sCert = Util.toHexString(this.connection.userCert);
-			txjson.put("Certificate", sCert);
-		}
 		
+
 		//for cross chain
 		if(crossChainArgs != null){
 			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);

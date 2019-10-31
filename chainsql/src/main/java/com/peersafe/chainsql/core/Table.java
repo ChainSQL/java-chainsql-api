@@ -264,6 +264,7 @@ public class Table extends Submit{
 		
 		txjson.put("Account", this.connection.address);
 		
+
 		//for cross chain
 		if(crossChainArgs != null){
 			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);

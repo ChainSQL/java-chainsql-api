@@ -1,5 +1,9 @@
 package com.peersafe.example.chainsql;
 
+import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -24,27 +28,68 @@ public class TestChainsql {
 	
 	
 	public static void main(String[] args) {
+
+
+
 //		c.connect("ws://101.201.40.124:5006");
-		c.connect("ws://127.0.0.1:6008");
+		c.connect("ws://192.168.29.112:6005");
 		
-		sTableName = "c1235";
+		sTableName = "c12356";
 		sTableName2 = "tTable2";
 		sReName = "tTable3";
 
+		// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
 		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
 		c.as(rootAddress, rootSecret);
 
 
-		testRipple();
-//		testChainSql();
+		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
+		//c.useCert(pemContent);
 
-//		c.disconnect();
+		//testRipple();
+		testChainSql();
+
+	}
+
+
+	private static  String readCertFile(String pemPath){
+
+
+		String str="";
+
+		File file=new File(pemPath);
+
+		try {
+
+			FileInputStream in=new FileInputStream(file);
+			int size=in.available();
+
+			byte[] buffer=new byte[size];
+
+			in.read(buffer);
+
+			in.close();
+
+			str=new String(buffer,"GB2312");
+
+		} catch (IOException e) {
+
+			// TODO Auto-generated catch block
+
+			e.printStackTrace();
+
+			return null;
+
+		}
+
+		return str;
+
 	}
 	
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-//		test.testCreateTable();
+		test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
@@ -66,7 +111,7 @@ public class TestChainsql {
 		
 		//根据sql语句查询，有签名检测
 
-		test.testGetBySqlUser();
+	//	test.testGetBySqlUser();
 		
 		//根据sql语句查询，admin权限，无签名检测
 //		test.testGetBySqlAdmin();
@@ -191,7 +236,7 @@ public class TestChainsql {
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
 		JSONObject obj;
-		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
+		obj = c.createTable("666",args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
 	}
 

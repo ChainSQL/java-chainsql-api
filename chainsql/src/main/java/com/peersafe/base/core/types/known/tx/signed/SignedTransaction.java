@@ -17,6 +17,7 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.chainsql.util.Util;
 
 public class SignedTransaction {
     private SignedTransaction(Transaction of) {
@@ -30,6 +31,7 @@ public class SignedTransaction {
     	this.signingData = st.signingData;
     	this.previousSigningData = st.previousSigningData;
     	this.tx_blob = st.tx_blob;
+    	this.ca_pem  = st.ca_pem;
     }
     // This will eventually be private
     @Deprecated
@@ -41,6 +43,8 @@ public class SignedTransaction {
     public byte[] signingData;
     public byte[] previousSigningData;
     public String tx_blob;
+
+    public String ca_pem;// CA
 
     public void multiSign(String base58Secret){
     	multiSign(Seed.fromBase58(base58Secret).keyPair());

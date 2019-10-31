@@ -1515,9 +1515,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	for(int i=0; i<txs.length(); i++){
         		JSONObject tx = (JSONObject)txs.get(i);
         		Util.unHexData(tx.getJSONObject("tx"));
-        		if(tx.has("meta")){
-        			tx.remove("meta");
-        		}
+//        		if(tx.has("meta")){
+//        			tx.remove("meta");
+//        		}
         	}
     	}
     }
@@ -2048,6 +2048,16 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     public Request subscribeAccount(AccountID... accounts) {
         Request request = newRequest(Command.subscribe);
+        JSONArray accounts_arr = new JSONArray();
+        for (AccountID acc : accounts) {
+            accounts_arr.put(acc);
+        }
+        request.json("accounts", accounts_arr);
+        return request;
+    }
+
+    public Request unsubscribeAccount(AccountID... accounts){
+        Request request = newRequest(Command.unsubscribe);
         JSONArray accounts_arr = new JSONArray();
         for (AccountID acc : accounts) {
             accounts_arr.put(acc);

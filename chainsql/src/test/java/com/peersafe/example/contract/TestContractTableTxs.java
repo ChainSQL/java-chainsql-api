@@ -76,7 +76,7 @@ public class TestContractTableTxs {
 	{		
 		//
 //		c.connect("ws://127.0.0.1:6008");
-		c.connect("ws://192.168.29.90:6005");
+		c.connect("ws://192.168.29.69:6006");
 		//
 		c.as(rootAddress, rootSecret);
 		//
@@ -86,8 +86,8 @@ public class TestContractTableTxs {
 		sUserOper = sUser;
 		sUserOperSec = sUserSec;
 		// */
-		String contractAddr = "zNh9nUsC5R7yBA2J29n2TkNVjTQCCeRFti";
-		tagStep nStep = tagStep.table_create;
+		String contractAddr = "znt6YNMvfvd52US1LnmZx84juBSqHCf6RW";
+		tagStep nStep = tagStep.table_insert;
 //		sTableName = sTableNameNew;
 		//
 		if (nStep != tagStep.active && nStep != tagStep.deployContract) {
@@ -133,13 +133,11 @@ public class TestContractTableTxs {
 	}
 
 	public static void table_create() {
-		c.as(sUser, sUserSec);
+		c.as(sOwner, sOwnerSec);
 		//发交易调用合约
 		try {
-			for(int i=5; i<100; i++) {
-				JSONObject ret = myContract.create(sTableName + i + 1000, rawTable).submit(SyncCond.db_success);
-				System.out.println("time is :" + System.currentTimeMillis() + "the " + i + "th tx:" + ret);
-			}			
+				JSONObject ret = myContract.create(sTableName, rawTable).submit(SyncCond.db_success);
+				System.out.println(ret);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

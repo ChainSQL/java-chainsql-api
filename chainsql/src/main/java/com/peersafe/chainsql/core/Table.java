@@ -24,6 +24,8 @@ public class Table extends Submit{
 	private List<String> query = new ArrayList<String>();
 	private String exec;
 
+	private String autoFillField;
+
 	/**
 	 * Constructor for Table.
 	 * @param name Tablename.
@@ -51,9 +53,28 @@ public class Table extends Submit{
 		}
 	    this.exec = "r_insert";
 	    return dealWithTransaction();
-		
+
 	}
-	
+
+	/**
+	 * Insert data to a table.
+	 * @param orgs  Insert parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table insert(List<String> orgs,String autoFillField){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
+		}
+		this.autoFillField = autoFillField;
+		this.exec = "r_insert";
+		return dealWithTransaction();
+
+	}
+
 	/**
 	 * Update table data.
 	 * @param orgs Update parameters.
@@ -264,12 +285,10 @@ public class Table extends Submit{
 		
 		txjson.put("Account", this.connection.address);
 
-
-		if (this.connection.userCert != null) {
-			String sCert = Util.toHexString(this.connection.userCert);
-			txjson.put("Certificate", sCert);
+		if(this.autoFillField != null){
+			txjson.put("AutoFillField", Util.toHexString(this.autoFillField));
 		}
-		
+
 		//for cross chain
 		if(crossChainArgs != null){
 			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);

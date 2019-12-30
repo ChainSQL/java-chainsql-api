@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.peersafe.chainsql.manager.CallbackManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -361,6 +362,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         manuallyDisconnected = true;
     	disconnectInner();
         service.shutdownNow();
+        CallbackManager.instance().shutdown();
         // our disconnect handler should do the rest
     }
     

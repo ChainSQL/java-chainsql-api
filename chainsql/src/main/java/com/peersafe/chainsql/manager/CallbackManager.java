@@ -24,5 +24,9 @@ public class CallbackManager {
      */
     public void runRunnable(Runnable runnable) {
     	service.execute(runnable);
-    }    
+    }
+
+    public void shutdown(){
+		service.shutdown();
+	}
 }

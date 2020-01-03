@@ -75,7 +75,7 @@ public class TestRipple {
 				jsonObj = c.accountSet(8, true).submit(SyncCond.validate_success);
 				System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
 				try {
-					jsonObj = c.accountSet("1.2", "0.2", "0.3").submit(SyncCond.validate_success);
+					jsonObj = c.accountSet("1.002", "0.2", "0.3").submit(SyncCond.validate_success);
 					System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
 				}
 				catch (Exception e)

@@ -103,7 +103,7 @@ public class Ripple extends Submit {
 					//
 					if((null!=feeMin) || (null!=feeMax) || lFeeRate != 0)
 					{
-						if( (!feeMin.isEmpty()) && feeMin.equals(feeMax) )
+						if( null != feeMin && !feeMin.isEmpty() && feeMin.equals(feeMax) )
 						{
 							value = value.add(new BigDecimal(feeMin));
 						}
@@ -330,51 +330,56 @@ public class Ripple extends Submit {
 	 * @param transferFeeMax  decimal number string
 	 * @return You can use this to call other Ripple functions continually.
 	 */
-	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax)
+	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax) throws Exception
 	{
 		//
 		double rate = 1.0;double feeMin;double feeMax;
-		try {
+//		try {
 			rate = Double.parseDouble(transferRate);
 			if((rate != 0) && rate<1.0 || rate>2.0)
 			{
-				Client.logger.log(Level.WARNING, "TransferRate must be 0 or a number >= 1.0 && <= 2.0");
-				return null;
+				throw new Exception("TransferRate must be 0 or a number >= 1.0 && <= 2.0");
+//				Client.logger.log(Level.WARNING, "TransferRate must be 0 or a number >= 1.0 && <= 2.0");
+//				return null;
 			}
 			feeMin = Double.parseDouble(transferFeeMin);
 			feeMax = Double.parseDouble(transferFeeMax);
 			if(feeMin < 0 || feeMax <0)
 			{
-				Client.logger.log(Level.WARNING, "min or max cannot be less than 0");
-				return null;
+				throw new Exception("min or max cannot be less than 0");
+//				Client.logger.log(Level.WARNING, "min or max cannot be less than 0");
+//				return null;
 			}
 			if(feeMin > feeMax)
 			{
-				Client.logger.log(Level.WARNING, "min cannot be greater than max");
-				return null;
+				throw new Exception("min cannot be greater than max");
+//				Client.logger.log(Level.WARNING, "min cannot be greater than max");
+//				return null;
 			}
 			//
 			if(feeMin == feeMax && feeMin>0)
 			{
 				if(rate>PRECISION && rate-1.0 > PRECISION)
 				{
-					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
-					return null;
+					throw new Exception("fee mismatch transferRate");
+//					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
+//					return null;
 				}
 			}
 			if(feeMin < feeMax) {
 				if(rate<PRECISION || rate-1.0 < PRECISION)
 				{
-					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
-					return null;
+					throw new Exception("fee mismatch transferRate");
+//					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
+//					return null;
 				}
 			}
-		}
-		catch(Exception e)
-		{
-			Client.logger.log(Level.WARNING, e + "\nTransferRate must be a number >= 1.0 && <= 2.0; TransferFeeMin and TransferFeeMax must be decimal number string.");
-			return null;
-		}
+//		}
+//		catch(Exception e)
+//		{
+//			Client.logger.log(Level.WARNING, e + "\nTransferRate must be a number >= 1.0 && <= 2.0; TransferFeeMin and TransferFeeMax must be decimal number string.");
+//			return null;
+//		}
 		transferRate = transferRate.replace(".", "");
 		int nLen = 10 - transferRate.length();
 		while (nLen>0)

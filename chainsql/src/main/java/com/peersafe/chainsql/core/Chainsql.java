@@ -408,17 +408,15 @@ public class Chainsql extends Submit {
 			}
 			mTxJson.put("Account",this.connection.address);
 
-			if(mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
+			if(mTxJson.has("OpType") && mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
 					!this.connection.address.equals(connection.scope)){
 				mTxJson.put("Owner",  connection.scope);
 			}
-
 
 			if (this.connection.userCert != null) {
 				String sCert = Util.toHexString(this.connection.userCert);
 				mTxJson.put("Certificate", sCert);
 			}
-
 
 			//for cross chain
 			if(crossChainArgs != null){

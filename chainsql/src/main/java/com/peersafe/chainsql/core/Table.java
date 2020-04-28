@@ -285,6 +285,11 @@ public class Table extends Submit{
 		
 		txjson.put("Account", this.connection.address);
 
+		if (this.connection.userCert != null) {
+			String sCert = Util.toHexString(this.connection.userCert);
+			txjson.put("Certificate", sCert);
+		}
+
 		if(this.autoFillField != null){
 			txjson.put("AutoFillField", Util.toHexString(this.autoFillField));
 		}

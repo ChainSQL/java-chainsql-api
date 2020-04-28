@@ -7,31 +7,35 @@ import com.peersafe.base.core.coretypes.RippleDate;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 
+import java.nio.channels.ScatteringByteChannel;
+
 public class TestRipple {
 	
 	public static final Chainsql c = new Chainsql();
 	//
 	//account,secret
 	private static String[] sAddr = {
-			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // 0
-			"zKQwdkkzpUQC9haHFEe2EwUsKHvvwwPHsv", // 1
-			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // 2
-			"z4ypskpHPpMDtHsZvFHg8eDEdTjQrYYYV6"  // 3
+			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // root
+			"zLLV3G8RfBXY4EAYDvnSaAz4q4PQg8PEe6", // user1
+			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // user
+			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS"  // issuer
 
 	};
 	private static String[] sSec = {
-			"xnoPBzXtMeMyMHUVTgbuqAfg1SUTb", // 0
-			"xnJn5J5uYz3qnYX72jXkAPVB3ZsER", // 1
-			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // 2
-			"xxXvas5HTwVwjpmGNLQDdRyYe2H6t"  // 3
+			"xnoPBzXtMeMyMHUVTgbuqAfg1SUTb", // root sec
+			"xnBWT67xXecGGWPCrTYtE1MHjKQqW", // user1 sec
+			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // user sec
+			"xxRjxBvT7ABczPh2CMikpNUwjiuLU"  // issuer sec
 
 	};
 	public static String rootAddress = sAddr[0];
 	public static String rootSecret = sSec[0];
+
 	public static String sUser1 = sAddr[1];
 	public static String sUserSec1 = sSec[1];
 	public static String sUser = sAddr[2];
 	public static String sUserSec = sSec[2];
+
 	public static String sGateWay = sAddr[3];
 	public static String sGateWaySec = sSec[3];
 
@@ -39,9 +43,9 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://127.0.0.1:6006");
+		c.connect("ws://192.168.29.115:5217");
 		//
-		String sCurrency = "aaa";
+		String sCurrency = "abc";
 		JSONObject jsonObj;
 		boolean bGateWay = true;
 		boolean bEscrow = false;
@@ -50,9 +54,9 @@ public class TestRipple {
 			//
 			c.as(rootAddress, rootSecret);
 			//
-			boolean bActive = true;
+			boolean bActive = false;
 			boolean bTrust = true;
-			boolean bPay = true;
+			boolean bPay = false;
 			if(bActive)
 			{
 				System.out.print("activate >>>>>>>>>>>>>>>\n");
@@ -70,8 +74,14 @@ public class TestRipple {
 				c.as(sGateWay, sGateWaySec);
 				jsonObj = c.accountSet(8, true).submit(SyncCond.validate_success);
 				System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
-				jsonObj = c.accountSet("1.005", "0.2", "0.3").submit(SyncCond.validate_success);
-				System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
+				try {
+					jsonObj = c.accountSet("1.002", "0.2", "0.3").submit(SyncCond.validate_success);
+					System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
+				}
+				catch (Exception e)
+				{
+					System.out.print(e);
+				}
 				c.as(sUser, sUserSec);
 				jsonObj = c.trustSet("1000000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
 				System.out.print("     user: " + jsonObj + "\n");
@@ -96,7 +106,7 @@ public class TestRipple {
 				jsonObj = c.connection.client.GetAccountLines(sUser);
 				System.out.print("    lines: " + jsonObj + "\n");
 				c.as(sUser, sUserSec);
-				jsonObj  = c.pay(sUser1, "10000", sCurrency, sGateWay).submit(SyncCond.validate_success);
+				jsonObj  = c.pay(sUser1, "10000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
 				System.out.print("    user1:\n     " + jsonObj + "\n");
 				jsonObj = c.connection.client.GetAccountLines(sUser1);
 				System.out.print("    lines: " + jsonObj + "\n");
@@ -109,11 +119,14 @@ public class TestRipple {
 			boolean bTestFin = true;
 			boolean bTestCancel = false;
 			boolean bTime = false;
-			int nCreateEscrowSeq = 41;
+			int nCreateEscrowSeq = 2;
 			if(bTestCreate)
 			{
-				c.as(sUser, sUserSec);
-				jsonObj = c.escrowCreate(sUser1, "100", sCurrency, sGateWay, "2018-09-12 16:42:00", "2018-09-12 16:43:00").submit(SyncCond.validate_success);
+				c.as(sGateWay, sGateWaySec);
+//				jsonObj = c.escrowCreate(sUser1, "10", "", "2020-01-03 18:10:40").submit(SyncCond.validate_success);
+				jsonObj = c.escrowCreate(sUser1, "10", "2020-01-03 17:27:06", "2020-01-03 18:10:40").submit(SyncCond.validate_success);
+//				jsonObj = c.escrowCreate(sUser1, "10", sCurrency, sGateWay, "", "2020-01-03 16:17:56").submit(SyncCond.validate_success);
+//				jsonObj = c.escrowCreate(sUser1, "10", sCurrency, sGateWay, "2018-09-12 16:42:00", "2018-09-12 16:43:00").submit(SyncCond.validate_success);
 				System.out.print("escrowCreate res: " + jsonObj + "\n");
 				jsonObj = c.getTransaction(jsonObj.getString("tx_hash"));
 				nCreateEscrowSeq = jsonObj.getInt("Sequence");
@@ -123,7 +136,7 @@ public class TestRipple {
 			if(bTestFin)
 			{
 				c.as(sUser1, sUserSec1);
-				jsonObj = c.escrowExecute(sUser, nCreateEscrowSeq).submit(SyncCond.validate_success);
+				jsonObj = c.escrowExecute(sGateWay, nCreateEscrowSeq).submit(SyncCond.validate_success);
 				System.out.print("escrowExecute res: " + jsonObj + "\n");
 			}
 			if(bTestCancel)
@@ -134,7 +147,7 @@ public class TestRipple {
 			}
 			if(bTime)
 			{
-				System.out.print("\n" + RippleDate.localFromSecondsSinceRippleEpoch(590056740) + "\n");
+				System.out.print("\n" + RippleDate.localFromSecondsSinceRippleEpoch(631346404) + "\n");
 				System.exit(1);
 			}
 			System.exit(1);

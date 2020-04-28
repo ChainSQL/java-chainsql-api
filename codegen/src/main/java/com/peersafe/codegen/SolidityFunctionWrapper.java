@@ -825,7 +825,8 @@ public class SolidityFunctionWrapper extends Generator {
             
         	ParameterizedTypeName typeName = ParameterizedTypeName.get(
                     ClassName.get(Callback.class), nativeReturnTypeName);
-        	methodBuilder.addParameter(typeName,CALLBACK);
+        	
+        	methodBuilder.addParameter(typeName,CALLBACK,Modifier.FINAL);
         	
             methodBuilder.addStatement("final $T function = "
                             + "new $T($N, \n$T.<$T>asList($L), "
@@ -920,7 +921,7 @@ public class SolidityFunctionWrapper extends Generator {
                     methodBuilder, functionName, inputParams, outputParameterTypes);
             
             methodBuilder.addParameter(ParameterizedTypeName.get(
-                    ClassName.get(Callback.class), parameterizedTupleType),CALLBACK);
+                    ClassName.get(Callback.class), parameterizedTupleType),CALLBACK,Modifier.FINAL);
 
             buildTupleResultContainerAsync(methodBuilder, parameterizedTupleType, outputParameterTypes);
         }

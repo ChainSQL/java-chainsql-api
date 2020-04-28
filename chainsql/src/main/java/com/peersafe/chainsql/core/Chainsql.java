@@ -854,7 +854,7 @@ public class Chainsql extends Submit {
 	 * @param transferFeeMax  decimal number string
 	 * @return You can use this to call other Ripple functions continually.
 	 */
-	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax)
+	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax) throws Exception
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.accountSet(transferRate, transferFeeMin, transferFeeMax);

@@ -362,7 +362,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         manuallyDisconnected = true;
     	disconnectInner();
         service.shutdownNow();
-        CallbackManager.instance().shutdown();
+        //CallbackManager.instance().shutdown();
         // our disconnect handler should do the rest
     }
     

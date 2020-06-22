@@ -88,6 +88,26 @@ public class Table extends Submit{
 	    return dealWithTransaction();
 		
 	}
+
+	/**
+	 * Update data to a table.
+	 * @param orgs  Update parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table update(String orgs,String autoFillField){
+
+
+		String json = Util.StrToJsonStr(orgs);
+		this.query.add(0, json);
+
+		this.autoFillField = autoFillField;
+		this.exec = "r_update";
+		return dealWithTransaction();
+
+	}
+
+
 	/**
 	 * Delete data from a table.
 	 * @return Table object,can be used to operate Table continually.

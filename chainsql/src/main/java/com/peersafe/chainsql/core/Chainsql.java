@@ -73,6 +73,8 @@ public class Chainsql extends Submit {
 		this.connection.address = address;
 		this.connection.secret = secret;
 		this.connection.scope = address;
+
+		this.connection.account = this.connection.client.accountFromSeed(secret);
 	}
 
 

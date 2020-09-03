@@ -385,14 +385,23 @@ public abstract class Submit {
     	fee = fee.add(extraFee);
     	
 		tx.as(Amount.Fee, fee);
+
+		int count = 100;
+		while (!connection.account.getAccountRoot().primed()) {
+			Util.waiting();
+			if (--count == 0) {
+				break;
+			}
+		}
+		tx.put(UInt32.Sequence, connection.account.transactionManager().locallyPreemptedSubmissionSequence());
 		
-  		AccountID account = AccountID.fromAddress(this.connection.address);
-  		JSONObject obj = connection.client.accountInfo(account);
-  		if(obj.has("error")) {
-  			throw new Exception(obj.getString("error_message"));
-  		}else {
-  			tx.as(UInt32.Sequence, obj.getJSONObject("account_data").getInt("Sequence"));
-  		}
+//  		AccountID account = AccountID.fromAddress(this.connection.address);
+//  		JSONObject obj = connection.client.accountInfo(account);
+//  		if(obj.has("error")) {
+//  			throw new Exception(obj.getString("error_message"));
+//  		}else {
+//  			tx.as(UInt32.Sequence, obj.getJSONObject("account_data").getInt("Sequence"));
+//  		}
  		
 		try {  
 		   tx.parseFromJson(json);

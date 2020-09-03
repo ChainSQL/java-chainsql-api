@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 import com.peersafe.base.client.Client;
+import com.peersafe.base.client.Account;
 import com.peersafe.base.client.transport.WebSocketTransport;
 import com.peersafe.base.client.transport.impl.JavaWebSocketTransportImpl;
 
@@ -12,8 +13,9 @@ public class Connection implements Closeable {
 	public String address;
 	public String secret;
 	public String scope;
-	public Client client;
+	public Account account;
 
+	public Client client;
 
 	public String userCert;
 

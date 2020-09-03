@@ -15,16 +15,16 @@ public class TestRipple {
 	//
 	//account,secret
 	private static String[] sAddr = {
-			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // root
-			"zLLV3G8RfBXY4EAYDvnSaAz4q4PQg8PEe6", // user1
-			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // user
-			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS"  // issuer
+			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // root in shard 1
+			"zLLV3G8RfBXY4EAYDvnSaAz4q4PQg8PEe6", // user1 in shard 1
+			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // user2 in shard 2
+			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS"  // issuer in shard 2
 
 	};
 	private static String[] sSec = {
 			"xnoPBzXtMeMyMHUVTgbuqAfg1SUTb", // root sec
 			"xnBWT67xXecGGWPCrTYtE1MHjKQqW", // user1 sec
-			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // user sec
+			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // user2 sec
 			"xxRjxBvT7ABczPh2CMikpNUwjiuLU"  // issuer sec
 
 	};
@@ -33,8 +33,8 @@ public class TestRipple {
 
 	public static String sUser1 = sAddr[1];
 	public static String sUserSec1 = sSec[1];
-	public static String sUser = sAddr[2];
-	public static String sUserSec = sSec[2];
+	public static String sUser2 = sAddr[2];
+	public static String sUserSec2 = sSec[2];
 
 	public static String sGateWay = sAddr[3];
 	public static String sGateWaySec = sSec[3];
@@ -43,7 +43,7 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://192.168.29.115:5217");
+		c.connect("ws://192.168.29.69:5017");
 		//
 		String sCurrency = "abc";
 		JSONObject jsonObj;
@@ -54,17 +54,17 @@ public class TestRipple {
 			//
 			c.as(rootAddress, rootSecret);
 			//
-			boolean bActive = false;
+			boolean bActive = true;
 			boolean bTrust = true;
-			boolean bPay = false;
+			boolean bPay = true;
 			if(bActive)
 			{
 				System.out.print("activate >>>>>>>>>>>>>>>\n");
 				jsonObj = c.pay(sGateWay, "100000000").submit(SyncCond.validate_success);
 				System.out.print("     gateWay:" + jsonObj + "\n");
-				jsonObj = c.pay(sUser, "100000000").submit(SyncCond.validate_success);
-				System.out.print("     user:" + jsonObj + "\n");
 				jsonObj = c.pay(sUser1, "100000000").submit(SyncCond.validate_success);
+				System.out.print("     user:" + jsonObj + "\n");
+				jsonObj = c.pay(sUser2, "100000000").submit(SyncCond.validate_success);
 				System.out.print("     user1:" + jsonObj + "\n");
 				System.out.print("activate <<<<<<<<<<<<<<<\n");
 			}
@@ -82,18 +82,18 @@ public class TestRipple {
 				{
 					System.out.print(e);
 				}
-				c.as(sUser, sUserSec);
-				jsonObj = c.trustSet("1000000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
-				System.out.print("     user: " + jsonObj + "\n");
 				c.as(sUser1, sUserSec1);
-				jsonObj = c.trustSet("1000000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
+				jsonObj = c.trustSet("10000", sCurrency, sGateWay).submit(SyncCond.send_success);
 				System.out.print("     user1: " + jsonObj + "\n");
+				c.as(sUser2, sUserSec2);
+				jsonObj = c.trustSet("10000", sCurrency, sGateWay).submit(SyncCond.validate_success);
+				System.out.print("     user2: " + jsonObj + "\n");
 				//check accountline
 				System.out.print("acountLines ...\n");
-				jsonObj = c.connection.client.GetAccountLines(sUser);
-				System.out.print("     user: " + jsonObj + "\n");
 				jsonObj = c.connection.client.GetAccountLines(sUser1);
-				System.out.print("     user1 " + jsonObj + "\n");
+				System.out.print("     user1: " + jsonObj + "\n");
+				jsonObj = c.connection.client.GetAccountLines(sUser2);
+				System.out.print("     user2: " + jsonObj + "\n");
 				System.out.print("trust <<<<<<<<<<<<<<<\n");
 			}
 			if(bPay)
@@ -101,15 +101,23 @@ public class TestRipple {
 				System.out.print("pay >>>>>>>>>>>>>>>\n");
 				System.out.print("transter issue coin hello:\n");
 				c.as(sGateWay, sGateWaySec);
-				jsonObj = c.pay(sUser, "1000000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
-				System.out.print("    user:\n     " + jsonObj + "\n");
-				jsonObj = c.connection.client.GetAccountLines(sUser);
-				System.out.print("    lines: " + jsonObj + "\n");
-				c.as(sUser, sUserSec);
-				jsonObj  = c.pay(sUser1, "10000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
-				System.out.print("    user1:\n     " + jsonObj + "\n");
+				jsonObj = c.pay(sUser2, "3000", sCurrency, sGateWay).submit(SyncCond.validate_success);
+				System.out.print("   gateway: " + jsonObj + "\n");
+
+				c.as(sUser2, sUserSec2);
+				jsonObj = c.pay(sUser1, "2000", sCurrency, sGateWay).submit(SyncCond.send_success);
+				System.out.print("     user2: " + jsonObj + "\n");
+
+				c.as(sUser1, sUserSec1);
+				jsonObj = c.trustSet("1", sCurrency, sGateWay).submit(SyncCond.validate_success);
+				System.out.print("     user1: " + jsonObj + "\n");
+
 				jsonObj = c.connection.client.GetAccountLines(sUser1);
-				System.out.print("    lines: " + jsonObj + "\n");
+				System.out.print("user1 lines: " + jsonObj + "\n");
+				jsonObj = c.connection.client.GetAccountLines(sUser2);
+				System.out.print("user2 lines: " + jsonObj + "\n");
+				jsonObj = c.connection.client.GetAccountLines(sGateWay);
+				System.out.print("   gw lines: " + jsonObj + "\n");
 				System.out.print("pay <<<<<<<<<<<<<<<\n");
 			}
 		}
@@ -141,8 +149,8 @@ public class TestRipple {
 			}
 			if(bTestCancel)
 			{
-				c.as(sUser, sUserSec);
-				jsonObj = c.escrowCancel(sUser, nCreateEscrowSeq).submit(SyncCond.validate_success);
+				c.as(sUser1, sUserSec1);
+				jsonObj = c.escrowCancel(sUser1, nCreateEscrowSeq).submit(SyncCond.validate_success);
 				System.out.print("escrowCancel res: " + jsonObj + "\n");
 			}
 			if(bTime)

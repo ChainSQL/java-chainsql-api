@@ -117,7 +117,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 	Set<Long> seenValidatedSequences = new TreeSet<Long>();
 	public long sequence = 0;
 
-	private UInt32 locallyPreemptedSubmissionSequence() {
+	public UInt32 locallyPreemptedSubmissionSequence() {
 		if (!accountRoot.primed()) {
 			throw new IllegalStateException("The AccountRoot hasn't been populated from the server");
 		}
@@ -406,9 +406,9 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		case telNormalFailure:
 			txn.emit(ManagedTxn.OnSubmitError.class, res);
 			return;
-//		case tefPAST_SEQ:
+		case tefPAST_SEQ:
 //			resubmitWithNewSequence(txn);
-//			break;
+			break;
 //		case tefMAX_LEDGER:
 //			resubmit(txn, submitSequence);
 //			break;
@@ -451,7 +451,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 //			case terRETRY:
 //				awaitLastLedgerSequenceExpiry(txn);
 //				if (getPending().isEmpty()) {
-//					sequence--;
+					sequence--;
 //				} else {
 //					// Plug a Sequence gap and pre-emptively resubmit some txns
 //					// rather than waiting for `OnValidatedSequence` which will

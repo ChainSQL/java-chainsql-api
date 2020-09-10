@@ -266,6 +266,11 @@ public abstract class Contract extends Submit{
         if(dropValue.intValue() > 0)
         	objTx.put("ContractValue", Amount.fromString(dropValue.toString()));
         objTx.put("ContractAddress", contractAddress);
+
+        if (this.priority)
+        {
+            objTx.put("Priority", 1);
+        }
         
         mTxJson = objTx;
         

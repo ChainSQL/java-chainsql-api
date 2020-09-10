@@ -50,6 +50,8 @@ public abstract class Submit {
 	protected Integer needVerify = 1;
 	//严格模式
 	protected boolean strictMode = false;
+	//合約嵌套调用交易，发送到委员会处理
+	protected boolean priority = true;
 	
 	public enum SyncCond {
 		send_success,
@@ -90,6 +92,10 @@ public abstract class Submit {
 	
 	public void setNeedVerify(boolean flag){
 		this.needVerify = flag ? 1 : 0;
+	}
+
+	public void setPriority(boolean flag) {
+		this.priority = flag;
 	}
 
 	/**

@@ -211,7 +211,7 @@ public class TestChainsql {
 		// obj = c.createTable("mytable4", args).submit((data)->{
 		// System.out.println(data);
 		// });
-		if (obj.getString("status").equals("success")) {
+		if (obj.getString("status").equals("db_success")) {
 			System.out.println("创建表成功");
 		} else {
 			System.out.println("创建表失败");

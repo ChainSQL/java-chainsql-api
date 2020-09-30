@@ -16,7 +16,7 @@ deployToGithub:
     name: github
     url: https://github.com/ChainSQL/java-chainsql-api.git
   tags:
-    - java-chainsql-api
+    - chainsqld
   only:
     refs:
       - master

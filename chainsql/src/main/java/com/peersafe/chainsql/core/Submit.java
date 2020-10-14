@@ -172,7 +172,10 @@ public abstract class Submit {
 		
         submit_state = SubmitState.waiting_submit;
         sync_state = SyncState.waiting_sync;
-        
+
+
+		connection.client.schemaID = connection.schemaID;
+
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
 	    ManagedTxn tx = new ManagedTxn(signed);
@@ -385,7 +388,9 @@ public abstract class Submit {
     	fee = fee.add(extraFee);
     	
 		tx.as(Amount.Fee, fee);
-		
+
+		connection.client.schemaID = connection.schemaID;
+
   		AccountID account = AccountID.fromAddress(this.connection.address);
   		JSONObject obj = connection.client.accountInfo(account);
   		if(obj.has("error")) {

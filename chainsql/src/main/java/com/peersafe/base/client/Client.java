@@ -224,6 +224,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private HashMap<AccountID, Account> accounts = new HashMap<AccountID, Account>();
     // Handles [un]subscription requests, also on reconnect
     public SubscriptionManager subscriptions = new SubscriptionManager();
+
+    public String schemaID = "";
     
     private static final int MAX_REQUEST_COUNT = 10; 
     
@@ -1186,6 +1188,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public JSONObject accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
+
+        request.json("schema_id", schemaID);
 
         request.request();
         waiting(request);

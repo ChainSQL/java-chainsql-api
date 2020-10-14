@@ -32,9 +32,9 @@ public class TestChainsql {
 
 
 //		c.connect("ws://101.201.40.124:5006");
-		c.connect("ws://192.168.29.112:6005");
+		c.connect("ws://192.168.29.116:7017");
 		
-		sTableName = "c12356";
+		sTableName = "table2";
 		sTableName2 = "tTable2";
 		sReName = "tTable3";
 
@@ -42,9 +42,9 @@ public class TestChainsql {
 		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
 		c.as(rootAddress, rootSecret);
 
-
-		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
-		//c.useCert(pemContent);
+		c.setSchema("2CD531311A5A4A3CDF90441CDEF2C86814A475982DB3C1817E035172D67C61BF");
+//		String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
+//		c.useCert(pemContent);
 
 		//testRipple();
 		testChainSql();
@@ -93,7 +93,7 @@ public class TestChainsql {
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
-//		test.testinsert();
+		test.testinsert();
 //		//更新表数据
 //		test.testUpdateTable();
 //		//删除表数据
@@ -124,7 +124,7 @@ public class TestChainsql {
 //		//生成新账户
 //		test.generateAccount();
 //		//给新账户打钱
-//		test.activateAccount(sNewAccountId);
+		test.activateAccount(sNewAccountId);
 		
 //		test.getTransactions();
 //		test.getTransaction();
@@ -236,7 +236,7 @@ public class TestChainsql {
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
 		JSONObject obj;
-		obj = c.createTable("666",args,false).submit(SyncCond.db_success);
+		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
 	}
 
@@ -246,16 +246,16 @@ public class TestChainsql {
 //		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 //		System.out.println("insert result:" + obj);
 		for(int i= 0; i<1; i++) {
-			List<String> orgs = Util.array("{'id':1,'age': 333,'name':'hello'}");
+			List<String> orgs = Util.array("{'id':1,'age': 333,'name':'你好'}");
 			JSONObject obj;
 			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 			System.out.println("insert result:" + obj);
-			orgs = Util.array("{'id':2,'age': 444,'name':'sss'}");
-			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
-			System.out.println("insert result:" + obj);
-			orgs = Util.array("{'id':3,'age': 555,'name':'rrr'}");
-			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
-			System.out.println("insert result:" + obj);
+//			orgs = Util.array("{'id':2,'age': 444,'name':'sss'}");
+//			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//			System.out.println("insert result:" + obj);
+//			orgs = Util.array("{'id':3,'age': 555,'name':'rrr'}");
+//			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//			System.out.println("insert result:" + obj);
 		}
 		
 	}

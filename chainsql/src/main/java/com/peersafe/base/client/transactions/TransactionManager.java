@@ -139,6 +139,8 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		req.json("tx_blob", txn.tx_blob);
 		req.json("ca_pem",txn.ca_pem);
 
+		req.json("schema_id",client.schemaID);
+
 		//System.out.println("before request");
 		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
 			@Override

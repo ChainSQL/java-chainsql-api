@@ -78,9 +78,15 @@ public class Chainsql extends Submit {
 
 	public void useCert(String userCert) {
 		this.connection.userCert = userCert;
-
 	}
 
+	/**
+	 * 设置操作链的ID
+	 * @param schemaID schemaID="" 代表操作的是主链;
+	 */
+	public void setSchema(String schemaID) {
+		this.connection.schemaID = schemaID;
+	}
 
 	/**
 	 * Assigning table owner.

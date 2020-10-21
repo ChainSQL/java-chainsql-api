@@ -26,6 +26,11 @@ public class K256KeyPair implements IKeyPair {
         return SECP256K1.basePointMultipliedBy(secretKey);
     }
 
+    public String type(){
+        return "secp256k1";
+    }
+
+
     /**
      *
      * @param privateGen secret point on the curve as BigInteger

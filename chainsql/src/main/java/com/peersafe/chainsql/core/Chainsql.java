@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -517,14 +518,25 @@ public class Chainsql extends Submit {
 		String strRaw = listRaw.toString();
 		String token = "";
 		if(confidential){
-			byte[] password = Util.getRandomBytes(PASSWORD_LENGTH);
+
+			boolean bSM = ( Utils.getAlgType(this.connection.secret) == "softGMAlg" );
+			int randomSize = bSM? PASSWORD_LENGTH /2 :PASSWORD_LENGTH ;
+
+			byte[] password = Util.getRandomBytes(randomSize);
 			token = generateUserToken(this.connection.secret,password);
 			if(token.length() == 0){
 				System.out.println("generateUserToken failed");
 				return null;
 			}
 			json.put("Token", token);
-			byte[] rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password );
+
+			byte[] rawBytes = null;
+			if(bSM){
+				rawBytes = EncryptCommon.sm4Encrypt(strRaw.getBytes(),password );
+			}else{
+				rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password );
+			}
+
 			strRaw = Util.bytesToHex(rawBytes);
 		}else{
 			strRaw = Util.toHexString(strRaw);
@@ -676,10 +688,18 @@ public class Chainsql extends Submit {
 		if(token.length() != 0){
 			try {
 				byte[] seedBytes = null;
+
+				boolean bSoftGM = Utils.getAlgType(this.connection.secret) == "softGMAlg";
 				if(!this.connection.secret.isEmpty()){
-					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+
+					if(bSoftGM){
+						seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
+					}else{
+						seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+					}
+
 				}
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
 				if(password == null){
 					return null;
 				}
@@ -1106,12 +1126,73 @@ public class Chainsql extends Submit {
 		
 		return generateAddress(seed);
 	}
+
+	/**
+	 *  {algorithm:"softGMAlg"}
+	 * @param options
+	 * @return
+	 */
+	public JSONObject generateAddress(JSONObject options){
+		Security.addProvider(new BouncyCastleProvider());
+
+		byte[] version = Seed.VER_K256;
+		if(options.has("algorithm") ){
+
+			String sVersion = options.getString("algorithm");
+
+			switch (sVersion) {
+				case "ed25519":
+					version = Seed.VER_ED25519;
+					break;
+				case "secp256k1":
+					version = Seed.VER_K256;
+					break;
+				case "softGMAlg":
+					version = Seed.VER_SOFT_SM;
+					break;
+				default:
+					;
+			}
+		}
+
+		Seed seed = Seed.randomSeed(version);
+		return generateAddress(seed);
+	}
 	
 	private JSONObject generateAddress(Seed seed){
 		if(Config.isUseGM()){
 			seed.setGM();
 		}
 		IKeyPair keyPair = seed.keyPair();
+
+
+		if(keyPair.type() == "softGMAlg"){
+
+			JSONObject  softGMAddress = new JSONObject();
+
+
+			BigInteger privateBig = keyPair.priv();
+			byte[] privateByts = privateBig.toByteArray();
+
+			if(privateByts.length == 33 && privateByts[0] == 0x0){
+				privateByts = Arrays.copyOfRange(privateByts,1,33);
+			}
+
+			System.out.println("私钥为 : " + ByteUtils.toHexString(privateByts));
+
+			String secretKey   = getB58IdentiferCodecs().encodeAccountPrivate(privateByts);
+			String publicKey   = getB58IdentiferCodecs().encodeAccountPublic(keyPair.canonicalPubBytes());
+
+			String address = Utils.deriveAddressFromBytes(keyPair.canonicalPubBytes());
+			softGMAddress.put("secret", secretKey);
+			softGMAddress.put("publicKey", publicKey);
+			softGMAddress.put("address", address);
+
+			return softGMAddress;
+		}
+
+
+
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;
 		{
@@ -1128,7 +1209,7 @@ public class Chainsql extends Submit {
 
 		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
 		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-		String address = getB58IdentiferCodecs().encodeAddress(o);
+		String address   = getB58IdentiferCodecs().encodeAddress(o);
 		
 		JSONObject obj = new JSONObject();
 		if(!Config.isUseGM()){

@@ -14,4 +14,6 @@ public interface IKeyPair {
     byte[] signMessage(byte[] message);
 
     byte[] pub160Hash();
+
+    String type();
 }

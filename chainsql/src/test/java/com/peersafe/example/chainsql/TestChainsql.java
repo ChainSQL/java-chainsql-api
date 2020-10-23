@@ -37,39 +37,31 @@ public class TestChainsql {
 	public static String smUserAddress = "zKzpkRTZPtsaQ733G8aRRG5x5Z2bTqhGbt";
 
 	public static String smUserPublicKey =  "pYvKjFb71Qrx26jpfMPAkpN1zfr5WTQoHCpsEtE98ZrBCv2EoxEs4rmWR7DcqTwSwEY81opTgL7pzZ2rZ3948vHi4H23vnY3";
+
+
+	public static String smNewUserSecret  = "p96dJiLZfazo4gicnt1UCumwP6LJfFuo6iR4EVLwzYBWqKrJVgf";
+	public static String smNewUserAddress = "zQA9xJDn2qzdexq2PMXjLhdoNffW1qdXq";
+
+	public static String smNewUserPublicKey =  "pYvNX91FDmctDr7F9PPk8kEJz5XddiXyRfjHVWPP8Rekpb9Qc6WBrN1PBoNwMhkF1dHb46KpeUMzZahwL1sRqg3FDyGkRqhs";
+
 	public static void main(String[] args) {
 
+		c.connect("ws://192.168.29.69:5003");
 
-
-//		{
-//			JSONObject options = new JSONObject();
-//			options.put("algorithm","softGMAlg");
 //
-//			JSONObject ret = c.generateAddress(userSecret);
+		sTableName = "B19";
+//		sTableName2 = "tTable2";
+//		sReName = "tTable3";
 //
-//			//c.as(ret.getString("address"), ret.getString("secret"));
+//		// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
+//		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
+		c.as(smRootAddress, smRootSecret);
 //
-//			System.out.println(ret);
-//		}
-
-
-
-		c.connect("ws://192.168.29.116:5006");
-		//c.connect("ws://192.168.29.116:6005");
-		
-		sTableName = "JM2";
-		sTableName2 = "tTable2";
-		sReName = "tTable3";
-
-		// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
-		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-		c.as(rootAddress, rootSecret);
-
-		//c.generateAddress()
-
-		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
-		//c.useCert(pemContent);
-
+//		//c.generateAddress()
+//
+//		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
+//		//c.useCert(pemContent);
+//
 		//testRipple();
 		testChainSql();
 	}
@@ -112,23 +104,23 @@ public class TestChainsql {
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-		//test.testCreateTable();
+		test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
-		//test.testinsert();
+		test.testinsert();
 //		//更新表数据
-//		test.testUpdateTable();
+		test.testUpdateTable();
 //		//删除表数据
-//		test.testdelete();
+		test.testdelete();
 //		//重命名表
-//		test.testrename();
+		test.testrename();
 //		//查询表数据
-//		test.testget();
+		test.testget();
 //		//删除表
-//		test.testdrop();
+		test.testdrop();
 //		//授权
-		//test.grant();
+		test.grant();
 //		//授权后使用被授权账户插入数据
 		test.insertAfterGrant();
 		
@@ -147,7 +139,7 @@ public class TestChainsql {
 //		//生成新账户
 //		test.generateAccount();
 //		//给新账户打钱
-		test.activateAccount(smUserAddress);
+		test.activateAccount(smNewUserAddress);
 		
 //		test.getTransactions();
 //		test.getTransaction();
@@ -259,7 +251,7 @@ public class TestChainsql {
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
 		JSONObject obj;
-		obj = c.createTable(sTableName,args,true).submit(SyncCond.db_success);
+		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
 	}
 
@@ -269,14 +261,14 @@ public class TestChainsql {
 //		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 //		System.out.println("insert result:" + obj);
 		for(int i= 0; i<1; i++) {
-			List<String> orgs = Util.array("{'id':1,'age': 333,'name':'hello'}");
+			List<String> orgs = Util.array("{'id':11,'age': 333,'name':'hello'}");
 			JSONObject obj;
 			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 			System.out.println("insert result:" + obj);
-			orgs = Util.array("{'id':2,'age': 444,'name':'sss'}");
+			orgs = Util.array("{'id':22,'age': 444,'name':'sss'}");
 			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 			System.out.println("insert result:" + obj);
-			orgs = Util.array("{'id':3,'age': 555,'name':'rrr'}");
+			orgs = Util.array("{'id':33,'age': 555,'name':'rrr'}");
 			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 			System.out.println("insert result:" + obj);
 		}
@@ -284,13 +276,13 @@ public class TestChainsql {
 	}
 
 	public void insertAfterGrant(){
-		c.as(userAddress, userSecret);
-		c.use(rootAddress);
-		List<String> orgs = Util.array("{'id':100,'age': 333,'name':'hello'}","{'id':101,'age': 444,'name':'sss'}","{'id':102,'age': 555,'name':'rrr'}");
+		c.as(smNewUserAddress, smNewUserSecret);
+		c.use(smRootAddress);
+		List<String> orgs = Util.array("{'id':105,'age': 333,'name':'hello'}","{'id':106,'age': 444,'name':'sss'}","{'id':107,'age': 555,'name':'rrr'}");
 		JSONObject obj;
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert after grant result:" + obj);
-		c.as(rootAddress, rootSecret);
+		//c.as(rootAddress, rootSecret);
 	}
 	
 	public void testUpdateTable() {
@@ -373,7 +365,7 @@ public class TestChainsql {
 	
 	public void grant() {
 		JSONObject obj = new JSONObject();
-		obj = c.grant(sTableName, userAddress,userPublicKey,"{insert:true,update:true}")
+		obj = c.grant(sTableName, smNewUserAddress,smNewUserPublicKey,"{insert:true,update:true}")
 				   .submit(SyncCond.validate_success);
 		System.out.println("grant result:" + obj.toString());
 	}

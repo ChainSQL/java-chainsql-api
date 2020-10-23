@@ -1124,7 +1124,7 @@ public class Chainsql extends Submit {
 	}
 
 	/**
-	 *  {algorithm:"softGMAlg"}
+	 *  {algorithm:"softGMAlg",secret:"pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV"}
 	 * @param options
 	 * @return
 	 */
@@ -1151,7 +1151,16 @@ public class Chainsql extends Submit {
 			}
 		}
 
-		Seed seed = Seed.randomSeed(version);
+		Seed seed = null;
+		if(options.has("secret")){
+
+			String sSecret = options.getString("secret");
+			seed = Seed.fromBase58(sSecret);
+
+		}else{
+			seed = Seed.randomSeed(version);
+		}
+
 		return generateAddress(seed);
 	}
 	

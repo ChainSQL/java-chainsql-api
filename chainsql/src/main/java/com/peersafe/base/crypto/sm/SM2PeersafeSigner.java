@@ -44,7 +44,7 @@ public class SM2PeersafeSigner
     private ECKeyParameters ecKey;
     private byte[] z;
 
-    private byte[] preMsg;
+    private byte[] rawMsg; // 原始的消息，不需要内部進行sm3的計算
 
     public SM2PeersafeSigner()
     {
@@ -127,7 +127,7 @@ public class SM2PeersafeSigner
 
     public void update(byte[] in, int off, int len)
     {
-        preMsg = in;
+        rawMsg = in;
         digest.update(in, off, len);
     }
 
@@ -159,7 +159,8 @@ public class SM2PeersafeSigner
     public byte[] generateSignature()
             throws CryptoException
     {
-        byte[] eHash = digestDoFinal();
+       // byte[] eHash = digestDoFinal();
+        byte[] eHash = rawMsg;
 
         BigInteger n = ecParams.getN();
         BigInteger e = calculateE(n, eHash);
@@ -223,7 +224,8 @@ public class SM2PeersafeSigner
         }
 
         // B3
-        byte[] eHash = digestDoFinal();
+       // byte[] eHash = digestDoFinal();
+        byte[] eHash = rawMsg;
 
         // B4
         BigInteger e = calculateE(n, eHash);
@@ -253,11 +255,9 @@ public class SM2PeersafeSigner
     {
         byte[] result = new byte[digest.getDigestSize()];
         digest.doFinal(result, 0);
-
         reset();
 
-        //return result;
-        return preMsg;
+        return result;
     }
 
     private byte[] getZ(byte[] userID)

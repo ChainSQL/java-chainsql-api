@@ -78,13 +78,13 @@ public class Seed {
 			}
         } else if(Arrays.equals(version, VER_SOFT_SM)){
 
-            // 创建软国密的Keypair
             if (account != 0) throw new AssertionError();
 
-            if(seedBytes.length == 16){
-                return SMKeyPair.from128Seed(seedBytes);
-            }else{
+            if(seedBytes.length == 32){
                 return SMKeyPair.from256Seed(seedBytes);
+            }else{
+                //  软国密算法 暂不支持16字节的seed 生成公私钥对
+                return SMKeyPair.generateKeyPair();
             }
 
         }

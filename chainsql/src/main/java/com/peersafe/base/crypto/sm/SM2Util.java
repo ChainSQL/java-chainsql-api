@@ -35,8 +35,6 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.ECFieldFp;
 import java.security.spec.EllipticCurve;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SM2Util extends GMBaseUtil {
     //////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +210,7 @@ public class SM2Util extends GMBaseUtil {
         System.arraycopy(cipherData, 0, sm2Cipher, 1, cipherData.length);
 
         ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(
-                new BigInteger(privBytes), SM2Util.DOMAIN_PARAMS);
+                new BigInteger(1,privBytes), SM2Util.DOMAIN_PARAMS);
 
         return  SM2Util.decrypt(Mode.C1C2C3,priKey, sm2Cipher);
 
@@ -507,7 +505,6 @@ public class SM2Util extends GMBaseUtil {
 
     /**
      * 签名
-     * 不指定withId，则默认withId为字节数组:"1234567812345678".getBytes()
      *
      * @param priKeyParameters 私钥
      * @param srcData          原文
@@ -536,7 +533,7 @@ public class SM2Util extends GMBaseUtil {
      * 签名
      *
      * @param priKeyParameters 私钥
-     * @param withId           可以为null，若为null，则默认withId为字节数组:"1234567812345678".getBytes()
+     * @param withId           可为null，
      * @param srcData          源数据
      * @return DER编码后的签名值
      * @throws CryptoException
@@ -598,13 +595,12 @@ public class SM2Util extends GMBaseUtil {
         v.add(new ASN1Integer(s));
         byte[] by2 =  new DERSequence(v).getEncoded(ASN1Encoding.DER);
 
-        System.out.println(Util.bytesToHex(by2));
 
         BigInteger signR = new BigInteger(1, extractBytes(rawSign, 0, 32));
         BigInteger signS = new BigInteger(1, extractBytes(rawSign, 32, 32));
 
         byte[] sign = StandardDSAEncoding.INSTANCE.encode(SM2Util.SM2_ECC_N, signR, signS);
-        System.out.println(Util.bytesToHex(sign));
+       // System.out.println(Util.bytesToHex(sign));
         return sign;
     }
 
@@ -658,15 +654,19 @@ public class SM2Util extends GMBaseUtil {
      * @return 验签成功返回true，失败返回false
      */
     public static boolean verify(ECPublicKeyParameters pubKeyParameters, byte[] withId, byte[] srcData, byte[] sign) {
-        SM2Signer signer = new SM2Signer();
+        SM2PeersafeSigner signer = new SM2PeersafeSigner();
         CipherParameters param;
         if (withId != null) {
             param = new ParametersWithID(pubKeyParameters, withId);
         } else {
             param = pubKeyParameters;
         }
+
+        // sm3
+        byte[]  srcHash =  SM3Util.hash(srcData);
+
         signer.init(false, param);
-        signer.update(srcData, 0, srcData.length);
+        signer.update(srcHash, 0, srcHash.length);
         return signer.verifySignature(sign);
     }
 

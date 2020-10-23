@@ -531,11 +531,7 @@ public class Chainsql extends Submit {
 			json.put("Token", token);
 
 			byte[] rawBytes = null;
-			if(bSM){
-				rawBytes = EncryptCommon.sm4Encrypt(strRaw.getBytes(),password );
-			}else{
-				rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password );
-			}
+			rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password,bSM );
 
 			strRaw = Util.bytesToHex(rawBytes);
 		}else{
@@ -1164,23 +1160,13 @@ public class Chainsql extends Submit {
 			seed.setGM();
 		}
 		IKeyPair keyPair = seed.keyPair();
-
-
 		if(keyPair.type() == "softGMAlg"){
 
 			JSONObject  softGMAddress = new JSONObject();
 
+			String privHex = keyPair.privHex();
 
-			BigInteger privateBig = keyPair.priv();
-			byte[] privateByts = privateBig.toByteArray();
-
-			if(privateByts.length == 33 && privateByts[0] == 0x0){
-				privateByts = Arrays.copyOfRange(privateByts,1,33);
-			}
-
-			System.out.println("私钥为 : " + ByteUtils.toHexString(privateByts));
-
-			String secretKey   = getB58IdentiferCodecs().encodeAccountPrivate(privateByts);
+			String secretKey   = getB58IdentiferCodecs().encodeAccountPrivate(ByteUtils.fromHexString(privHex));
 			String publicKey   = getB58IdentiferCodecs().encodeAccountPublic(keyPair.canonicalPubBytes());
 
 			String address = Utils.deriveAddressFromBytes(keyPair.canonicalPubBytes());
@@ -1190,8 +1176,6 @@ public class Chainsql extends Submit {
 
 			return softGMAddress;
 		}
-
-
 
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;

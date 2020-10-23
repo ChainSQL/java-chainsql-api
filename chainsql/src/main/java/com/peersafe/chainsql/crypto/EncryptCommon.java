@@ -25,14 +25,14 @@ public class EncryptCommon {
 				//
 				byte[] ret =   SM2Util.encrypt(publicKey, plainBytes);
 
-//				System.out.println( "原文为: " +   ByteUtils.toHexString(plainBytes).toUpperCase());
-//				System.out.println( "密文为: " +   ByteUtils.toHexString(ret).toUpperCase());
-//				System.out.println( "公钥为: " +   ByteUtils.toHexString(publicKey).toUpperCase());
-//
-//				byte[] priv = ByteUtils.fromHexString("32bbdc4cf266bf6d408c2a24354c7283c2b778cef491c60dfc27dd2ae2145681");
-//				byte[] testPlain =  SM2Util.decrypt(priv, ret);
-//
-//				System.out.println( "解密后为: " +   ByteUtils.toHexString(testPlain).toUpperCase());
+				System.out.println( "原文为: " +   ByteUtils.toHexString(plainBytes).toUpperCase());
+				System.out.println( "密文为: " +   ByteUtils.toHexString(ret).toUpperCase());
+				System.out.println( "公钥为: " +   ByteUtils.toHexString(publicKey).toUpperCase());
+
+				byte[] priv = ByteUtils.fromHexString("32bbdc4cf266bf6d408c2a24354c7283c2b778cef491c60dfc27dd2ae2145681");
+				byte[] testPlain =  SM2Util.decrypt(priv, ret);
+
+				System.out.println( "解密后为: " +   ByteUtils.toHexString(testPlain).toUpperCase());
 
 				return ret;
 			} catch (Exception ex) {
@@ -123,6 +123,18 @@ public class EncryptCommon {
 	}
 
 
+	public static byte[] symEncrypt(byte[] plainBytes,byte[] password,boolean bSM){
+		if(Config.isUseGM()){
+//			return SM4.encrypt(password, plainBytes);
+			return null;
+		}else if(bSM){
+			return sm4Encrypt(plainBytes,password);
+		}
+		else{
+			return Aes256.encrypt(plainBytes, password);
+		}
+	}
+
 	//通用对称加密
 	public static byte[] symEncrypt(byte[] plainBytes,byte[] password){
 		if(Config.isUseGM()){
@@ -132,6 +144,7 @@ public class EncryptCommon {
 			return Aes256.encrypt(plainBytes, password);
 		}
 	}
+
 	//通用对称解密
 	public static byte[] symDecrypt(byte[] cipherText, byte[] password){
 		if(Config.isUseGM()){

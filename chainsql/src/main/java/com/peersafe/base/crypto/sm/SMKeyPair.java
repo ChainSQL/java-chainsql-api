@@ -1,8 +1,6 @@
 package com.peersafe.base.crypto.sm;
 
 import java.math.BigInteger;
-
-import com.peersafe.base.crypto.ecdsa.EDKeyPair;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 
 import com.peersafe.base.utils.HashUtils;
@@ -35,7 +33,6 @@ public class SMKeyPair implements IKeyPair {
 		return "softGMAlg";
 	}
 
-
 	public static SMKeyPair generateKeyPair(){
 
 		try{
@@ -51,6 +48,14 @@ public class SMKeyPair implements IKeyPair {
 			String publicKeyHex = "47" + pubX + pubY;
 			assert  publicKeyHex.length() == 130;
 
+//			String privHex =  priKeyParams.getD().toString(16).toUpperCase();
+//			if(privHex.length() > 64){
+//				System.out.println(privHex);
+//
+//				byte[] bytes = ByteUtils.fromHexString("00992088B264933C0C3E1046D15A89414726938E030289CD07C5D68987F5D4A9");
+//				System.out.println(bytes.length);
+//			}
+
 			return new SMKeyPair(null,priKeyParams.getD(),new BigInteger(publicKeyHex,16));
 
 		}catch (Exception e){
@@ -61,23 +66,13 @@ public class SMKeyPair implements IKeyPair {
 
 	}
 
-	/**
-	 *
-	 * @param seedBytes SeedBytes.
-	 * @return EDKeyPair Keypair.
-	 */
-	public static SMKeyPair from128Seed(byte[] seedBytes) {
-		assert seedBytes.length == 16;
-		return from256Seed(HashUtils.halfSha512(seedBytes));
-	}
-
 	public static SMKeyPair from256Seed(byte[] seedBytes) {
 
 		assert seedBytes.length == 32;
 
-		BigInteger privateBig =  new BigInteger(Util.bytesToHex(seedBytes),16);
-		ECPrivateKeyParameters priKey = new  ECPrivateKeyParameters(privateBig,SM2Util.DOMAIN_PARAMS);
+		BigInteger         privateBig = new BigInteger(Util.bytesToHex(seedBytes),16);
 
+		ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(privateBig,SM2Util.DOMAIN_PARAMS);
 		ECPublicKeyParameters  pubKey = BCECUtil.buildECPublicKeyByPrivateKey(priKey);
 
 		String pubX = ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase();
@@ -106,7 +101,11 @@ public class SMKeyPair implements IKeyPair {
 
 
 	public String privHex() {
-		return this.priv_.toString(16);
+
+		String privHex =   this.priv_.toString(16).toUpperCase();
+		assert  privHex.length() <= 64;
+		// left padding "0"
+		return String.format("%64s", privHex).replace(" ","0");
 	}
 
 

@@ -9,11 +9,6 @@ import java.util.Arrays;
 
 public class SM3Util extends GMBaseUtil {
 
-
-
-    // HalfSha512  bytes()
-
-
     /**
      * 计算SM3摘要值
      *

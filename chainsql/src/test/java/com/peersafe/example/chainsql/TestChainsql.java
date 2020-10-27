@@ -46,7 +46,14 @@ public class TestChainsql {
 
 	public static void main(String[] args) {
 
-		c.connect("ws://192.168.29.69:5003");
+
+
+//		JSONObject ret = c.generateAddress();
+//
+//
+//		System.out.println(ret);
+
+		c.connect("ws://192.168.29.116:7017");
 
 //
 		sTableName = "B19";
@@ -55,15 +62,15 @@ public class TestChainsql {
 //
 //		// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
 //		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-		c.as(smRootAddress, smRootSecret);
+		c.as(rootAddress, rootSecret);
 //
 //		//c.generateAddress()
 //
 //		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
 //		//c.useCert(pemContent);
 //
-		//testRipple();
-		testChainSql();
+		testRipple();
+	//	testChainSql();
 	}
 
 
@@ -103,6 +110,7 @@ public class TestChainsql {
 	
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
+
 		//建表
 		test.testCreateTable();
 		//建表，用于重命名，删除
@@ -139,7 +147,7 @@ public class TestChainsql {
 //		//生成新账户
 //		test.generateAccount();
 //		//给新账户打钱
-		test.activateAccount(smNewUserAddress);
+		test.activateAccount(userAddress);
 		
 //		test.getTransactions();
 //		test.getTransaction();

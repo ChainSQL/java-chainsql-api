@@ -21,9 +21,9 @@ public class ChainsqlTest extends TestCase {
     public void setUp() throws Exception {
         try{
 
-            c.connect("ws://192.168.29.69:5003");
-            c.as(smRootAddress,smRootSecret);
-            super.setUp();
+//            c.connect("ws://192.168.29.69:5003");
+//            c.as(smRootAddress,smRootSecret);
+//            super.setUp();
 
         }catch (Exception e){
             e.printStackTrace();
@@ -32,9 +32,30 @@ public class ChainsqlTest extends TestCase {
     }
 
     public void tearDown() throws Exception {
-        c.disconnect();
+       // c.disconnect();
     }
 
+    public  void testValidationCreate(){
+
+        try{
+
+            for(int i=0;i<10000;i++){
+                JSONObject gmOptions = new JSONObject();
+                gmOptions.put("algorithm","softGMAlg");
+                JSONObject validateCreate = c.validationCreate(gmOptions);
+                System.out.println(validateCreate);
+            }
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+
+
+
+    }
 
     public void testGenerateAddress(){
 

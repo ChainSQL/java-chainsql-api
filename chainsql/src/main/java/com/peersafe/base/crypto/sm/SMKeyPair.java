@@ -104,6 +104,7 @@ public class SMKeyPair implements IKeyPair {
 
 		String privHex =   this.priv_.toString(16).toUpperCase();
 		assert  privHex.length() <= 64;
+
 		// left padding "0"
 		return String.format("%64s", privHex).replace(" ","0");
 	}

@@ -1233,10 +1233,7 @@ public class Chainsql extends Submit {
 		Security.addProvider(new BouncyCastleProvider());
 		JSONObject ret = new JSONObject();
 		Seed seed = Seed.randomSeed();
-		
-//		byte[] bytes = getB58IdentiferCodecs().decodeFamilySeed("snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
-//		Seed seed = new Seed(bytes);
-		
+
 		IKeyPair keyPair = seed.keyPair(-1);
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		
@@ -1248,6 +1245,50 @@ public class Chainsql extends Submit {
 		
 		return ret;
 	}
+
+
+	/**
+	 *
+	 * @param options JSONObject with field "seed" and "algorithm".
+	 * @return JSONObject with field "seed" and "publickey".
+	 */
+	public JSONObject validationCreate(JSONObject options){
+		Security.addProvider(new BouncyCastleProvider());
+		boolean bSoftGMAlg = ( options.has("algorithm") && options.get("algorithm") == "softGMAlg" );
+		boolean hasSecret  = options.has("secret") ;
+
+		if(!bSoftGMAlg){
+			return validationCreate();
+		}
+
+		byte[] version = Seed.VER_SOFT_SM;
+		Seed seed = null;
+
+		if(hasSecret){
+			String sSecret = options.getString("secret");
+			byte[] secretBytes =   getB58IdentiferCodecs().decodeNodePrivate(sSecret);
+			seed = new Seed(version,secretBytes);
+		}else{
+			seed = Seed.randomSeed(version);
+
+		}
+
+		IKeyPair keyPair = seed.keyPair();
+
+		String sPrivHex  = keyPair.privHex();
+		String secretKey = getB58IdentiferCodecs().encodeNodePrivate(ByteUtils.fromHexString(sPrivHex));
+
+		assert secretKey.charAt(0) == 'p';
+
+		String validationPub = getB58IdentiferCodecs().encodeNodePublic(keyPair.canonicalPubBytes());
+		JSONObject ret = new JSONObject();
+		ret.put("seed", secretKey);
+		ret.put("publickey", validationPub);
+		return ret;
+	}
+
+
+
 	/**
 	 * Get validation publickey list
 	 * @return validation publickey list

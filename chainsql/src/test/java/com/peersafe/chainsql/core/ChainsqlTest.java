@@ -27,6 +27,7 @@ public class ChainsqlTest extends TestCase {
             c.as(rootAddress, rootSecret);
 
         }catch (Exception e){
+            c.disconnect();
             e.printStackTrace();
             Assert.fail();
         }
@@ -53,7 +54,6 @@ public class ChainsqlTest extends TestCase {
         try{
 
             c.setSchema("6BA63B86E5CE48283D03CC21D3BE5F4630CC6572CE7F54982E5AE687C998B7A3");
-
             //c.setSchema(Chainsql.MAIN_SCHEMA);
             JSONObject obj =  c.getAccountInfo(userAddress);
             System.out.println(obj);
@@ -91,7 +91,7 @@ public class ChainsqlTest extends TestCase {
 
         try{
             JSONObject schemaInfo = new JSONObject();
-            schemaInfo.put("SchemaName","hello1");
+            schemaInfo.put("SchemaName","hello2");
             schemaInfo.put("WithState",false);
             schemaInfo.put("SchemaAdmin",rootAddress);
 
@@ -113,10 +113,16 @@ public class ChainsqlTest extends TestCase {
             System.out.println(peerListJsonArray);
             schemaInfo.put("PeerList",peerListJsonArray);
 
-            //c.createSchema(schemaInfo);
-
+            // 不继承状态
             JSONObject ret = c.createSchema(schemaInfo).submit(Submit.SyncCond.validate_success);
-            System.out.println(ret);
+            System.out.println("创建不继承主链状态的子链: " + ret);
+
+//            // 继承主链的状态
+//            schemaInfo.put("SchemaName","hello3");
+//            schemaInfo.put("WithState",true);
+//            schemaInfo.put("AnchorLedgerHash","2FA25D7E49145E04C25B7B719F4198433EB83FCF13131B0444B879B1DFE6AA55"); // 锚定的主链的账本hash
+//            ret = c.createSchema(schemaInfo).submit(Submit.SyncCond.validate_success);
+//            System.out.println("继承继承主链的状态的子链: " + ret);
 
         }catch (Exception e){
 
@@ -166,7 +172,10 @@ public class ChainsqlTest extends TestCase {
     public  void testGetSchemaList(){
         try{
 
-            JSONObject ret =  c.getSchemaList();
+            JSONObject item = new JSONObject();
+            item.put("running",false);
+            item.put("account",rootAddress);
+            JSONObject ret =  c.getSchemaList(item);
             System.out.println(ret);
 
         }catch (Exception e){

@@ -1666,8 +1666,8 @@ public class Chainsql extends Submit {
 	 * Get schema list.
 	 * @return schema information.
 	 */
-	public JSONObject getSchemaList(){
-		return connection.client.getSchemaList();
+	public JSONObject getSchemaList(JSONObject params){
+		return connection.client.getSchemaList(params);
 	}
 
 	/**

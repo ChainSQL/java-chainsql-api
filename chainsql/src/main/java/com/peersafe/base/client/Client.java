@@ -2109,9 +2109,19 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * Get schema_list
      * @return schema_list data.
      */
-    public JSONObject getSchemaList(){
+    public JSONObject getSchemaList(JSONObject params){
         Request request = newRequest(Command.schema_list);
         request.request();
+
+        if(params.has("account")){
+            request.json("account", params.getString("account"));
+        }
+
+        if(params.has("running")){
+            request.json("running",params.getBoolean("run"));
+        }
+
+
         waiting(request);
         return getResult(request);
     }

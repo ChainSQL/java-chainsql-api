@@ -3,6 +3,7 @@ package com.peersafe.example.chainsql;
 import java.io.*;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,25 +30,92 @@ public class TestChainsql {
 	
 	public static void main(String[] args) {
 
+		try{
+			c.connect("ws://192.168.29.69:7017");
+			//c.connect("ws://221.7.246.149/ws");
+
+			sTableName = "table2";
+			sTableName2 = "tTable2";
+			sReName = "tTable3";
+
+			// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
+			sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
+			c.as(rootAddress, rootSecret);
+
+			JSONObject ret2 = c.getAccountInfo(rootAddress);
 
 
-//		c.connect("ws://101.201.40.124:5006");
-		c.connect("ws://192.168.29.116:7017");
-		
-		sTableName = "table2";
-		sTableName2 = "tTable2";
-		sReName = "tTable3";
+			System.out.println(ret2);
 
-		// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
-		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-		c.as(rootAddress, rootSecret);
+//		{
+//			// 序列化 建表
+//			List<String> rawInfo = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
+//					"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+//
+//			JSONObject obj;
+//			obj = c.createTable(sTableName,rawInfo,false).submit(SyncCond.db_success);
+//			System.out.println("create result:" + obj);
+//
+//		}
 
-		c.setSchema("2CD531311A5A4A3CDF90441CDEF2C86814A475982DB3C1817E035172D67C61BF");
-//		String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
-//		c.useCert(pemContent);
+			{
+				JSONObject schemaInfo = new JSONObject();
+				schemaInfo.put("SchemaName","hello1");
+				schemaInfo.put("WithState",false);
 
-		//testRipple();
-		testChainSql();
+				schemaInfo.put("SchemaAdmin",rootAddress);
+
+				List<String> validators = new ArrayList<String>();
+				validators.add("02BD87A95F549ECF607D6AE3AEC4C95D0BFF0F49309B4E7A9F15B842EB62A8ED1B");
+				JSONArray validatorsJsonArray = new JSONArray(validators);
+				System.out.println(validatorsJsonArray);
+				schemaInfo.put("Validators",validatorsJsonArray);
+
+				List<String> peerList = new ArrayList<String>();
+				peerList.add("192.168.29.116:7016");
+				JSONArray peerListJsonArray = new JSONArray(peerList);
+
+				for(int i=0; i<peerListJsonArray.length(); i++){
+					String tx = (String)peerListJsonArray.get(i);
+					System.out.println(tx);
+				}
+
+				System.out.println(peerListJsonArray);
+				schemaInfo.put("PeerList",peerListJsonArray);
+
+				schemaInfo.put("SchemaAdmin",rootAddress);
+
+				//c.createSchema(schemaInfo);
+
+				JSONObject ret = c.createSchema(schemaInfo).submit(SyncCond.validate_success);
+				System.out.println(ret);
+
+//			ret = c.modifySchema().submit(SyncCond.validate_success);
+//			System.out.println(ret);
+
+			}
+
+
+
+			{
+
+
+			}
+
+			//c.setSchema("2CD531311A5A4A3CDF90441CDEF2C86814A475982DB3C1817E035172D67C61BF");
+//			String pemContent = readCertFile("D:\\ca\\userCert.cert");
+//			c.useCert(pemContent);
+//
+//			testRipple();
+			testChainSql();
+
+		}catch (Exception e){
+
+			e.printStackTrace();
+		}
+
+
+
 
 	}
 
@@ -93,7 +161,7 @@ public class TestChainsql {
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
-		test.testinsert();
+		//test.testinsert();
 //		//更新表数据
 //		test.testUpdateTable();
 //		//删除表数据
@@ -101,7 +169,7 @@ public class TestChainsql {
 //		//重命名表
 //		test.testrename();
 //		//查询表数据
-//		test.testget();
+	test.testget();
 //		//删除表
 //		test.testdrop();
 //		//授权
@@ -125,6 +193,11 @@ public class TestChainsql {
 //		test.generateAccount();
 //		//给新账户打钱
 		test.activateAccount(sNewAccountId);
+
+
+
+		//c.trustSet()
+
 		
 //		test.getTransactions();
 //		test.getTransaction();

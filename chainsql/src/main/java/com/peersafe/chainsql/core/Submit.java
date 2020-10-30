@@ -47,6 +47,10 @@ public abstract class Submit {
 	protected Map<GenericPair<String,String>,String> mapToken = 
 			new HashMap<GenericPair<String,String>,String>();
 	protected boolean transaction = false;
+
+	protected boolean schemaCreateTx = false;
+	protected boolean schemaModifyTx = false;
+
 	protected Integer needVerify = 1;
 	//严格模式
 	protected boolean strictMode = false;
@@ -66,6 +70,12 @@ public abstract class Submit {
 	public enum SyncState{
 		waiting_sync,
 		sync_response,
+	}
+
+	public enum SchemaOpType {
+		schema_add,
+		schema_del,
+
 	}
 	
 	public class CrossChainArgs{
@@ -172,9 +182,6 @@ public abstract class Submit {
 		
         submit_state = SubmitState.waiting_submit;
         sync_state = SyncState.waiting_sync;
-
-
-		connection.client.schemaID = connection.schemaID;
 
 		Account account = connection.client.accountFromSeed(connection.secret);
 	    TransactionManager tm = account.transactionManager();
@@ -389,7 +396,7 @@ public abstract class Submit {
     	
 		tx.as(Amount.Fee, fee);
 
-		connection.client.schemaID = connection.schemaID;
+
 
   		AccountID account = AccountID.fromAddress(this.connection.address);
   		JSONObject obj = connection.client.accountInfo(account);

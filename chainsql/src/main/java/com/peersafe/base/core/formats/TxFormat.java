@@ -200,4 +200,22 @@ public class TxFormat extends Format {
             Field.ReferenceFeeUnits,    Requirement.REQUIRED,
             Field.ReserveBase,          Requirement.REQUIRED,
             Field.ReserveIncrement,     Requirement.REQUIRED);
+
+
+    static public TxFormat SchemaCreate = new TxFormat(
+            TransactionType.SchemaCreate,
+            Field.SchemaName,           Requirement.REQUIRED,
+            Field.SchemaStrategy,       Requirement.REQUIRED,
+            Field.SchemaAdmin,          Requirement.OPTIONAL,
+            Field.AnchorLedgerHash,     Requirement.OPTIONAL,
+            Field.Validators,           Requirement.REQUIRED,
+            Field.PeerList,             Requirement.REQUIRED);
+
+    static public TxFormat SchemaModify = new TxFormat(
+            TransactionType.SchemaModify,
+            Field.OpType,              Requirement.REQUIRED,
+            Field.Validators,          Requirement.REQUIRED,
+            Field.PeerList,            Requirement.REQUIRED,
+            Field.SchemaID,            Requirement.REQUIRED);
+
 }

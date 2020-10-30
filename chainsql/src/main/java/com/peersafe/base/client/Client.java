@@ -1189,7 +1189,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
 
-        request.json("schema_id", schemaID);
+        //request.json("schema_id", schemaID);
 
         request.request();
         waiting(request);
@@ -2101,5 +2101,33 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("taker_gets", get.toJSON());
         request.json("taker_pays", pay.toJSON());
         return request;
+    }
+
+
+
+    /**
+     * Get schema_list
+     * @return schema_list data.
+     */
+    public JSONObject getSchemaList(){
+        Request request = newRequest(Command.schema_list);
+        request.request();
+        waiting(request);
+        return getResult(request);
+    }
+
+
+    /**
+     * Request for schema_info.
+     * @param schemaID schemaID.
+     * @return Request data.
+     */
+    public JSONObject getSchemaInfo(String schemaID) {
+        Request request = newRequest(Command.schema_info);
+        request.json("schema", schemaID);
+
+        request.request();
+        waiting(request);
+        return getResult(request);
     }
 }

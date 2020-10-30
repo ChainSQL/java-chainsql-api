@@ -153,8 +153,8 @@ public class EventManager {
 	public void subscribeTx(String id,Callback<?> cb) {
 		JSONObject messageTx = new JSONObject();
 
-		if(this.connection.schemaID !=""){
-			messageTx.put("schema_id", this.connection.schemaID);
+		if(this.connection.client.schemaID !=""){
+			messageTx.put("schema_id", this.connection.client.schemaID);
 		}
 
 		messageTx.put("command", "subscribe");

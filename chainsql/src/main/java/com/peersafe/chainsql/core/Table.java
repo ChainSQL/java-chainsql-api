@@ -26,6 +26,7 @@ public class Table extends Submit{
 	private String exec;
 
 	private String autoFillField;
+	private String txsHashFillField;
 
 	/**
 	 * Constructor for Table.
@@ -76,6 +77,35 @@ public class Table extends Submit{
 
 	}
 
+
+	/**
+	 * Insert data to a table.
+	 * @param orgs  Insert parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table insert(List<String> orgs,String autoFillField,String txsHashFillField){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
+		}
+
+		if(!autoFillField.isEmpty()){
+			this.autoFillField = autoFillField;
+		}
+
+		if(!txsHashFillField.isEmpty()){
+			this.txsHashFillField = txsHashFillField;
+		}
+
+		this.exec = "r_insert";
+		return dealWithTransaction();
+
+	}
+
+
 	/**
 	 * Update table data.
 	 * @param orgs Update parameters.
@@ -107,6 +137,34 @@ public class Table extends Submit{
 		return dealWithTransaction();
 
 	}
+
+
+	/**
+	 * Update data to a table.
+	 * @param orgs  Update parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @param txsHashFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table update(String orgs,String autoFillField,String txsHashFillField){
+
+
+		String json = Util.StrToJsonStr(orgs);
+		this.query.add(0, json);
+
+		if(!autoFillField.isEmpty()){
+			this.autoFillField = autoFillField;
+		}
+
+		if(!txsHashFillField.isEmpty()){
+			this.txsHashFillField = txsHashFillField;
+		}
+
+		this.exec = "r_update";
+		return dealWithTransaction();
+
+	}
+
 
 
 	/**
@@ -323,6 +381,11 @@ public class Table extends Submit{
 		if(this.autoFillField != null){
 			txjson.put("AutoFillField", Util.toHexString(this.autoFillField));
 		}
+
+		if(this.txsHashFillField != null){
+			txjson.put("TxsHashFillField", Util.toHexString(this.txsHashFillField));
+		}
+
 
 		//for cross chain
 		if(crossChainArgs != null){

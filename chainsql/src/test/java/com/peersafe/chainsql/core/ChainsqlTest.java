@@ -18,11 +18,18 @@ public class ChainsqlTest extends TestCase {
 
     public static String smUserPublicKey =  "pYvKjFb71Qrx26jpfMPAkpN1zfr5WTQoHCpsEtE98ZrBCv2EoxEs4rmWR7DcqTwSwEY81opTgL7pzZ2rZ3948vHi4H23vnY3";
 
+
+    public static String userSecret = "xnnUqirFepEKzVdsoBKkMf577upwT";
+    public static String userAddress = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
+    public static String userPublicKey = "cB4pxq1LUfwPxNP9Xyj223mqM8zfeW6t2DqP1Ek3UQWaUVb9ciCZ";
+    public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
+    public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
+
     public void setUp() throws Exception {
         try{
 
-           c.connect("ws://192.168.29.69:5006");
-           c.as(smRootAddress,smRootSecret);
+            c.connect("ws://192.168.29.116:7017");
+            c.as(rootAddress,rootSecret);
         }catch (Exception e){
             e.printStackTrace();
             Assert.fail();
@@ -30,7 +37,7 @@ public class ChainsqlTest extends TestCase {
     }
 
     public void tearDown() throws Exception {
-       // c.disconnect();
+        c.disconnect();
     }
 
     public  void testValidationCreate(){
@@ -91,7 +98,7 @@ public class ChainsqlTest extends TestCase {
 
         try{
 
-         c.pay(smUserAddress,"1000").submit(Submit.SyncCond.validate_success);
+         c.pay(userAddress,"1000").submit(Submit.SyncCond.validate_success);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -134,27 +141,27 @@ public class ChainsqlTest extends TestCase {
             // 授权
             if(bEncrypted){
 
-                obj = c.grant(sTableName, smUserAddress,smUserPublicKey,"{insert:true,update:true}")
+                obj = c.grant(sTableName, userAddress,userPublicKey,"{insert:true,update:true}")
                         .submit(Submit.SyncCond.validate_success);
                 System.out.println("grant result:" + obj.toString());
             }else{
 
-                obj = c.grant(sTableName, smUserAddress,"{insert:true,update:true}")
+                obj = c.grant(sTableName, userAddress,"{insert:true,update:true}")
                         .submit(Submit.SyncCond.validate_success);
                 System.out.println("grant result:" + obj.toString());
             }
 
 
             // 授权后使用被授权账户插入数据
-            c.as(smUserAddress, smUserSecret);
-            c.use(smRootAddress);
+            c.as(userAddress, userSecret);
+            c.use(rootAddress);
             List<String> orgLst = Util.array("{'id':105,'age': 333,'name':'hello'}","{'id':106,'age': 444,'name':'sss'}","{'id':107,'age': 555,'name':'rrr'}");
             obj = c.table(sTableName).insert(orgLst).submit(Submit.SyncCond.db_success);
             System.out.println("insert after grant result:" + obj);
 
 
             // 重命名表
-            c.as(smRootAddress, smRootSecret);
+            c.as(rootAddress, rootSecret);
             String sReName = "newTable";
             obj = c.renameTable(sTableName, sReName).submit(Submit.SyncCond.db_success);
             System.out.println("rename result:" + obj);

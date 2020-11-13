@@ -1255,6 +1255,7 @@ public class Chainsql extends Submit {
 	public JSONObject validationCreate(JSONObject options){
 		Security.addProvider(new BouncyCastleProvider());
 		boolean bSoftGMAlg = ( options.has("algorithm") && options.get("algorithm") == "softGMAlg" );
+
 		boolean hasSecret  = options.has("secret") ;
 
 		if(!bSoftGMAlg){
@@ -1281,6 +1282,7 @@ public class Chainsql extends Submit {
 		assert secretKey.charAt(0) == 'p';
 
 		String validationPub = getB58IdentiferCodecs().encodeNodePublic(keyPair.canonicalPubBytes());
+
 		JSONObject ret = new JSONObject();
 		ret.put("seed", secretKey);
 		ret.put("publickey", validationPub);

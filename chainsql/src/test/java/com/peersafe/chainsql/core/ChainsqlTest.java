@@ -23,8 +23,6 @@ public class ChainsqlTest extends TestCase {
 
            c.connect("ws://192.168.29.69:5006");
            c.as(smRootAddress,smRootSecret);
-//            super.setUp();
-
         }catch (Exception e){
             e.printStackTrace();
             Assert.fail();
@@ -39,25 +37,19 @@ public class ChainsqlTest extends TestCase {
 
         try{
 
-            JSONObject validateCreate = c.validationCreate();
-            System.out.println(validateCreate);
-
-//            for(int i=0;i<4;i++){
-//                JSONObject gmOptions = new JSONObject();
-//                gmOptions.put("algorithm","softGMAlg");
-//                gmOptions.put("secret","pcVkr8eJfqoqA8ANobhCP21o5TayF1hrgx6i1fsMTB3gRXnnuVA");
-//                JSONObject validateCreate = c.validationCreate(gmOptions);
-//                System.out.println(validateCreate);
-//            }
+            for(int i=0;i<100;i++){
+                JSONObject gmOptions = new JSONObject();
+                gmOptions.put("algorithm","softGMAlg");
+                gmOptions.put("secret","pc9rUimGMRkKFAkvprzPCuAFbMbJNTP7K6nfoeSZF6WW5Ltqgh7");
+                JSONObject validateCreate = c.validationCreate(gmOptions);
+                System.out.println(validateCreate);
+            }
 
         }catch (Exception e){
 
             e.printStackTrace();
             Assert.fail();
         }
-
-
-
 
     }
 

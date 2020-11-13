@@ -174,6 +174,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+    public static void shutdown(){
+        CallbackManager.instance().shutdown();
+    }
+
     // ### Members
     // The implementation of the WebSocket
     WebSocketTransport ws;

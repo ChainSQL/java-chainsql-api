@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -517,14 +518,21 @@ public class Chainsql extends Submit {
 		String strRaw = listRaw.toString();
 		String token = "";
 		if(confidential){
-			byte[] password = Util.getRandomBytes(PASSWORD_LENGTH);
+
+			boolean bSM = ( Utils.getAlgType(this.connection.secret) == "softGMAlg" );
+			int randomSize = bSM? PASSWORD_LENGTH /2 :PASSWORD_LENGTH ;
+
+			byte[] password = Util.getRandomBytes(randomSize);
 			token = generateUserToken(this.connection.secret,password);
 			if(token.length() == 0){
 				System.out.println("generateUserToken failed");
 				return null;
 			}
 			json.put("Token", token);
-			byte[] rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password );
+
+			byte[] rawBytes = null;
+			rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password,bSM );
+
 			strRaw = Util.bytesToHex(rawBytes);
 		}else{
 			strRaw = Util.toHexString(strRaw);
@@ -676,10 +684,18 @@ public class Chainsql extends Submit {
 		if(token.length() != 0){
 			try {
 				byte[] seedBytes = null;
+
+				boolean bSoftGM = Utils.getAlgType(this.connection.secret) == "softGMAlg";
 				if(!this.connection.secret.isEmpty()){
-					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+
+					if(bSoftGM){
+						seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
+					}else{
+						seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+					}
+
 				}
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
 				if(password == null){
 					return null;
 				}
@@ -1106,12 +1122,70 @@ public class Chainsql extends Submit {
 		
 		return generateAddress(seed);
 	}
+
+	/**
+	 *  {algorithm:"softGMAlg",secret:"pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV"}
+	 * @param options
+	 * @return
+	 */
+	public JSONObject generateAddress(JSONObject options){
+		Security.addProvider(new BouncyCastleProvider());
+
+		byte[] version = Seed.VER_K256;
+		if(options.has("algorithm") ){
+
+			String sVersion = options.getString("algorithm");
+
+			switch (sVersion) {
+				case "ed25519":
+					version = Seed.VER_ED25519;
+					break;
+				case "secp256k1":
+					version = Seed.VER_K256;
+					break;
+				case "softGMAlg":
+					version = Seed.VER_SOFT_SM;
+					break;
+				default:
+					;
+			}
+		}
+
+		Seed seed = null;
+		if(options.has("secret")){
+
+			String sSecret = options.getString("secret");
+			seed = Seed.fromBase58(sSecret);
+
+		}else{
+			seed = Seed.randomSeed(version);
+		}
+
+		return generateAddress(seed);
+	}
 	
 	private JSONObject generateAddress(Seed seed){
 		if(Config.isUseGM()){
 			seed.setGM();
 		}
 		IKeyPair keyPair = seed.keyPair();
+		if(keyPair.type() == "softGMAlg"){
+
+			JSONObject  softGMAddress = new JSONObject();
+
+			String privHex = keyPair.privHex();
+
+			String secretKey   = getB58IdentiferCodecs().encodeAccountPrivate(ByteUtils.fromHexString(privHex));
+			String publicKey   = getB58IdentiferCodecs().encodeAccountPublic(keyPair.canonicalPubBytes());
+
+			String address = Utils.deriveAddressFromBytes(keyPair.canonicalPubBytes());
+			softGMAddress.put("secret", secretKey);
+			softGMAddress.put("publicKey", publicKey);
+			softGMAddress.put("address", address);
+
+			return softGMAddress;
+		}
+
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;
 		{
@@ -1128,7 +1202,7 @@ public class Chainsql extends Submit {
 
 		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
 		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-		String address = getB58IdentiferCodecs().encodeAddress(o);
+		String address   = getB58IdentiferCodecs().encodeAddress(o);
 		
 		JSONObject obj = new JSONObject();
 		if(!Config.isUseGM()){
@@ -1159,10 +1233,7 @@ public class Chainsql extends Submit {
 		Security.addProvider(new BouncyCastleProvider());
 		JSONObject ret = new JSONObject();
 		Seed seed = Seed.randomSeed();
-		
-//		byte[] bytes = getB58IdentiferCodecs().decodeFamilySeed("snEqBjWd2NWZK3VgiosJbfwCiLPPZ");
-//		Seed seed = new Seed(bytes);
-		
+
 		IKeyPair keyPair = seed.keyPair(-1);
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		
@@ -1174,6 +1245,52 @@ public class Chainsql extends Submit {
 		
 		return ret;
 	}
+
+
+	/**
+	 *
+	 * @param options JSONObject with field "seed" and "algorithm".
+	 * @return JSONObject with field "seed" and "publickey".
+	 */
+	public JSONObject validationCreate(JSONObject options){
+		Security.addProvider(new BouncyCastleProvider());
+		boolean bSoftGMAlg = ( options.has("algorithm") && options.get("algorithm") == "softGMAlg" );
+
+		boolean hasSecret  = options.has("secret") ;
+
+		if(!bSoftGMAlg){
+			return validationCreate();
+		}
+
+		byte[] version = Seed.VER_SOFT_SM;
+		Seed seed = null;
+
+		if(hasSecret){
+			String sSecret = options.getString("secret");
+			byte[] secretBytes =   getB58IdentiferCodecs().decodeNodePrivate(sSecret);
+			seed = new Seed(version,secretBytes);
+		}else{
+			seed = Seed.randomSeed(version);
+
+		}
+
+		IKeyPair keyPair = seed.keyPair();
+
+		String sPrivHex  = keyPair.privHex();
+		String secretKey = getB58IdentiferCodecs().encodeNodePrivate(ByteUtils.fromHexString(sPrivHex));
+
+		assert secretKey.charAt(0) == 'p';
+
+		String validationPub = getB58IdentiferCodecs().encodeNodePublic(keyPair.canonicalPubBytes());
+
+		JSONObject ret = new JSONObject();
+		ret.put("seed", secretKey);
+		ret.put("publickey", validationPub);
+		return ret;
+	}
+
+
+
 	/**
 	 * Get validation publickey list
 	 * @return validation publickey list

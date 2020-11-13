@@ -17,6 +17,7 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.crypto.sm.SM3Util;
 import com.peersafe.chainsql.util.Util;
 
 public class SignedTransaction {
@@ -157,6 +158,10 @@ public class SignedTransaction {
             tx_blob = blob.bytesHex();
             if(Config.isUseGM()){
 //            	hash = SMDigest.getTransactionHash(HashPrefix.transactionID, blob.bytes());
+            }else if(keyPair.type() == "softGMAlg"){
+
+                Hash256  sm3Hash = new Hash256(SM3Util.prefixedHash(HashPrefix.transactionID.bytes(), blob.bytes()));
+                hash = sm3Hash  ;
             }else{
             	hash = Hash256.prefixedHalfSha512(HashPrefix.transactionID, blob.bytes());	
             }

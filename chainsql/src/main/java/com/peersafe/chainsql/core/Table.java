@@ -5,6 +5,7 @@ import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.peersafe.base.utils.Utils;
 import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
@@ -334,14 +335,23 @@ public class Table extends Submit{
 			}
 			try {
 				byte[] seedBytes = null;
+
+				boolean bSoftGM = Utils.getAlgType(this.connection.secret) == "softGMAlg";
 				if(!this.connection.secret.isEmpty()){
-					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+
+					if(bSoftGM){
+						seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
+					}else{
+						seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+					}
+
 				}
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
+
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
 				if(password == null){
 					System.out.println("Exception: decrypt token failed");
 				}
-				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password);
+				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password,bSoftGM);
 				strRaw = Util.bytesToHex(rawBytes);
 			} catch (Exception e) {
 				e.printStackTrace();

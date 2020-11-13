@@ -41,20 +41,11 @@ public class SMKeyPair implements IKeyPair {
 			ECPrivateKeyParameters priKeyParams = (ECPrivateKeyParameters) keyPair.getPrivate();
 			ECPublicKeyParameters pubKeyParams  = (ECPublicKeyParameters)  keyPair.getPublic();
 
-			//System.out.println("私钥 : " + priKeyParams.getD().toString(16).toUpperCase());
 			String pubX = ByteUtils.toHexString(pubKeyParams.getQ().getAffineXCoord().getEncoded()).toUpperCase();
 			String pubY = ByteUtils.toHexString(pubKeyParams.getQ().getAffineYCoord().getEncoded()).toUpperCase();
 
 			String publicKeyHex = "47" + pubX + pubY;
 			assert  publicKeyHex.length() == 130;
-
-//			String privHex =  priKeyParams.getD().toString(16).toUpperCase();
-//			if(privHex.length() > 64){
-//				System.out.println(privHex);
-//
-//				byte[] bytes = ByteUtils.fromHexString("00992088B264933C0C3E1046D15A89414726938E030289CD07C5D68987F5D4A9");
-//				System.out.println(bytes.length);
-//			}
 
 			return new SMKeyPair(null,priKeyParams.getD(),new BigInteger(publicKeyHex,16));
 

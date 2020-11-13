@@ -32,9 +32,9 @@ public class TestChainsql {
 
 
 //		c.connect("ws://101.201.40.124:5006");
-		c.connect("ws://192.168.29.112:6005");
+		c.connect("ws://192.168.29.116:7017");
 		
-		sTableName = "c12356";
+		sTableName = "t9";
 		sTableName2 = "tTable2";
 		sReName = "tTable3";
 
@@ -46,8 +46,8 @@ public class TestChainsql {
 		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
 		//c.useCert(pemContent);
 
-		//testRipple();
-		testChainSql();
+		testRipple();
+		//testChainSql();
 
 	}
 
@@ -88,8 +88,9 @@ public class TestChainsql {
 	
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
+
 		//建表
-		test.testCreateTable();
+		//test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
@@ -114,18 +115,21 @@ public class TestChainsql {
 	//	test.testGetBySqlUser();
 		
 		//根据sql语句查询，admin权限，无签名检测
-//		test.testGetBySqlAdmin();
+		//test.testGetBySqlAdmin();
+
+
+		//test.testTxnHash();
 	}
 	
 	private static void testRipple() {
 		TestChainsql test = new TestChainsql();
+
 //		//查询根账户余额
 //		test.getAccountBalance();
 //		//生成新账户
 //		test.generateAccount();
 //		//给新账户打钱
 //		test.activateAccount(sNewAccountId);
-		
 //		test.getTransactions();
 //		test.getTransaction();
 		
@@ -150,6 +154,41 @@ public class TestChainsql {
 //			}
 //			
 //		});
+	}
+
+
+
+
+	public  void testTxnHash(){
+
+		String sTestTableName = "testTxnHash5";
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
+				"{'field':'txn_hash','type':'text'}", "{'field':'age','type':'int'}");
+
+		JSONObject obj;
+		obj = c.createTable(sTestTableName,args,false).submit(SyncCond.db_success);
+		System.out.println("create result:" + obj);
+
+		// 插入交易
+		List<String> orgs = Util.array("{'id':22,'age': 333}");
+		obj = c.table(sTestTableName).insert(orgs,"","txn_hash").submit(SyncCond.db_success);
+		System.out.println("insert result:" + obj);
+
+		// 更新交易
+		List<String> arr1 = Util.array("{'id': 22}");
+
+		for(int i=0;i<10;i++){
+			obj = c.table(sTestTableName).get(arr1).update("{'age':100}","","txn_hash").submit(SyncCond.db_success);
+			//System.out.println("update result:" + obj);
+
+			if(i%10 ==0){
+				System.out.println(i);
+			}
+		}
+
+		//查询所有数据
+		obj = c.table(sTestTableName).get().submit();
+		System.out.println("get result:" + obj);
 	}
 	
 	public void generateAccount() {
@@ -322,7 +361,7 @@ public class TestChainsql {
 			public void called(JSONObject args) {
 				System.out.println(args);
 				if(args.has("nameInDB")) {
-					String sql = "select * from t_" + args.getString("nameInDB");
+					String sql = "select * from t_1d02efd954bfe9eb895f5cf14191eb819cc88c2e" + args.getString("nameInDB");
 					c.getBySqlAdmin(sql,new Callback<JSONObject>() {
 
 						@Override

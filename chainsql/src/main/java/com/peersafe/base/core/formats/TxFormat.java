@@ -170,7 +170,8 @@ public class TxFormat extends Format {
             Field.TxnLgrSeq,	 Requirement.OPTIONAL,
             Field.OriginalAddress,Requirement.OPTIONAL,
             Field.CurTxHash,	 Requirement.OPTIONAL,
-            Field.FutureTxHash,	 Requirement.OPTIONAL);
+            Field.FutureTxHash,	 Requirement.OPTIONAL,
+            Field.TxsHashFillField, Requirement.OPTIONAL);
     
     static public TxFormat SQLTransaction = new TxFormat(
             TransactionType.SQLTransaction,

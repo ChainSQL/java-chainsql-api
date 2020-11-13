@@ -151,7 +151,8 @@ public enum Field {
     TransferFeeMax(63,Type.Blob),
     ContractCode(64,Type.Blob),
     ContractData(65,Type.Blob),
- 
+    TxsHashFillField(68,Type.Blob),
+
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),
     Destination(3, Type.AccountID),

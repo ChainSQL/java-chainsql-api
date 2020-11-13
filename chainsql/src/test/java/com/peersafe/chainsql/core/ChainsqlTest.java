@@ -10,7 +10,7 @@ import java.util.List;
 public class ChainsqlTest extends TestCase {
 
     public static final Chainsql  c    = new Chainsql();
-    public static String sTableName    = "B14";
+    public static String sTableName    = "T1";
     public static String smRootSecret  = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
     public static String smRootAddress = "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj";
     public static String smUserSecret  = "pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV";
@@ -21,8 +21,8 @@ public class ChainsqlTest extends TestCase {
     public void setUp() throws Exception {
         try{
 
-//            c.connect("ws://192.168.29.69:5003");
-//            c.as(smRootAddress,smRootSecret);
+           c.connect("ws://192.168.29.69:5006");
+           c.as(smRootAddress,smRootSecret);
 //            super.setUp();
 
         }catch (Exception e){
@@ -39,12 +39,16 @@ public class ChainsqlTest extends TestCase {
 
         try{
 
-            for(int i=0;i<10000;i++){
-                JSONObject gmOptions = new JSONObject();
-                gmOptions.put("algorithm","softGMAlg");
-                JSONObject validateCreate = c.validationCreate(gmOptions);
-                System.out.println(validateCreate);
-            }
+            JSONObject validateCreate = c.validationCreate();
+            System.out.println(validateCreate);
+
+//            for(int i=0;i<4;i++){
+//                JSONObject gmOptions = new JSONObject();
+//                gmOptions.put("algorithm","softGMAlg");
+//                gmOptions.put("secret","pcVkr8eJfqoqA8ANobhCP21o5TayF1hrgx6i1fsMTB3gRXnnuVA");
+//                JSONObject validateCreate = c.validationCreate(gmOptions);
+//                System.out.println(validateCreate);
+//            }
 
         }catch (Exception e){
 
@@ -119,9 +123,12 @@ public class ChainsqlTest extends TestCase {
             System.out.println("create result:" + obj);
 
             // 插入表
-            List<String> orgs = Util.array("{'id':2,'age': 333,'name':'hello'}");
+            List<String> orgs = Util.array("{'id':2,'age': 333,'name':'88.185.0021/210-15508U-014P-05015-200100327'}");
             obj = c.table(sTableName).insert(orgs).submit(Submit.SyncCond.db_success);
             System.out.println("insert result:" + obj);
+
+            obj = c.table(sTableName).get(c.array("{'name':'88.185.0021/210-15508U-014P-05015-200100327'}")).submit();
+            System.out.println("get result:" + obj);
 
             // 更新表
             List<String> arr1 = Util.array("{'id': 2}");
@@ -170,4 +177,26 @@ public class ChainsqlTest extends TestCase {
         }
 
     }
+
+
+    public void testTable() {
+
+        try{
+
+            //  表数据的获取
+            //  表中字段含有'.' 等特殊字符
+            JSONObject obj = c.table(sTableName).get(c.array("{'name':'88.185.0021/210-15508U-014P-05015-200100327'}")).submit();
+            System.out.println("get result:" + obj);
+            obj = c.dropTable("N8").submit(Submit.SyncCond.db_success);
+            System.out.println("get result:" + obj);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+
+    }
+
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.peersafe.chainsql.pool.ChainsqlPool;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -222,6 +223,12 @@ public class Chainsql extends Submit {
 				onReconnected(args);
 			}			
 		});
+	}
+
+
+	public static void shutdown() {
+		ChainsqlPool.instance().shutdown();
+		Client.shutdown();
 	}
 	
 	/**

@@ -26,6 +26,8 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.util.encoders.Hex;
 
+import com.peersafe.chainsql.util.Util;
+
 /**
  * The SM2PeersafeSigner Digital Signature algorithm.
  *
@@ -87,7 +89,8 @@ public class SM2PeersafeSigner
         {
             baseParam = param;
             // the default value, string value is "1234567812345678"
-            userID = Hex.decodeStrict("31323334353637383132333435363738");
+//            userID = Hex.decodeStrict("31323334353637383132333435363738");
+            userID = Util.hexToBytes("31323334353637383132333435363738");
         }
 
         if (forSigning)

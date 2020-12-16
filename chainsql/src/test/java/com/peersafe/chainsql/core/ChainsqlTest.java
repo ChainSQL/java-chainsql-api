@@ -28,7 +28,7 @@ public class ChainsqlTest extends TestCase {
     public void setUp() throws Exception {
         try{
 
-            c.connect("ws://192.168.29.116:7017");
+            c.connect("ws://192.168.29.108:7017");
             c.as(rootAddress,rootSecret);
         }catch (Exception e){
             e.printStackTrace();
@@ -110,32 +110,38 @@ public class ChainsqlTest extends TestCase {
     public void testCreateTable() {
 
         try{
-
             // 建表
             List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
                     "{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
-            boolean bEncrypted = false;
-
+            boolean bEncrypted = true;
             JSONObject obj;
             obj = c.createTable(sTableName,args,bEncrypted).submit(Submit.SyncCond.db_success);
             System.out.println("create result:" + obj);
+
+            String sTableNameInDB;
+            JSONObject nameInDB = c.getTableNameInDB(rootAddress,sTableName);
+            sTableNameInDB = nameInDB.getString("nameInDB");
+
+            JSONObject tableProperty = new JSONObject();
+            tableProperty.put("nameInDB",sTableNameInDB);
+            tableProperty.put("confidential",true);
 
             // 插入表
             List<String> orgs = Util.array("{'id':2,'age': 333,'name':'88.185.0021/210-15508U-014P-05015-200100327'}");
             obj = c.table(sTableName).insert(orgs).submit(Submit.SyncCond.db_success);
             System.out.println("insert result:" + obj);
 
-            obj = c.table(sTableName).get(c.array("{'name':'88.185.0021/210-15508U-014P-05015-200100327'}")).submit();
+            obj = c.table(sTableName).tableSet(tableProperty).get(c.array("{'name':'88.185.0021/210-15508U-014P-05015-200100327'}")).submit();
             System.out.println("get result:" + obj);
 
             // 更新表
             List<String> arr1 = Util.array("{'id': 2}");
-            obj = c.table(sTableName).get(arr1).update("{'age':200}").submit(Submit.SyncCond.db_success);
+            obj = c.table(sTableName).tableSet(tableProperty).get(arr1).update("{'age':200}").submit(Submit.SyncCond.db_success);
             System.out.println("update result:" + obj);
 
             // 删除表数据
-            obj = c.table(sTableName).get(c.array("{'id': " + 2 + "}")).delete().submit(Submit.SyncCond.db_success);
+            obj = c.table(sTableName).tableSet(tableProperty).get(c.array("{'id': " + 2 + "}")).delete().submit(Submit.SyncCond.db_success);
             System.out.println("delete result:" + obj);
 
             // 授权
@@ -156,7 +162,7 @@ public class ChainsqlTest extends TestCase {
             c.as(userAddress, userSecret);
             c.use(rootAddress);
             List<String> orgLst = Util.array("{'id':105,'age': 333,'name':'hello'}","{'id':106,'age': 444,'name':'sss'}","{'id':107,'age': 555,'name':'rrr'}");
-            obj = c.table(sTableName).insert(orgLst).submit(Submit.SyncCond.db_success);
+            obj = c.table(sTableName).tableSet(tableProperty).insert(orgLst).submit(Submit.SyncCond.db_success);
             System.out.println("insert after grant result:" + obj);
 
 
@@ -177,7 +183,57 @@ public class ChainsqlTest extends TestCase {
 
     }
 
+    public void testTableSet(){
+        try{
 
+            String table_set_name = "tableSet";
+            // 建表
+            List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
+                    "{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+
+            boolean bEncrypted = false;
+            JSONObject obj;
+            obj = c.createTable(table_set_name,args,bEncrypted).submit(Submit.SyncCond.db_success);
+            System.out.println("create result:" + obj);
+
+            String sTableNameInDB;
+            JSONObject nameInDB = c.getTableNameInDB(rootAddress,table_set_name);
+            sTableNameInDB = nameInDB.getString("nameInDB");
+
+            JSONObject tableProperty = new JSONObject();
+            tableProperty.put("nameInDB",sTableNameInDB);
+            tableProperty.put("confidential",false);
+
+            // 插入表
+            List<String> orgs = Util.array("{'id':2,'age': 333,'name':'88'}");
+            obj = c.table(table_set_name).insert(orgs).submit(Submit.SyncCond.db_success);
+            System.out.println("insert result:" + obj);
+
+            obj = c.table(table_set_name).tableSet(tableProperty).get(c.array("{'name':'88'}")).submit();
+            System.out.println("get result:" + obj);
+
+            // 更新表
+            List<String> arr1 = Util.array("{'id': 2}");
+            obj = c.table(table_set_name).tableSet(tableProperty).get(arr1).update("{'age':200}").submit(Submit.SyncCond.db_success);
+            System.out.println("update result:" + obj);
+
+            // 删除表数据
+            obj = c.table(table_set_name).tableSet(tableProperty).get(c.array("{'id': " + 2 + "}")).delete().submit(Submit.SyncCond.db_success);
+            System.out.println("delete result:" + obj);
+
+
+            // 删除表
+            obj = c.dropTable(table_set_name).submit(Submit.SyncCond.db_success);
+            System.out.println("drop result:" + obj);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    
     public void testTable() {
 
         try{

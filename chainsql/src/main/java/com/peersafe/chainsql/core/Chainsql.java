@@ -1101,6 +1101,28 @@ public class Chainsql extends Submit {
 	public JSONObject getTransaction(String hash){
 		return this.connection.client.getTransaction(hash);
 	}
+
+
+
+
+	/**
+	 * Get transaction identified by hash.
+	 * @param txInfo txInfo  {"hash": "B168F7FC87EC5D435F85885B21DEA3C55B98C9390CA9FDB75F14571E451BD1B3", "meta":false,"meta_chain":true}
+	 * @return Transaction information.
+	 */
+	public JSONObject getTransaction(JSONObject txInfo) throws Exception{
+
+
+		if(txInfo == null || !txInfo.has("hash")){
+			throw new Exception("txInfo has no field of hash");
+		}
+
+		return this.connection.client.getTransaction(txInfo);
+	}
+
+
+
+
 	/**
 	 * Get transaction by hash asynrhonously.
 	 * @param hash Transaction hash.

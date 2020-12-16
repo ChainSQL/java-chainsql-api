@@ -233,7 +233,31 @@ public class ChainsqlTest extends TestCase {
         }
     }
 
-    
+
+    public void testTransaction(){
+
+        try{
+
+            JSONObject obj = new JSONObject();
+            obj.put("hash","AFAD615877384B9CACB099BAFEB4F5AB7F9577062BF313ADAD50253B6D6D108F");
+            obj.put("meta",true);
+            obj.put("meta_chain",true);
+
+            JSONObject txInfo =  c.getTransaction(obj);
+            System.out.println(txInfo);
+
+            txInfo =  c.getTransaction("AFAD615877384B9CACB099BAFEB4F5AB7F9577062BF313ADAD50253B6D6D108F");
+            System.out.println(txInfo);
+
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+    }
+
     public void testTable() {
 
         try{

@@ -2038,6 +2038,25 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+
+
+
+    /**
+     * getTransaction synchronously
+     * @param txInfo tx information.
+     * @return Transaction details.
+     */
+    public JSONObject getTransaction(JSONObject txInfo) {
+        Request request = newRequest(Command.tx);
+        request.json("transaction", txInfo.getString("hash"));
+        request.json("meta", txInfo.has("meta") && txInfo.getBoolean("meta"));
+        request.json("meta_chain", txInfo.has("meta_chain") && txInfo.getBoolean("meta_chain"));
+        request.request();
+        waiting(request);
+        return getResult(request);
+    }
+
+
     
     /**
      * Request ping.

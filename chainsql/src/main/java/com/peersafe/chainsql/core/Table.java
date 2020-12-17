@@ -27,7 +27,7 @@ public class Table extends Submit{
 	private String  autoFillField;
 	private String  txsHashFillField;
 	private String  nameInDB;
-	private boolean confidential = false;  // 标志是否为加密表
+	private boolean confidential = true;  // 标志是否为加密表
 
 	/**
 	 * Constructor for Table.
@@ -331,6 +331,11 @@ public class Table extends Submit{
 			}else if(res.has("token")) {
 				token = res.getString("token");
 			}
+		}
+
+		if(token.equals("")) {
+			strRaw = Util.toHexString(strRaw);
+			return strRaw;
 		}
 
 		//有加密则不验证

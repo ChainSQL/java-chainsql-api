@@ -73,8 +73,11 @@ public class Chainsql extends Submit {
 		}
 
 		this.connection.address = address;
-		this.connection.secret = secret;
-		this.connection.scope = address;
+		this.connection.secret  = secret;
+
+		if(this.connection.scope == null){
+			this.connection.scope   = address;
+		}
 	}
 
 
@@ -138,19 +141,9 @@ public class Chainsql extends Submit {
 	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url);
 		this.eventManager.init(this.connection);
-		connection.client.onConnected(new Client.OnConnected() {
-			@Override
-			public void called(Client args) {
-				connectCb.called(args);
-			}
-		});
+		connection.client.onConnected(connectCb::called);
 		if(disconnectCb != null) {
-			connection.client.onDisconnected(new Client.OnDisconnected() {
-				@Override
-				public void called(Client args) {
-					disconnectCb.called(args);
-				}
-			});	
+			connection.client.onDisconnected(disconnectCb::called);
 		}
 		
 		return connection;
@@ -180,19 +173,9 @@ public class Chainsql extends Submit {
 		connection = new Connection().connect(url,serverCertPath,storePass);
 		this.eventManager.init(this.connection);
 
-		connection.client.onConnected(new Client.OnConnected() {
-			@Override
-			public void called(Client args) {
-				connectCb.called(args);
-			}
-		});
+		connection.client.onConnected(connectCb::called);
 		if(disconnectCb != null) {
-			connection.client.onDisconnected(new Client.OnDisconnected() {
-				@Override
-				public void called(Client args) {
-					disconnectCb.called(args);
-				}
-			});
+			connection.client.onDisconnected(disconnectCb::called);
 		}
 
 		return connection;
@@ -211,18 +194,8 @@ public class Chainsql extends Submit {
 		//jdk1.8
 //		this.connection.client.onReconnecting(this::onReconnecting);
 //		this.connection.client.onReconnected(this::onReconnected);
-		this.connection.client.onReconnecting(new OnReconnecting(){
-			@Override
-			public void called(JSONObject args) {
-				onReconnecting(args);
-			}
-		});
-		this.connection.client.onReconnected(new OnReconnected(){
-			@Override
-			public void called(JSONObject args) {
-				onReconnected(args);
-			}			
-		});
+		this.connection.client.onReconnecting(this::onReconnecting);
+		this.connection.client.onReconnected(this::onReconnected);
 	}
 
 
@@ -238,7 +211,7 @@ public class Chainsql extends Submit {
 	 * @return List of String
 	 */
 	public static List<String> array(String val0, String... vals){
-	 	List<String> res = new ArrayList<String>();
+	 	List<String> res = new ArrayList<>();
 	 	res.add(val0);
 	 	res.addAll(Arrays.asList(vals));
 
@@ -362,7 +335,7 @@ public class Chainsql extends Submit {
 		if(!tx.has("secret")){
 			return Util.errorObject("no secret supplied");
 		}
-			;
+
 		if(!tx.has("account")){
 			return Util.errorObject("no account supplied");
 		}
@@ -526,7 +499,7 @@ public class Chainsql extends Submit {
 		String token = "";
 		if(confidential){
 
-			boolean bSM = ( Utils.getAlgType(this.connection.secret) == "softGMAlg" );
+			boolean bSM = ( Utils.getAlgType(this.connection.secret).equals("softGMAlg") );
 			int randomSize = bSM? PASSWORD_LENGTH /2 :PASSWORD_LENGTH ;
 
 			byte[] password = Util.getRandomBytes(randomSize);
@@ -537,8 +510,7 @@ public class Chainsql extends Submit {
 			}
 			json.put("Token", token);
 
-			byte[] rawBytes = null;
-			rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password,bSM );
+			byte[] rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password,bSM );
 
 			strRaw = Util.bytesToHex(rawBytes);
 		}else{
@@ -552,10 +524,10 @@ public class Chainsql extends Submit {
 		if(this.transaction){
 			//有加密则不验证
 			if(confidential){
-				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),token);
+				this.mapToken.put(new GenericPair<>(this.connection.address, name),token);
 				this.needVerify = 0;
 			}else {
-				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),"");
+				this.mapToken.put(new GenericPair<>(this.connection.address, name),"");
 			}
 			this.cache.add(json);
 			return null;
@@ -566,11 +538,13 @@ public class Chainsql extends Submit {
 	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
-		byte[] tokenBytes = null;
+		byte[] tokenBytes;
 		if(Config.isUseGM())
 			tokenBytes = EncryptCommon.asymEncrypt(password, null);
-		else
+		else {
+			assert keyPair != null;
 			tokenBytes = EncryptCommon.asymEncrypt(password, keyPair.canonicalPubBytes());
+		}
 		return tokenBytes == null ? "" :Util.bytesToHex(tokenBytes);
 	}
 	/**
@@ -634,9 +608,9 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * check if publickey matches user
-	 * @param user
-	 * @param userPublicKey
-	 * @return
+	 * @param user user
+	 * @param userPublicKey userPublicKey
+	 * @return true
 	 */
 	private boolean checkUserMatchPublic(String user,String userPublicKey) {
 		if(user.isEmpty() || userPublicKey.isEmpty())
@@ -674,7 +648,7 @@ public class Chainsql extends Submit {
 			logger.log(Level.SEVERE, "PublicKey does not match User");
 			return null;
 		}
-		GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+		GenericPair<String,String> pair = new GenericPair<>(this.connection.address, name);
 		if(mapToken.containsKey(pair)){
 			token = mapToken.get(pair);
 		}else {
@@ -692,7 +666,7 @@ public class Chainsql extends Submit {
 			try {
 				byte[] seedBytes = null;
 
-				boolean bSoftGM = Utils.getAlgType(this.connection.secret) == "softGMAlg";
+				boolean bSoftGM = Utils.getAlgType(this.connection.secret).equals("softGMAlg");
 				if(!this.connection.secret.isEmpty()){
 
 					if(bSoftGM){
@@ -729,7 +703,7 @@ public class Chainsql extends Submit {
 	}
 
 	private Chainsql grant_inner(String name, String user,String flag,String token) {
-		List<JSONObject> flags = new ArrayList<JSONObject>();
+		List<JSONObject> flags = new ArrayList<>();
 		flags.add(Util.StrToJson(flag));
 		
 		JSONObject json = new JSONObject();
@@ -1048,14 +1022,11 @@ public class Chainsql extends Submit {
 			return Util.errorObject("hash cannot be null");
 		}
 		mRetJson = null;
-		this.connection.client.getCrossChainTxs(hash, limit,include,new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
+		this.connection.client.getCrossChainTxs(hash, limit,include, data -> {
+			if(data == null){
+				mRetJson = new JSONObject();
+			}else{
+				mRetJson = (JSONObject) data;
 			}
 		});
 		while(mRetJson == null){
@@ -1153,8 +1124,8 @@ public class Chainsql extends Submit {
 	}
 
 	/**
-	 *  {algorithm:"softGMAlg",secret:"pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV"}
-	 * @param options
+	 *  generate address
+	 * @param options {algorithm:"softGMAlg",secret:"pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV"}
 	 * @return
 	 */
 	public JSONObject generateAddress(JSONObject options){
@@ -1176,11 +1147,11 @@ public class Chainsql extends Submit {
 					version = Seed.VER_SOFT_SM;
 					break;
 				default:
-					;
+					version = Seed.VER_ED25519;
 			}
 		}
 
-		Seed seed = null;
+		Seed seed;
 		if(options.has("secret")){
 
 			String sSecret = options.getString("secret");
@@ -1198,7 +1169,7 @@ public class Chainsql extends Submit {
 			seed.setGM();
 		}
 		IKeyPair keyPair = seed.keyPair();
-		if(keyPair.type() == "softGMAlg"){
+		if(keyPair.type().equals("softGMAlg")){
 
 			JSONObject  softGMAddress = new JSONObject();
 
@@ -1292,7 +1263,7 @@ public class Chainsql extends Submit {
 		}
 
 		byte[] version = Seed.VER_SOFT_SM;
-		Seed seed = null;
+		Seed seed;
 
 		if(hasSecret){
 			String sSecret = options.getString("secret");
@@ -1379,9 +1350,9 @@ public class Chainsql extends Submit {
 		List<JSONObject> cache = this.cache;	
 		
 		JSONArray statements = new JSONArray();
-        for (int i = 0; i < cache.size(); i++) {
-        	statements.put(cache.get(i));
-        }
+		for (JSONObject jsonObject : cache) {
+			statements.put(jsonObject);
+		}
         
 		JSONObject json = new JSONObject();
 		//this line must add here

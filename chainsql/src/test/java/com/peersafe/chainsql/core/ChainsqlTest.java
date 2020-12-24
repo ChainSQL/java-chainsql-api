@@ -25,10 +25,11 @@ public class ChainsqlTest extends TestCase {
     public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
     public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 
+
     public void setUp() throws Exception {
         try{
 
-            c.connect("ws://192.168.29.108:7017");
+            c.connect("ws://127.0.0.1:7017");
             c.as(rootAddress,rootSecret);
         }catch (Exception e){
             e.printStackTrace();
@@ -233,6 +234,39 @@ public class ChainsqlTest extends TestCase {
         }
     }
 
+    public void testTableDataType(){
+
+        try{
+
+            // longtext 类型数据
+            List<String> args =    Util.array(
+                    "{'field':'TENDER_PROJECT_CODE','type':'longtext'}"
+            );
+
+            JSONObject obj;
+            JSONObject insertField = new JSONObject();
+            insertField.put("TENDER_PROJECT_CODE",getAlphaNumericString(1024*500));
+
+
+            // 插入数据
+            List<String> orgs = Util.array(insertField.toString());
+
+            String sTableNameInDB;
+            JSONObject nameInDB = c.getTableNameInDB(rootAddress,"test5");
+            sTableNameInDB = nameInDB.getString("nameInDB");
+
+            JSONObject tableProperty = new JSONObject();
+            tableProperty.put("nameInDB",sTableNameInDB);
+            tableProperty.put("confidential",false);
+            obj = c.table("test5").tableSet(tableProperty).insert(orgs).submit(Submit.SyncCond.db_success);
+            System.out.println("insert result:" + obj);
+
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+    }
 
     public void testTransaction(){
 
@@ -277,5 +311,36 @@ public class ChainsqlTest extends TestCase {
 
 
     }
+
+
+
+    // function to generate a random string of length n
+    static String getAlphaNumericString(int n)
+    {
+
+        // chose a Character random from this String
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                + "0123456789"
+                + "abcdefghijklmnopqrstuvxyz";
+
+        // create StringBuffer size of AlphaNumericString
+        StringBuilder sb = new StringBuilder(n);
+
+        for (int i = 0; i < n; i++) {
+
+            // generate a random number between
+            // 0 to AlphaNumericString variable length
+            int index
+                    = (int)(AlphaNumericString.length()
+                    * Math.random());
+
+            // add Character one by one in end of sb
+            sb.append(AlphaNumericString
+                    .charAt(index));
+        }
+
+        return sb.toString();
+    }
+
 
 }

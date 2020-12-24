@@ -712,6 +712,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 case contract_event:
                 	emit(OnContractEvent.class,msg);
                 	break;
+                case viewChange:
+                	break;
                 default:
                     unhandledMessage(msg);
                     break;
@@ -751,10 +753,18 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         //deal with reconnect
         if(reconnecting) {
         	log(Level.INFO,"reconnected");
-        	reconnecting = false;
 			emit(OnReconnected.class,null);
 			reconnect_future.cancel(true);
 			reconnect_future = null;
+			if(!reconnecting && serverInfo.primed()) {
+				getLedgerVersion(new Callback<JSONObject>() {
+					@Override
+					public void called(JSONObject args) {
+						serverInfo.ledger_index = args.getInt("ledger_current_index");
+					}
+		    	});	
+			}
+        	reconnecting = false;
         }
         
         subscribe(prepareSubscription());
@@ -951,6 +961,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         subscriptions.pauseEventEmissions();
         subscriptions.addStream(SubscriptionManager.Stream.ledger);
         subscriptions.addStream(SubscriptionManager.Stream.server);
+        subscriptions.addStream(SubscriptionManager.Stream.view_change);
         subscriptions.unpauseEventEmissions();
         return subscriptions.allSubscribed();
     }

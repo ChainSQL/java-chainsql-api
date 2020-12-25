@@ -29,7 +29,7 @@ public class ChainsqlTest extends TestCase {
     public void setUp() throws Exception {
         try{
 
-            c.connect("ws://127.0.0.1:7017");
+            c.connect("ws://127.0.0.1:5017");
             c.as(rootAddress,rootSecret);
         }catch (Exception e){
             e.printStackTrace();
@@ -111,7 +111,7 @@ public class ChainsqlTest extends TestCase {
     public void testCreateTable() {
 
         try{
-            // 建表
+            // 1、 建表
             List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
                     "{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
@@ -120,6 +120,8 @@ public class ChainsqlTest extends TestCase {
             obj = c.createTable(sTableName,args,bEncrypted).submit(Submit.SyncCond.db_success);
             System.out.println("create result:" + obj);
 
+
+            // 2 获取表的nameInDB
             String sTableNameInDB;
             JSONObject nameInDB = c.getTableNameInDB(rootAddress,sTableName);
             sTableNameInDB = nameInDB.getString("nameInDB");
@@ -133,19 +135,20 @@ public class ChainsqlTest extends TestCase {
             obj = c.table(sTableName).insert(orgs).submit(Submit.SyncCond.db_success);
             System.out.println("insert result:" + obj);
 
+            // 3 使用tableSet接口 设置表的属性
             obj = c.table(sTableName).tableSet(tableProperty).get(c.array("{'name':'88.185.0021/210-15508U-014P-05015-200100327'}")).submit();
             System.out.println("get result:" + obj);
 
-            // 更新表
+            // 4 更新表
             List<String> arr1 = Util.array("{'id': 2}");
             obj = c.table(sTableName).tableSet(tableProperty).get(arr1).update("{'age':200}").submit(Submit.SyncCond.db_success);
             System.out.println("update result:" + obj);
 
-            // 删除表数据
+            // 5 删除表数据
             obj = c.table(sTableName).tableSet(tableProperty).get(c.array("{'id': " + 2 + "}")).delete().submit(Submit.SyncCond.db_success);
             System.out.println("delete result:" + obj);
 
-            // 授权
+            // 6 授权
             if(bEncrypted){
 
                 obj = c.grant(sTableName, userAddress,userPublicKey,"{insert:true,update:true}")
@@ -159,7 +162,7 @@ public class ChainsqlTest extends TestCase {
             }
 
 
-            // 授权后使用被授权账户插入数据
+            // 7 授权后使用被授权账户插入数据
             c.as(userAddress, userSecret);
             c.use(rootAddress);
             List<String> orgLst = Util.array("{'id':105,'age': 333,'name':'hello'}","{'id':106,'age': 444,'name':'sss'}","{'id':107,'age': 555,'name':'rrr'}");
@@ -167,13 +170,13 @@ public class ChainsqlTest extends TestCase {
             System.out.println("insert after grant result:" + obj);
 
 
-            // 重命名表
+            // 8 重命名表
             c.as(rootAddress, rootSecret);
             String sReName = "newTable";
             obj = c.renameTable(sTableName, sReName).submit(Submit.SyncCond.db_success);
             System.out.println("rename result:" + obj);
 
-            // 删除表
+            // 9 删除表
             obj = c.dropTable(sReName).submit(Submit.SyncCond.db_success);
             System.out.println("drop result:" + obj);
 

@@ -205,7 +205,7 @@ public abstract class Submit {
         	Util.waiting();
         	if(--count <= 0){
         		submit_state = SubmitState.submit_error;
-        		submitRes = getError("waiting submit result timeout");
+        		submitRes = getError("waiting submit result timeout,tx_hash=" + tx.hash.toString());
         		break;
         	}
         }        
@@ -219,7 +219,7 @@ public abstract class Submit {
             	while(sync_state != SyncState.sync_response){
             		Util.waiting();
             		if(--count <= 0){
-            			syncRes = getError("waiting sync result timeout");
+            			syncRes = getError("waiting sync result timeout,tx_hash=" + tx.hash.toString());
             			break;
             		}
             	}
@@ -370,7 +370,7 @@ public abstract class Submit {
 			drops_per_byte = connection.client.serverInfo.drops_per_byte;
     		fee = connection.client.serverInfo.transactionFee(tx);
     		if(!json.has(UInt32.LastLedgerSequence.toString())) {
-    			tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 5));
+    			tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 20));
     		}
     	}else {
     		fee = Amount.fromString("50");
@@ -383,6 +383,7 @@ public abstract class Submit {
     	//chainsql type tx needs higher fee
     	Amount extraFee = Util.getExtraFee(json,drops_per_byte,type);
     	fee = fee.add(extraFee);
+    	fee = fee.add(Amount.fromString(String.valueOf(10)));
     	
 		tx.as(Amount.Fee, fee);
 		

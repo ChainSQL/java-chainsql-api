@@ -620,7 +620,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     @Override
     public void onMessage(final JSONObject msg) {
-//    	System.out.println("onMessage:" + msg);
         resetReconnectStatus();
         run(new Runnable() {
             @Override
@@ -875,7 +874,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     new TransactionManager(this, accountRoot, id, keyPair)
             );
             accounts.put(id, account);
-            subscriptions.addAccount(id);
+//            subscriptions.addAccount(id);
 
             return account;
         }

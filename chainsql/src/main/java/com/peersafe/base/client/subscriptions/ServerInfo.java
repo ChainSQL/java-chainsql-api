@@ -79,6 +79,10 @@ public class ServerInfo {
     public void update(JSONObject json) {
         // TODO, this might asking for trouble, just assuming certain fields, it should BLOW UP
 
+    	if(json.optLong("ledger_index", ledger_index) < ledger_index) {
+//    		System.out.println("Server_info update:"+json);
+    		return;
+    	}
         fee_base = json.optInt("fee_base", fee_base);
         drops_per_byte = json.optInt("drops_per_byte", drops_per_byte);
         txn_count = json.optInt("txn_count", txn_count);
@@ -97,7 +101,6 @@ public class ServerInfo {
 
         txn_success = json.optInt("txn_success", txn_success);
         txn_failure = json.optInt("txn_failure", txn_failure);
-
 
         updated = true;
     }

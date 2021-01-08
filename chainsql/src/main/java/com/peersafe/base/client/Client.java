@@ -920,7 +920,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /* ------------------------------ SUBSCRIPTIONS ----------------------------- */
 
-    private void subscribe(JSONObject subscription) {
+    public void subscribe(JSONObject subscription) {
         Request request = newRequest(Command.subscribe);
         
         request.json(subscription);
@@ -953,6 +953,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             	}
 			}
 		});
+        request.request();
+    }
+    
+    public void unsubscribe(JSONObject subscription) {
+        Request request = newRequest(Command.unsubscribe);
+        
+        request.json(subscription);
         request.request();
     }
 
@@ -992,9 +999,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             sendMessage(request.toJSON());
             // Better safe than sorry
         } catch (Exception e) {
-            if (reqLog.isLoggable(Level.WARNING)) {
-                reqLog.log(Level.WARNING, "Exception when trying to request: {0}", e);
-            }
+//            if (reqLog.isLoggable(Level.WARNING)) {
+//                reqLog.log(Level.WARNING, "Exception when trying to request: {0}", e);
+//            }
             nextTickOrWhenConnected(new OnConnected() {
                 @Override
                 public void called(Client args) {

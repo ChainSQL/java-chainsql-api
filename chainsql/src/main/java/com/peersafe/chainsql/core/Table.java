@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.peersafe.base.utils.Utils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
@@ -56,6 +57,17 @@ public class Table extends Submit{
 		}
 	    this.exec = "r_insert";
 	    return dealWithTransaction();
+	}
+
+	public  Table insert(JSONArray jsonArray){
+		for(Object json: jsonArray){
+			if(!"".equals(json) && json != null){
+				String jsonStr = json.toString();
+				this.query.add(jsonStr);
+			}
+		}
+		this.exec = "r_insert";
+		return dealWithTransaction();
 	}
 
 	/**

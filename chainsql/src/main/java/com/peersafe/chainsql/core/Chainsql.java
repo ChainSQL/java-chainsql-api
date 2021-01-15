@@ -1595,4 +1595,18 @@ public class Chainsql extends Submit {
 	{
 		connection.client.getLedgerTxs(ledgerSeq,bIncludeSuccess,bIncludefailure,cb);
 	}
+
+	/**
+	 *
+	 * @param extraDrop
+	 *     额外的费用,单位为drop
+	 * @throws Exception
+	 */
+	public void setExtraZXC(int extraDrop) throws Exception {
+		if((extraDrop < 1000000) && (extraDrop >= 0)){
+			this.extraDrop = extraDrop;
+		}else{
+			throw new Exception("设置的额外费用超过1ZXC或低于0drop");
+		}
+	}
 }

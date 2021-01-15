@@ -50,6 +50,8 @@ public abstract class Submit {
 	protected Integer needVerify = 1;
 	//严格模式
 	protected boolean strictMode = false;
+
+	protected int extraDrop = 0;
 	
 	public enum SyncCond {
 		send_success,
@@ -383,7 +385,7 @@ public abstract class Submit {
     	//chainsql type tx needs higher fee
     	Amount extraFee = Util.getExtraFee(json,drops_per_byte,type);
     	fee = fee.add(extraFee);
-    	fee = fee.add(Amount.fromString(String.valueOf(10)));
+		fee = fee.add(Amount.fromString(String.valueOf(extraDrop)));
     	
 		tx.as(Amount.Fee, fee);
 		

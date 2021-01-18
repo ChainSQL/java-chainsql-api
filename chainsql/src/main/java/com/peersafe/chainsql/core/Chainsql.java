@@ -437,7 +437,7 @@ public class Chainsql extends Submit {
 	 * @throws Exception
 	 */
 	public void setExtraFee(int extraDrop) throws Exception {
-		if ((extraDrop < 1000000) && (extraDrop >= 0)) {
+		if ((extraDrop <= 1000000) && (extraDrop > 0)) {
 			this.extraDrop = extraDrop;
 		} else {
 			throw new Exception("设置的额外费用超过1ZXC或低于0drop");

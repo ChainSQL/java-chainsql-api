@@ -44,7 +44,7 @@ public class InsertTest extends TestCase {
     }
 
     public void testExtraFee() throws Exception {
-        c.setExtraZXC(100);
+        c.setExtraFee(100);
         System.out.println(c.extraDrop);
 
     }

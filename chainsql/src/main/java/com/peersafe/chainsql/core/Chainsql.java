@@ -422,13 +422,25 @@ public class Chainsql extends Submit {
 	    	}else{
 	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
 	    	}
-			
+
 			signed = payment.sign(this.connection.secret);
-			
+
 			return Util.successObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Util.errorObject(e.getMessage());
+		}
+	}
+
+	/**
+	 * @param extraDrop 额外的费用,单位为drop
+	 * @throws Exception
+	 */
+	public void setExtraFee(int extraDrop) throws Exception {
+		if ((extraDrop <= 1000000) && (extraDrop > 0)) {
+			this.extraDrop = extraDrop;
+		} else {
+			throw new Exception("设置的额外费用超过1ZXC或低于0drop");
 		}
 	}
 
@@ -441,7 +453,7 @@ public class Chainsql extends Submit {
 	public Chainsql createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
-	
+
 	/**
 	 * Create table with operation-rule
 	 * @param name Table name

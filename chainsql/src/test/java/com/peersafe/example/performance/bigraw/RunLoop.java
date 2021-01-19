@@ -85,34 +85,17 @@ public class RunLoop {
 			PublicVars.rootSecret = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
 		}
 		
-		PublicVars.Data = readFileContent(args[6]);
+		PublicVars.Data = constructContent(Integer.parseInt(args[6]));
 	}
 	
 	
-	public static String readFileContent(String fileName) {
-	    File file = new File(fileName);
-	    BufferedReader reader = null;
-	    StringBuffer sbf = new StringBuffer();
-	    try {
-	        reader = new BufferedReader(new FileReader(file));
-	        String tempStr;
-	        while ((tempStr = reader.readLine()) != null) {
-	            sbf.append(tempStr);
-	        }
-	        reader.close();
-	        return sbf.toString();
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    } finally {
-	        if (reader != null) {
-	            try {
-	                reader.close();
-	            } catch (IOException e1) {
-	                e1.printStackTrace();
-	            }
-	        }
+	public static String constructContent(int contentSizeKb) {
+	    String strRet = "";
+	    String strKb = "7b224845414444415441223a7b22444154415f434e223a22222c22444154415f4b4559223a2261356331393363612d373066632d343137342d626234652d633238346237623264616161222c22444154415f4e4f223a22353034222c2254494d455354414d50223a313630363238353635383137332c2256455253494f4e223a2232222c2246524f4d504c4154464f524d434f4445223a2242616948616e54657374303031222c22544f504c4154464f524d434f4445223a224333323035383230303031222c22444154415f54595045223a22222c22444154415f454e223a22227d2c22444553434f4e54455854223a7b22554e49464945445f4445414c5f434f444553223a2236386133343735662d353264652d346135662d613366382d336433323263393064343039222c224e4f544943455f434f4e54454e54223a223c7020616c69676e3d5c2263656e7465725c22207374796c653d5c226d617267696e3a203070743b20746578742d616c69676e3a2063656e7465723b206c696e652d6865696768743a20323170743b20666f6e742d66616d696c793a2043616c6962723a2063656e7465723b206c696e652d6865696768743a20323170743b20666f6e742d66616d696c793a2043616c696272742d66616d696c793a2043616c696272742d66616d696c793a2043616c6962726d696c793a2043616c6962726272";
+	    for(int i=0; i<contentSizeKb; i++) {
+	    	strRet += strKb;
 	    }
-	    return sbf.toString();
+	    return strRet;
 	}
 
 

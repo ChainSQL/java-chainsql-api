@@ -36,6 +36,8 @@ class PublicVar {
 	public static String NameInDB = "";
 	public static boolean GM = false;
 	public static int TxType = 0;
+	public static String Data = "";
+	public static int DataSizeKb;
 }
 
 /**
@@ -51,6 +53,7 @@ class PublicVar {
 	5. 发送完一笔交易等等多久
 	6. 是否国密算法
 	7. 交易类型：0-insert 1-payment
+	8. 插入数据 大小（kb）
  */
 public class RunGmLoop {
 	public static List<Account> mAccountList = new ArrayList<Account>();
@@ -70,7 +73,7 @@ public class RunGmLoop {
 	}
 
 	public static void parseArgs(String[] args) {
-		if (args.length != 7) {
+		if (args.length != 8) {
 			System.out.println("参数错误,length="+args.length);
 			return;
 		}
@@ -89,8 +92,19 @@ public class RunGmLoop {
 			PublicVar.rootAddress = "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj";
 			PublicVar.rootSecret = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
 		}
+		PublicVar.DataSizeKb = Integer.parseInt(args[7]);
+		PublicVar.Data = constructContent(PublicVar.DataSizeKb);
 	}
 
+	public static String constructContent(int contentSizeKb) {
+	    String strRet = "";
+	    String strKb = "7b224845414444415441223a7b22444154415f434e223a22222c22444154415f4b4559223a2261356331393363612d373066632d343137342d626234652d633238346237623264616161222c22444154415f4e4f223a22353034222c2254494d455354414d50223a313630363238353635383137332c2256455253494f4e223a2232222c2246524f4d504c4154464f524d434f4445223a2242616948616e54657374303031222c22544f504c4154464f524d434f4445223a224333323035383230303031222c22444154415f54595045223a22222c22444154415f454e223a22227d2c22444553434f4e54455854223a7b22554e49464945445f4445414c5f434f444553223a2236386133343735662d353264652d346135662d613366382d336433323263393064343039222c224e4f544943455f434f4e54454e54223a223c7020616c69676e3d5c2263656e7465725c22207374796c653d5c226d617267696e3a203070743b20746578742d616c69676e3a2063656e7465723b206c696e652d6865696768743a20323170743b20666f6e742d66616d696c793a2043616c6962723a2063656e7465723b206c696e652d6865696768743a20323170743b20666f6e742d66616d696c793a2043616c696272742d66616d696c793a2043616c696272742d66616d696c793a2043616c6962726d696c793a2043616c6962726272";
+	    for(int i=0; i<contentSizeKb; i++) {
+	    	strRet += strKb;
+	    }
+	    return strRet;
+	}
+	
 	public static void testPool() {
 //		ChainsqlPool.instance().init(PublicVar.WsUrl, PublicVar.PoolSize);
 
@@ -107,7 +121,7 @@ public class RunGmLoop {
 		c.as(PublicVar.rootAddress, PublicVar.rootSecret);
 		// 激活
 		for (int i = 0; i < mAccountList.size(); i++) {
-			JSONObject obj = c.pay(mAccountList.get(i).address, "200000000").submit(SyncCond.validate_success);
+			JSONObject obj = c.pay(mAccountList.get(i).address, "20000000").submit(SyncCond.validate_success);
 			System.out.println("activate result:" + obj);
 		}
 		if(PublicVar.TxType == 1) {
@@ -115,7 +129,7 @@ public class RunGmLoop {
 		}
 		// 建表
 		List<String> args = Util.array("{'field':'id','type':'int','length':11,'NN':0}",
-				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+				"{'field':'name','type':'longtext'}", "{'field':'age','type':'int'}");
 		JSONObject obj = c.createTable(PublicVar.mTableName, args).submit(SyncCond.validate_success);
 		System.out.println("create table result:" + obj);
 		JSONObject ret = c.getTableNameInDB(PublicVar.rootAddress, PublicVar.mTableName);
@@ -238,9 +252,8 @@ class InsertThread implements Runnable {
 					"	 }"+
 					"],"+
 				   "'OpType': 6,"+				   
-				   "'Fee':'100000',"+
 				   "'Raw': ["+
-					"	{'id':1,'name':'12345','age':333}"+
+					"	{'id':1,'name':'" + PublicVar.Data + "','age':333}"+
 				   "]"+
 				"}");
 				param.put("tx_json", json);

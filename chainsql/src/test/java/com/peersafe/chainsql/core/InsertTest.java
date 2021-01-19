@@ -43,4 +43,10 @@ public class InsertTest extends TestCase {
         System.out.println("insert result:" + obj1);
     }
 
+    public void testExtraFee() throws Exception {
+        c.setExtraFee(100);
+        System.out.println(c.extraDrop);
+
+    }
+
 }

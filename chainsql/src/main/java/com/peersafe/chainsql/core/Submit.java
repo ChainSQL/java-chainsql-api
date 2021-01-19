@@ -33,18 +33,18 @@ public abstract class Submit {
 	private SyncState sync_state;
 	private JSONObject submitRes;
 	private JSONObject syncRes;
-	
+
 	private boolean sync = false;
 	protected SyncCond condition;
 	protected SignedTransaction signed;
-	
+
 	protected CrossChainArgs crossChainArgs = null;
-	
+
 	protected EventManager eventManager = new EventManager();
-	
+
 	//事务相关
-	protected List<JSONObject> cache = new ArrayList<JSONObject>();	
-	protected Map<GenericPair<String,String>,String> mapToken = 
+	protected List<JSONObject> cache = new ArrayList<JSONObject>();
+	protected Map<GenericPair<String,String>,String> mapToken =
 			new HashMap<GenericPair<String,String>,String>();
 	protected boolean transaction = false;
 
@@ -54,19 +54,21 @@ public abstract class Submit {
 	protected Integer needVerify = 1;
 	//严格模式
 	protected boolean strictMode = false;
-	
+
+	protected int extraDrop = 0;
+
 	public enum SyncCond {
 		send_success,
-        validate_success,	
-        db_success,
+		validate_success,
+		db_success,
 	}
-	
+
 	public enum SubmitState{
 		waiting_submit,
 		send_success,
 		submit_error,
 	}
-	
+
 	public enum SyncState{
 		waiting_sync,
 		sync_response,
@@ -87,17 +89,17 @@ public abstract class Submit {
 	private static final int wait_milli = 50;
 	private static final int submit_wait = 10000;
 	private static final int sync_maxtime = 30000;
-	
+
 	/**
 	 * Set restrict mode.
-	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation 
-	 * to a table and some other user interrupts this by making an operation to this identical table.  
+	 * If restrict mode enabled,transaction will fail when user executing a consecutive operation
+	 * to a table and some other user interrupts this by making an operation to this identical table.
 	 * @param falg True to enable restrict mode and false to disable restrict mode.
 	 */
 	public void setRestrict(boolean falg) {
 		this.strictMode = falg;
 	}
-	
+
 	public void setNeedVerify(boolean flag){
 		this.needVerify = flag ? 1 : 0;
 	}
@@ -112,7 +114,7 @@ public abstract class Submit {
 
 		return doSubmit();
 	}
-	
+
 	/**
 	 * synchronous,return when condition satisfied or submit failed
 	 * @param cond,return condition
@@ -121,7 +123,7 @@ public abstract class Submit {
 	public JSONObject submit(SyncCond cond){
 		sync = true;
 		condition = cond;
-		
+
 		return doSubmit();
 	}
 
@@ -135,7 +137,7 @@ public abstract class Submit {
 		cb = null;
 		return doSubmit();
 	}
-	
+
 	public void setCrossChainArgs(String originalAddress,int txnLedgerSeq,String curTxHash,String futureHash){
 		crossChainArgs = new CrossChainArgs();
 		crossChainArgs.originalAddress = originalAddress;
@@ -143,7 +145,7 @@ public abstract class Submit {
 		crossChainArgs.curTxHash = curTxHash;
 		crossChainArgs.futureHash = futureHash;
 	}
-	
+
 	public void setCrossChainArgs(CrossChainArgs args){
 		this.crossChainArgs = args;
 	}
@@ -162,19 +164,19 @@ public abstract class Submit {
 		obj.put("error_message", err);
 		return obj;
 	}
-	
+
 	public EventManager eventManager() {
 		return eventManager;
 	}
-	
+
 	protected JSONObject doSubmit(){
 		JSONObject obj = prepareSigned();
 		if(obj.has("final_result") || obj.has("error")){
 			return obj;
-		}		
+		}
 		return doSubmitNoPrepare();
 	}
-	
+
 	protected JSONObject doSubmitNoPrepare(){
 		if(signed == null){
 			return getError("Signing failed,maybe ripple node error");
@@ -184,135 +186,135 @@ public abstract class Submit {
         sync_state = SyncState.waiting_sync;
 
 		Account account = connection.client.accountFromSeed(connection.secret);
-	    TransactionManager tm = account.transactionManager();
-	    ManagedTxn tx = new ManagedTxn(signed);
-        
-        //subscribe tx
-        if(sync || cb != null){
-        	if(tx == null || tx.hash == null){
-    			return getError("Submit failed,transaction hash is null.");
-        	}
-        	subscribeTx(tx.hash.toString());
-        }
-        
-        tm.submitSigned(tx.onSubmitSuccess(new OnSubmitSuccess(){
+		TransactionManager tm = account.transactionManager();
+		ManagedTxn tx = new ManagedTxn(signed);
+
+		//subscribe tx
+		if(sync || cb != null){
+			if(tx == null || tx.hash == null){
+				return getError("Submit failed,transaction hash is null.");
+			}
+			subscribeTx(tx.hash.toString());
+		}
+
+		tm.submitSigned(tx.onSubmitSuccess(new OnSubmitSuccess(){
 			@Override
 			public void called(Response args) {
 				onSubmitSuccess(args);
-			}    	  
-        }).onError(new Callback<Response>(){
+			}
+		}).onError(new Callback<Response>(){
 			@Override
 			public void called(Response args) {
 				onSubmitError(args);
 			}
-        })); 
-        
+		}));
+
 //        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 //        System.out.println("time start waiting:" + df.format(new Date()));// new Date()为获取当前系统时间
-        //wait until submit return
-        int count = submit_wait / wait_milli;
-        while(submit_state == SubmitState.waiting_submit){
-        	Util.waiting();
-        	if(--count <= 0){
-        		submit_state = SubmitState.submit_error;
-        		submitRes = getError("waiting submit result timeout");
-        		break;
-        	}
-        }        
-        
-        if(sync){
-        	if(submit_state == SubmitState.submit_error || 
-        		(submit_state == SubmitState.send_success && condition == SyncCond.send_success)){
-        		return submitRes;
-        	}else{
-        		count = sync_maxtime / wait_milli;
-            	while(sync_state != SyncState.sync_response){
-            		Util.waiting();
-            		if(--count <= 0){
-            			syncRes = getError("waiting sync result timeout");
-            			break;
-            		}
-            	}
-            	return syncRes;
-        	}        	
-        }else{
-        	return submitRes;
-        }
+		//wait until submit return
+		int count = submit_wait / wait_milli;
+		while(submit_state == SubmitState.waiting_submit){
+			Util.waiting();
+			if(--count <= 0){
+				submit_state = SubmitState.submit_error;
+				submitRes = getError("waiting submit result timeout,tx_hash=" + tx.hash.toString());
+				break;
+			}
+		}
+
+		if(sync){
+			if(submit_state == SubmitState.submit_error ||
+				(submit_state == SubmitState.send_success && condition == SyncCond.send_success)){
+				return submitRes;
+			}else{
+				count = sync_maxtime / wait_milli;
+				while(sync_state != SyncState.sync_response){
+					Util.waiting();
+					if(--count <= 0){
+						syncRes = getError("waiting sync result timeout,tx_hash=" + tx.hash.toString());
+						break;
+					}
+				}
+				return syncRes;
+			}
+		}else{
+			return submitRes;
+		}
 	}
-	
+
 	private void subscribeTx(String txId){
-    	this.eventManager.subscribeTx(txId,new Callback<JSONObject>(){
+		this.eventManager.subscribeTx(txId,new Callback<JSONObject>(){
 			@Override
 			public void called(JSONObject data) {
-	    		if(cb != null){
-	    			if(!data.getString("status").equals("success"))
-	    				cb.called((JSONObject)data);
-	    		}else if(sync){
-	    			if(!data.has("transaction"))
-	    				return;
-	    			JSONObject obj = (JSONObject)data;
-	    			JSONObject res = new JSONObject();
-	    			JSONObject tx = (JSONObject) obj.get("transaction");
-	    			String hash = tx.get("hash").toString();
-	    			
-	    			//only deal with subscribed tx
-	    			if(!hash.equals(txId)) {
-	    				return;
-	    			}
-	    			
-	    			res.put("tx_hash", hash);
-	    			
-	    			boolean bUnsubcribe = true;
-	    			if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
-	    				res.put("status", "validate_success");
-	    			}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
-	    				res.put("status", "db_success");
-	    			}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
-	    				res.put("status", obj.get("status"));
-	    				if(obj.has("error_message"))
-	    					res.put("error_message", obj.get("error_message"));
-	    				if(obj.has("error"))
-	    					res.put("error", obj.get("error"));
-	    			}else {
-	    				bUnsubcribe = false;
-	    			}
-	    			
-	    			//unsubscribe tx
-	    			if(bUnsubcribe) {
-	    				unSubscribeTx(hash);
-	    			}
-    				
-	    			if(!res.isNull("status") && sync_state == SyncState.waiting_sync){
-	        			syncRes = res;
-	        			sync_state = SyncState.sync_response;
-	        			submit_state = SubmitState.send_success;
-	    			}
-	    		}
+				if(cb != null){
+					if(!data.getString("status").equals("success"))
+						cb.called((JSONObject)data);
+				}else if(sync){
+					if(!data.has("transaction"))
+						return;
+					JSONObject obj = (JSONObject)data;
+					JSONObject res = new JSONObject();
+					JSONObject tx = (JSONObject) obj.get("transaction");
+					String hash = tx.get("hash").toString();
+
+					//only deal with subscribed tx
+					if(!hash.equals(txId)) {
+						return;
+					}
+
+					res.put("tx_hash", hash);
+
+					boolean bUnsubcribe = true;
+					if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
+						res.put("status", "validate_success");
+					}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
+						res.put("status", "db_success");
+					}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
+						res.put("status", obj.get("status"));
+						if(obj.has("error_message"))
+							res.put("error_message", obj.get("error_message"));
+						if(obj.has("error"))
+							res.put("error", obj.get("error"));
+					}else {
+						bUnsubcribe = false;
+					}
+
+					//unsubscribe tx
+					if(bUnsubcribe) {
+						unSubscribeTx(hash);
+					}
+
+					if(!res.isNull("status") && sync_state == SyncState.waiting_sync){
+						syncRes = res;
+						sync_state = SyncState.sync_response;
+						submit_state = SubmitState.send_success;
+					}
+				}
 			}
-    	});
+		});
 	}
-	
+
 	private void unSubscribeTx(String txId) {
 		this.eventManager.unsubscribeTx(txId,null);
 	}
-	
-	private void onSubmitSuccess(Response res){    	
-        JSONObject obj = new JSONObject();
-        obj.put("status", "send_success");
-        JSONObject tx_json = (JSONObject) res.result.get("tx_json");
-        obj.put("tx_hash", tx_json.get("hash").toString());
-        
+
+	private void onSubmitSuccess(Response res){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "send_success");
+		JSONObject tx_json = (JSONObject) res.result.get("tx_json");
+		obj.put("tx_hash", tx_json.get("hash").toString());
+
 		submitRes = obj;
 		submit_state = SubmitState.send_success;
 	}
 
-    private void onSubmitError(Response res) {
-        JSONObject obj = new JSONObject();
-        
-        obj.put("status", "error");
+	private void onSubmitError(Response res) {
+		JSONObject obj = new JSONObject();
+
+		obj.put("status", "error");
 
 
-        if(res.result == null){
+		if(res.result == null){
 
 			res.result = new JSONObject();
 			if (res.message.has("result")) {
@@ -341,30 +343,30 @@ public abstract class Submit {
 
 
 
-        if(sync || cb != null) {
-        	unSubscribeTx(signed.hash.toString());
-            if(cb != null) {
-            	cb.called(obj);
-            }
-        }
-        
-        submitRes = obj;
-        submit_state = SubmitState.submit_error;
-    }
-  
+		if(sync || cb != null) {
+			unSubscribeTx(signed.hash.toString());
+			if(cb != null) {
+				cb.called(obj);
+			}
+		}
+
+		submitRes = obj;
+		submit_state = SubmitState.submit_error;
+	}
+
 	protected JSONArray getTableArray(String tableName){
 		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\"}}";
 		return Util.strToJSONArray(tablestr);
 	}
-	
+
 	protected boolean mapError(Map<String,Object> map){
 		if(map.get("Sequence") == null){
-	    	return true;
-	    }else{
-	    	return false;
-	    }
+			return true;
+		}else{
+			return false;
+		}
 	}
-	
+
 	/**
 	 * Translate to transaction type.
 	 * @param json tx_json.
@@ -373,27 +375,28 @@ public abstract class Submit {
 	 * @throws Exception Exception to be throws.
 	 */
 	protected Transaction toTransaction(JSONObject json,TransactionType type) throws Exception{
-    	Transaction tx = new Transaction(type);
-    	Amount fee;
-    	int drops_per_byte = 1000;
-    	if(connection.client.serverInfo.primed()) {
+		Transaction tx = new Transaction(type);
+		Amount fee;
+		int drops_per_byte = 1000;
+		if(connection.client.serverInfo.primed()) {
 			drops_per_byte = connection.client.serverInfo.drops_per_byte;
-    		fee = connection.client.serverInfo.transactionFee(tx);
-    		if(!json.has(UInt32.LastLedgerSequence.toString())) {
-    			tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 5));
-    		}
-    	}else {
-    		fee = Amount.fromString("50");
-    		JSONObject ledger = connection.client.getLedgerVersion();
-    		if(ledger.has("ledger_current_index")) {
-    			tx.put(UInt32.LastLedgerSequence, new UInt32(ledger.getInt("ledger_current_index") + 5));
-    		}
-    	}    		
-    	
-    	//chainsql type tx needs higher fee
-    	Amount extraFee = Util.getExtraFee(json,drops_per_byte,type);
-    	fee = fee.add(extraFee);
-    	
+			fee = connection.client.serverInfo.transactionFee(tx);
+			if(!json.has(UInt32.LastLedgerSequence.toString())) {
+				tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 20));
+			}
+		}else {
+			fee = Amount.fromString("50");
+			JSONObject ledger = connection.client.getLedgerVersion();
+			if(ledger.has("ledger_current_index")) {
+				tx.put(UInt32.LastLedgerSequence, new UInt32(ledger.getInt("ledger_current_index") + 5));
+			}
+		}
+
+		//chainsql type tx needs higher fee
+		Amount extraFee = Util.getExtraFee(json,drops_per_byte,type);
+		fee = fee.add(extraFee);
+		fee = fee.add(Amount.fromString(String.valueOf(extraDrop)));
+
 		tx.as(Amount.Fee, fee);
 
 
@@ -408,9 +411,9 @@ public abstract class Submit {
  		
 		try {  
 		   tx.parseFromJson(json);
-		} catch (JSONException e) {  
-		   e.printStackTrace();  
-		}  
-	  	return tx;
-    }	
+		} catch (JSONException e) {
+		   e.printStackTrace();
+		}
+		return tx;
+	}
 }

@@ -174,6 +174,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+    public static void shutdown(){
+        CallbackManager.instance().shutdown();
+    }
+
     // ### Members
     // The implementation of the WebSocket
     WebSocketTransport ws;
@@ -618,7 +622,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     @Override
     public void onMessage(final JSONObject msg) {
-//    	System.out.println("onMessage:" + msg);
         resetReconnectStatus();
         run(new Runnable() {
             @Override
@@ -710,6 +713,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 case contract_event:
                 	emit(OnContractEvent.class,msg);
                 	break;
+                case viewChange:
+                	break;
                 default:
                     unhandledMessage(msg);
                     break;
@@ -749,10 +754,18 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         //deal with reconnect
         if(reconnecting) {
         	log(Level.INFO,"reconnected");
-        	reconnecting = false;
 			emit(OnReconnected.class,null);
 			reconnect_future.cancel(true);
 			reconnect_future = null;
+			if(!reconnecting && serverInfo.primed()) {
+				getLedgerVersion(new Callback<JSONObject>() {
+					@Override
+					public void called(JSONObject args) {
+						serverInfo.ledger_index = args.getInt("ledger_current_index");
+					}
+		    	});	
+			}
+        	reconnecting = false;
         }
         
         subscribe(prepareSubscription());
@@ -863,7 +876,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     new TransactionManager(this, accountRoot, id, keyPair)
             );
             accounts.put(id, account);
-            subscriptions.addAccount(id);
+//            subscriptions.addAccount(id);
 
             return account;
         }
@@ -909,7 +922,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /* ------------------------------ SUBSCRIPTIONS ----------------------------- */
 
-    private void subscribe(JSONObject subscription) {
+    public void subscribe(JSONObject subscription) {
         Request request = newRequest(Command.subscribe);
         
         request.json(subscription);
@@ -944,11 +957,19 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		});
         request.request();
     }
+    
+    public void unsubscribe(JSONObject subscription) {
+        Request request = newRequest(Command.unsubscribe);
+        
+        request.json(subscription);
+        request.request();
+    }
 
     private JSONObject prepareSubscription() {
         subscriptions.pauseEventEmissions();
         subscriptions.addStream(SubscriptionManager.Stream.ledger);
         subscriptions.addStream(SubscriptionManager.Stream.server);
+        subscriptions.addStream(SubscriptionManager.Stream.view_change);
         subscriptions.unpauseEventEmissions();
         return subscriptions.allSubscribed();
     }
@@ -980,9 +1001,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             sendMessage(request.toJSON());
             // Better safe than sorry
         } catch (Exception e) {
-            if (reqLog.isLoggable(Level.WARNING)) {
-                reqLog.log(Level.WARNING, "Exception when trying to request: {0}", e);
-            }
+//            if (reqLog.isLoggable(Level.WARNING)) {
+//                reqLog.log(Level.WARNING, "Exception when trying to request: {0}", e);
+//            }
             nextTickOrWhenConnected(new OnConnected() {
                 @Override
                 public void called(Client args) {
@@ -2038,6 +2059,37 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+
+
+
+    /**
+     * getTransaction synchronously
+     * @param txInfo tx information.
+     * @return Transaction details.
+     */
+    public JSONObject getTransaction(JSONObject txInfo) {
+
+        boolean meta,meta_chain;
+        meta = meta_chain = true;
+
+        if(txInfo.has("meta") && !txInfo.getBoolean("meta")){
+            meta = false;
+        }
+
+        if(txInfo.has("meta_chain") && !txInfo.getBoolean("meta_chain")){
+            meta_chain = false;
+        }
+
+        Request request = newRequest(Command.tx);
+        request.json("transaction", txInfo.getString("hash"));
+        request.json("meta", meta);
+        request.json("meta_chain", meta_chain);
+        request.request();
+        waiting(request);
+        return getResult(request);
+    }
+
+
     
     /**
      * Request ping.

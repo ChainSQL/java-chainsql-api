@@ -167,14 +167,8 @@ public enum Field {
     ContractLogs (67,Type.Blob),
     SchemaName (68,Type.Blob),
     Endpoint (69,Type.Blob),
+    TxsHashFillField(70,Type.Blob),
 
-//    SF_Blob const sfContractTxs     (access, STI_VL, 66, "ContractTxs");
-//    SF_Blob const sfContractLogs    (access, STI_VL, 67, "ContractLogs");
-//    SF_Blob const sfSchemaName      (access, STI_VL, 68, "SchemaName");
-//    SF_Blob const sfEndpoint		(access, STI_VL, 69, "Endpoint");
-
-
- 
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),
     Destination(3, Type.AccountID),

@@ -1,166 +1,154 @@
 package com.peersafe.base.crypto.sm;
 
 import java.math.BigInteger;
-
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
+
+import com.peersafe.base.utils.HashUtils;
+import com.peersafe.chainsql.util.Util;
+
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
+
 
 public class SMKeyPair implements IKeyPair {
 
-	@Override
+	BigInteger  priv_;
+	BigInteger  pub_;
+	byte[]      pubBytes_;
+	byte[]      seedBytes_;
+
+
+	public SMKeyPair(byte[] seedBytes,BigInteger priv, BigInteger pub) {
+
+		this.priv_      = priv;
+		this.pub_       = pub;
+		this.pubBytes_  = pub.toByteArray();
+		this.seedBytes_ = seedBytes;
+	}
+
+	public String type(){
+		return "softGMAlg";
+	}
+
+	public static SMKeyPair generateKeyPair(){
+
+		try{
+
+			AsymmetricCipherKeyPair keyPair     = SM2Util.generateKeyPairParameter();
+			ECPrivateKeyParameters priKeyParams = (ECPrivateKeyParameters) keyPair.getPrivate();
+			ECPublicKeyParameters pubKeyParams  = (ECPublicKeyParameters)  keyPair.getPublic();
+
+			String pubX = ByteUtils.toHexString(pubKeyParams.getQ().getAffineXCoord().getEncoded()).toUpperCase();
+			String pubY = ByteUtils.toHexString(pubKeyParams.getQ().getAffineYCoord().getEncoded()).toUpperCase();
+
+			String publicKeyHex = "47" + pubX + pubY;
+			assert  publicKeyHex.length() == 130;
+
+			return new SMKeyPair(null,priKeyParams.getD(),new BigInteger(publicKeyHex,16));
+
+		}catch (Exception e){
+
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public static SMKeyPair from256Seed(byte[] seedBytes) {
+
+		assert seedBytes.length == 32;
+
+		BigInteger         privateBig = new BigInteger(Util.bytesToHex(seedBytes),16);
+
+		ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(privateBig,SM2Util.DOMAIN_PARAMS);
+		ECPublicKeyParameters  pubKey = BCECUtil.buildECPublicKeyByPrivateKey(priKey);
+
+		String pubX = ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase();
+		String pubY = ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase();
+
+		String publicKeyHex = "47" + pubX + pubY;
+		assert  publicKeyHex.length() == 130;
+
+		return new SMKeyPair(seedBytes,priKey.getD(),new BigInteger(publicKeyHex,16));
+	}
+
+
 	public String canonicalPubHex() {
-		// TODO Auto-generated method stub
-		return null;
+		return Util.bytesToHex(canonicalPubBytes());
 	}
 
-	@Override
-	public byte[] canonicalPubBytes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
 	public BigInteger pub() {
-		// TODO Auto-generated method stub
-		return null;
+		return  this.pub_;
+
 	}
 
-	@Override
-	public BigInteger priv() {
-		// TODO Auto-generated method stub
-		return null;
+	private byte[] pubBytes_() {
+		return this.pubBytes_;
 	}
 
-	@Override
+
 	public String privHex() {
-		// TODO Auto-generated method stub
-		return null;
+
+		String privHex =   this.priv_.toString(16).toUpperCase();
+		assert  privHex.length() <= 64;
+
+		// left padding "0"
+		return String.format("%64s", privHex).replace(" ","0");
 	}
 
-	@Override
+
+	public BigInteger priv() {
+		return  this.priv_;
+	}
+
+
 	public boolean verifySignature(byte[] message, byte[] sigBytes) {
-		// TODO Auto-generated method stub
-		return false;
+
+		try {
+
+			byte[] pub = new byte[33];
+			System.arraycopy(this.pubBytes_, 1, pub, 0, 33);
+
+			ECPoint pt =   SM2Util.CURVE.decodePoint(pub);
+			ECPublicKeyParameters sm2PublicKey = new  ECPublicKeyParameters(pt,SM2Util.DOMAIN_PARAMS);
+			boolean flag = SM2Util.verify(sm2PublicKey,message , sigBytes);
+			return flag;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
 	}
 
-	@Override
-	public byte[] signMessage(byte[] message) {
-		// TODO Auto-generated method stub
-		return null;
+	public byte[] signMessage(byte[] message)
+	{
+		try {
+
+			ECPrivateKeyParameters smPrivateKey = new  ECPrivateKeyParameters(this.priv_,SM2Util.DOMAIN_PARAMS);
+
+			// der
+			byte[] sign = SM2Util.sign(smPrivateKey,message);
+			// r+s
+			byte[] rawSign = SM2Util.decodeDERSM2Sign(sign);
+
+			return rawSign;
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
 	}
 
-	@Override
+	public byte[] canonicalPubBytes() {
+
+		return  this.pubBytes_;
+	}
+
 	public byte[] pub160Hash() {
-		// TODO Auto-generated method stub
-		return null;
+		return HashUtils.SHA256_RIPEMD160(canonicalPubBytes());
 	}
-//    BigInteger priv, pub;
-//    byte[] pubBytes = new byte[65];
-//    
-//    private SWJAPI sdkey;
-//
-//    public SMKeyPair() throws Exception{
-//    	this.sdkey = SMDevice.sdkey;
-//    	if(Config.isNewKeyPair()){
-//    		boolean bRet = genEccKeyPair();
-//    		if(!bRet){
-//    			throw new Exception("GenEccKeyPair failed");
-//    		}
-//    		Config.setNewKeyPair(false);
-//    	}else if(!isContainerExist()){
-//    		boolean bRet = genEccKeyPair();
-//    		if(!bRet){
-//    			throw new Exception("GenEccKeyPair failed");
-//    		}
-//    	}
-//		byte[] publicBytes = sdkey.GetEccPublicKey(SMDevice.getContainerName(), 1);
-//		//国密首字节是0X47
-//		pubBytes[0] = 0x47;
-//		System.arraycopy(publicBytes, 0, pubBytes, 1, publicBytes.length);
-//    }
-//    
-//    public boolean  genEccKeyPair() {
-//        if (sdkey == null) {
-//            return false;
-//        }
-//        try {
-//           int  reValue = sdkey.GenEccKeyPair(SMDevice.getContainerName(), 1);
-//           return reValue == 0;
-//        } catch (SDKeyException e) {
-//            return false;
-//        }
-//    }
-//    public boolean isContainerExist(){
-//    	try {
-//    		Vector list = sdkey.getKeysList();//获取密钥对的列表，如果需要获取证书列表，请调用getCertsList(参考certRWTest)
-//			if (list == null) 
-//			{
-//				return false;
-//			}
-//			else
-//			{
-//				int num = list.size();
-//				CertInfo keyInfo = null;
-//				for (int i=0; i<num; i++) {
-//					keyInfo = (CertInfo) list.get(i);
-//					if(keyInfo.getAlias().equals(SMDevice.getContainerName()))
-//						return true;
-//				}
-//			}
-//		} catch (SDKeyException e) {
-//			e.printStackTrace();;
-//		}
-//    	return false;
-//    }
-//    
-//	@Override
-//	public String canonicalPubHex() {
-//		return null;
-//	}
-//
-//	@Override
-//	public byte[] canonicalPubBytes() {
-//		return pubBytes;
-//	}
-//
-//	@Override
-//	public BigInteger pub() {
-//		return null;
-//	}
-//
-//	@Override
-//	public BigInteger priv() {
-//		return null;
-//	}
-//
-//	@Override
-//	public String privHex() {
-//		return null;
-//	}
-//
-//	@Override
-//	public boolean verifySignature(byte[] message, byte[] sigBytes) {
-//		return false;
-//	}
-//
-//    public byte[] signHash(byte[] hash) throws SDKeyException {
-//        return sdkey.EccSign(SMDevice.getContainerName(), 1, hash);
-//    }
-//    
-//	@Override
-//	public byte[] signMessage(byte[] message) {
-//		try {
-//			int ctx = sdkey.HashInit(4);
-//			sdkey.HashUpdate(ctx, message);
-//			byte[] hash = sdkey.HashFinal(ctx);
-//			return signHash(hash);
-//		} catch (SDKeyException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-//
-//	@Override
-//	public byte[] pub160Hash() {
-//		return HashUtils.SHA256_RIPEMD160(pubBytes);
-//	}
+
 }

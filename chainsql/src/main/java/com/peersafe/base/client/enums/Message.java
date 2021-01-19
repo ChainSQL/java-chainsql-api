@@ -2,6 +2,7 @@ package com.peersafe.base.client.enums;
 
 public enum Message {
     ledgerClosed,
+    viewChange,
     response,
     transaction,
     serverStatus,

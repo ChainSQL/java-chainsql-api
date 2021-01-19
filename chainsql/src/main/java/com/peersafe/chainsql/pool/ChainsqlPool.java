@@ -53,4 +53,10 @@ public class ChainsqlPool {
 		}
 		return null;
 	}
+
+	public void shutdown(){
+		for(int i=0; i<mListChainsql.size(); i++) {
+			mListChainsql.get(i).unlock();
+		}
+	}
 }

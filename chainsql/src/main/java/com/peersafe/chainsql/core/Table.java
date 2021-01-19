@@ -5,6 +5,7 @@ import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.peersafe.base.utils.Utils;
 import org.json.JSONArray;
 //import net.sf.json.JSONObject;
 import org.json.JSONObject;
@@ -21,10 +22,12 @@ import com.peersafe.chainsql.util.Validate;
 
 public class Table extends Submit{
 	private String name;
-	private List<String> query = new ArrayList<String>();
-	private String exec;
-
-	private String autoFillField;
+	private List<String> query = new ArrayList<>();
+	private String  exec;
+	private String  autoFillField;
+	private String  txsHashFillField;
+	private String  nameInDB;
+	private boolean confidential = true;  // 标志是否为加密表
 
 	/**
 	 * Constructor for Table.
@@ -53,7 +56,17 @@ public class Table extends Submit{
 		}
 	    this.exec = "r_insert";
 	    return dealWithTransaction();
+	}
 
+	public  Table insert(JSONArray jsonArray){
+		for(Object json: jsonArray){
+			if(!"".equals(json) && json != null){
+				String jsonStr = json.toString();
+				this.query.add(jsonStr);
+			}
+		}
+		this.exec = "r_insert";
+		return dealWithTransaction();
 	}
 
 	/**
@@ -74,6 +87,35 @@ public class Table extends Submit{
 		return dealWithTransaction();
 
 	}
+
+
+	/**
+	 * Insert data to a table.
+	 * @param orgs  Insert parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table insert(List<String> orgs,String autoFillField,String txsHashFillField){
+		for(String s: orgs){
+			if(!"".equals(s)&&s!=null){
+				String json = Util.StrToJsonStr(s);
+				this.query.add(json);
+			}
+		}
+
+		if(!autoFillField.isEmpty()){
+			this.autoFillField = autoFillField;
+		}
+
+		if(!txsHashFillField.isEmpty()){
+			this.txsHashFillField = txsHashFillField;
+		}
+
+		this.exec = "r_insert";
+		return dealWithTransaction();
+
+	}
+
 
 	/**
 	 * Update table data.
@@ -106,6 +148,34 @@ public class Table extends Submit{
 		return dealWithTransaction();
 
 	}
+
+
+	/**
+	 * Update data to a table.
+	 * @param orgs  Update parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @param txsHashFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table update(String orgs,String autoFillField,String txsHashFillField){
+
+
+		String json = Util.StrToJsonStr(orgs);
+		this.query.add(0, json);
+
+		if(!autoFillField.isEmpty()){
+			this.autoFillField = autoFillField;
+		}
+
+		if(!txsHashFillField.isEmpty()){
+			this.txsHashFillField = txsHashFillField;
+		}
+
+		this.exec = "r_update";
+		return dealWithTransaction();
+
+	}
+
 
 
 	/**
@@ -237,7 +307,6 @@ public class Table extends Submit{
 	}
 	
 	private JSONObject txJson() throws Exception{
-		//System.out.println(this.query.toString());
 		JSONObject json = new JSONObject();
 		json.put("Tables", getTableArray(name));
 		json.put("Owner",  connection.scope);
@@ -248,15 +317,23 @@ public class Table extends Submit{
 	}
 	
 	private String tryEncryptRaw(String strRaw) throws Exception{
+
+		if( !this.confidential ){
+			strRaw = Util.toHexString(strRaw);
+			return strRaw;
+		}
+
+		// 处理加密表
 		String token = "";
 		boolean bFound = false;
 		if(this.transaction){
-			GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+			GenericPair<String,String> pair = new GenericPair<>(this.connection.address,name);
 			if(mapToken.containsKey(pair)){
 				token = mapToken.get(pair);
 				bFound = true;
 			}
 		}
+
 		if(token.equals("") && !bFound){
 			JSONObject res = this.connection.client.getUserToken(this.connection.scope,connection.address,name);
 			if(res.has("error")){
@@ -267,29 +344,38 @@ public class Table extends Submit{
 			}
 		}
 
-		if(token.equals("")){
+		if(token.equals("")) {
 			strRaw = Util.toHexString(strRaw);
-		}else{
-			//有加密则不验证
-			if(this.transaction){
-				this.needVerify = 0;
-			}
-			try {
-				byte[] seedBytes = null;
-				if(!this.connection.secret.isEmpty()){
+			return strRaw;
+		}
+
+		//有加密则不验证
+		if(this.transaction){
+			this.needVerify = 0;
+		}
+		try {
+			byte[] seedBytes = null;
+
+			boolean bSoftGM = Utils.getAlgType(this.connection.secret).equals("softGMAlg");
+			if(!this.connection.secret.isEmpty()){
+
+				if(bSoftGM){
+					seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
+				}else{
 					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
 				}
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
-				if(password == null){
-					System.out.println("Exception: decrypt token failed");
-				}
-				byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password);
-				strRaw = Util.bytesToHex(rawBytes);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}	
 
+			}
+
+			byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
+			if(password == null){
+				System.out.println("Exception: decrypt token failed");
+			}
+			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password,bSoftGM);
+			strRaw = Util.bytesToHex(rawBytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		return strRaw;
 	}
@@ -314,6 +400,10 @@ public class Table extends Submit{
 			txjson.put("AutoFillField", Util.toHexString(this.autoFillField));
 		}
 
+		if(this.txsHashFillField != null){
+			txjson.put("TxsHashFillField", Util.toHexString(this.txsHashFillField));
+		}
+
 		//for cross chain
 		if(crossChainArgs != null){
 			txjson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
@@ -322,15 +412,21 @@ public class Table extends Submit{
 			txjson.put("FutureTxHash", crossChainArgs.futureHash);
 			crossChainArgs = null;
 		}
-		
-		JSONObject result = this.connection.client.tablePrepare(txjson);
-    	if(result.has("error")){
-    		return result;
-    	}
-    	
-		JSONObject tx_json = result.getJSONObject("tx_json");
+
+		JSONObject tx_json = txjson;
+		if(this.nameInDB != null){
+			tx_json.put("NameInDB",this.nameInDB);
+
+		}else{
+
+			JSONObject result = this.connection.client.tablePrepare(txjson);
+			if(result.has("error")){
+				return result;
+			}
+			tx_json = result.getJSONObject("tx_json");
+		}
+
 		Transaction payment;
-		
 		try {
 			payment = toTransaction(tx_json,TransactionType.SQLStatement);
 	        signed = payment.sign(connection.secret);
@@ -344,7 +440,7 @@ public class Table extends Submit{
 	@Override
 	protected
 	JSONObject prepareSigned() {
-		if(this.exec == "r_get"){
+		if(this.exec.equals("r_get")){
 			return select();
 		}else{
 			try {
@@ -363,5 +459,37 @@ public class Table extends Submit{
 		AccountID account = AccountID.fromAddress(connection.address);
 		AccountID owner = AccountID.fromAddress(connection.scope);
 		return connection.client.select(this.connection.secret,account,owner,name,query.toString(),cb);
+	}
+
+	/**
+	 *  设置表的属性，包括 nameInDB; 是否为加密表
+	 * @param tableProperties {"nameInDB":"AAAA","confidential":false}
+	 * @return Table
+	 */
+	public Table tableSet(JSONObject tableProperties){
+
+		if(tableProperties.has("nameInDB")){
+			this.nameInDB = tableProperties.getString("nameInDB");
+		}
+
+		if(tableProperties.has("confidential")){
+			this.confidential = tableProperties.getBoolean("confidential");
+		}
+
+		return this;
+	}
+
+
+	@Override
+	public JSONArray getTableArray(String tableName){
+
+		String tableStr;
+		if(this.nameInDB != null){
+			tableStr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\",\"NameInDB\":\"" + this.nameInDB + "\"}}";
+		}else{
+			tableStr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(tableName) + "\"}}";
+		}
+
+		return Util.strToJSONArray(tableStr);
 	}
 }

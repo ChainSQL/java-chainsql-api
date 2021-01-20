@@ -67,7 +67,9 @@ public class Request extends Publisher<Request.events> {
         id          = assignedId;
         json        = new JSONObject();
 
-        json("schema_id", this.client.schemaID);
+        if(!this.client.schemaID.equals("")) {
+        	json("schema_id", this.client.schemaID);
+        }
         json("command", cmd.toString());
         json("id",      assignedId);
 

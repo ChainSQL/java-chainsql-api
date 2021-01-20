@@ -669,6 +669,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    
+    public void unsubscribeStreams() {
+    	unsubscribe(prepareSubscription());
+    }
+    public void resubscribeStreams() {
+    	serverInfo.unprime();
+    	subscribe(prepareSubscription());    	
+    }
 
     /* ----------------------- CLIENT THREAD EVENT HANDLER ---------------------- */
 
@@ -926,6 +934,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         Request request = newRequest(Command.subscribe);
         
         request.json(subscription);
+        
         request.on(Request.OnSuccess.class, new Request.OnSuccess() {
             @Override
             public void called(Response response) {

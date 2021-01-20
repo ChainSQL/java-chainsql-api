@@ -381,6 +381,7 @@ public abstract class Submit {
 		if(connection.client.serverInfo.primed()) {
 			drops_per_byte = connection.client.serverInfo.drops_per_byte;
 			fee = connection.client.serverInfo.transactionFee(tx);
+
 			if(!json.has(UInt32.LastLedgerSequence.toString())) {
 				tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 20));
 			}
@@ -398,8 +399,6 @@ public abstract class Submit {
 		fee = fee.add(Amount.fromString(String.valueOf(extraDrop)));
 
 		tx.as(Amount.Fee, fee);
-
-
 
   		AccountID account = AccountID.fromAddress(this.connection.address);
   		JSONObject obj = connection.client.accountInfo(account);

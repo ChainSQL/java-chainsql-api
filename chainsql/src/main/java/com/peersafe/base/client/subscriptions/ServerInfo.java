@@ -52,6 +52,8 @@ public class ServerInfo {
                 load_base = 256;
             if (fee_base == 0)
                 fee_base = 10;
+            if (load_factor == 0)
+            	load_factor = 256;
         }
 
         double fee_unit = (double) fee_base / fee_ref, fee;
@@ -79,8 +81,7 @@ public class ServerInfo {
     public void update(JSONObject json) {
         // TODO, this might asking for trouble, just assuming certain fields, it should BLOW UP
 
-    	if(json.optLong("ledger_index", ledger_index) < ledger_index) {
-//    		System.out.println("Server_info update:"+json);
+    	if(updated && json.optLong("ledger_index", ledger_index) < ledger_index) {
     		return;
     	}
         fee_base = json.optInt("fee_base", fee_base);
@@ -121,6 +122,10 @@ public class ServerInfo {
      */
     public boolean primed() {
         return updated;
+    }
+    
+    public void unprime() {
+    	updated = false;
     }
 }
 

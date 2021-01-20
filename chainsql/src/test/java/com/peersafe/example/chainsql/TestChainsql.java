@@ -31,92 +31,18 @@ public class TestChainsql {
 	public static void main(String[] args) {
 
 		try{
-			c.connect("ws://192.168.29.69:7017");
+			c.connect("ws://127.0.0.1:6006");
 			//c.connect("ws://221.7.246.149/ws");
 
-			sTableName = "table2";
-			sTableName2 = "tTable2";
-			sReName = "tTable3";
 
-			// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
-			sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-			c.as(rootAddress, rootSecret);
-
-			JSONObject ret2 = c.getAccountInfo(rootAddress);
-
-
-			System.out.println(ret2);
-
-//		{
-//			// 序列化 建表
-//			List<String> rawInfo = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
-//					"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
-//
-//			JSONObject obj;
-//			obj = c.createTable(sTableName,rawInfo,false).submit(SyncCond.db_success);
-//			System.out.println("create result:" + obj);
-//
-//		}
-
-			{
-				JSONObject schemaInfo = new JSONObject();
-				schemaInfo.put("SchemaName","hello1");
-				schemaInfo.put("WithState",false);
-
-				schemaInfo.put("SchemaAdmin",rootAddress);
-
-				List<String> validators = new ArrayList<String>();
-				validators.add("02BD87A95F549ECF607D6AE3AEC4C95D0BFF0F49309B4E7A9F15B842EB62A8ED1B");
-				JSONArray validatorsJsonArray = new JSONArray(validators);
-				System.out.println(validatorsJsonArray);
-				schemaInfo.put("Validators",validatorsJsonArray);
-
-				List<String> peerList = new ArrayList<String>();
-				peerList.add("192.168.29.116:7016");
-				JSONArray peerListJsonArray = new JSONArray(peerList);
-
-				for(int i=0; i<peerListJsonArray.length(); i++){
-					String tx = (String)peerListJsonArray.get(i);
-					System.out.println(tx);
-				}
-
-				System.out.println(peerListJsonArray);
-				schemaInfo.put("PeerList",peerListJsonArray);
-
-				schemaInfo.put("SchemaAdmin",rootAddress);
-
-				//c.createSchema(schemaInfo);
-
-				JSONObject ret = c.createSchema(schemaInfo).submit(SyncCond.validate_success);
-				System.out.println(ret);
-
-//			ret = c.modifySchema().submit(SyncCond.validate_success);
-//			System.out.println(ret);
-
-			}
-
-
-
-			{
-
-
-			}
-
-			//c.setSchema("2CD531311A5A4A3CDF90441CDEF2C86814A475982DB3C1817E035172D67C61BF");
-//			String pemContent = readCertFile("D:\\ca\\userCert.cert");
-//			c.useCert(pemContent);
-//
 //			testRipple();
-			testChainSql();
+//			testChainSql();
+			testSchema();
 
 		}catch (Exception e){
 
 			e.printStackTrace();
 		}
-
-
-
-
 	}
 
 
@@ -185,6 +111,16 @@ public class TestChainsql {
 //		test.testGetBySqlAdmin();
 	}
 	
+	private static void testSchema() {
+		TestChainsql test = new TestChainsql();
+//		test.testSchemaCreate();
+		for(int i=0; i<10; i++) {
+
+			test.doSchemaTx();
+		}
+	}
+	
+	
 	private static void testRipple() {
 		TestChainsql test = new TestChainsql();
 //		//查询根账户余额
@@ -223,6 +159,54 @@ public class TestChainsql {
 //			}
 //			
 //		});
+	}
+	
+	public void testSchemaCreate() {
+		JSONObject schemaInfo = new JSONObject();
+		schemaInfo.put("SchemaName","hello1");
+		schemaInfo.put("WithState",false);
+
+		schemaInfo.put("SchemaAdmin",rootAddress);
+
+		List<String> validators = new ArrayList<String>();
+		validators.add("02BD87A95F549ECF607D6AE3AEC4C95D0BFF0F49309B4E7A9F15B842EB62A8ED1B");
+		JSONArray validatorsJsonArray = new JSONArray(validators);
+		System.out.println(validatorsJsonArray);
+		schemaInfo.put("Validators",validatorsJsonArray);
+
+		List<String> peerList = new ArrayList<String>();
+		peerList.add("192.168.29.116:7016");
+		JSONArray peerListJsonArray = new JSONArray(peerList);
+
+		for(int i=0; i<peerListJsonArray.length(); i++){
+			String tx = (String)peerListJsonArray.get(i);
+			System.out.println(tx);
+		}
+
+		System.out.println(peerListJsonArray);
+		schemaInfo.put("PeerList",peerListJsonArray);
+
+		schemaInfo.put("SchemaAdmin",rootAddress);
+
+		//c.createSchema(schemaInfo);
+		
+		try {
+			JSONObject ret = c.createSchema(schemaInfo).submit(SyncCond.validate_success);
+			System.out.println(ret);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+//		ret = c.modifySchema().submit(SyncCond.validate_success);
+//		System.out.println(ret);
+	}
+	
+	public void doSchemaTx() {
+		c.setSchema("57256592FD987D4256DDCE4812484BDE9B9193A70DDEC983541A182275045FE0");
+		c.as(rootAddress, rootSecret);
+		JSONObject ret = c.pay(userAddress, "100").submit(SyncCond.validate_success);
+		System.out.println(ret);
 	}
 	
 	public void generateAccount() {

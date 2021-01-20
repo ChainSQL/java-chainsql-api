@@ -98,7 +98,12 @@ public class Chainsql extends Submit {
 	 * @param schemaID schemaID="" 代表操作的是主链;
 	 */
 	public void setSchema(String schemaID) {
-		this.connection.client.schemaID = schemaID;
+		if(!this.connection.client.schemaID.equals(schemaID)) 
+		{
+			this.connection.client.unsubscribeStreams();
+			this.connection.client.schemaID = schemaID;	
+			this.connection.client.resubscribeStreams();
+		}
 	}
 
 	/**

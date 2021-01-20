@@ -77,7 +77,6 @@ public abstract class Submit {
 	public enum SchemaOpType {
 		schema_add,
 		schema_del,
-
 	}
 	
 	public class CrossChainArgs{
@@ -320,7 +319,10 @@ public abstract class Submit {
 			if (res.message.has("result")) {
 				res.result = res.message.getJSONObject("result");
 			} else {
-				obj.put("error_message", res.message.getString("error_message"));
+				if(res.message.has("error_message"))
+					obj.put("error_message", res.message.getString("error_message"));
+				else if(res.message.has("error_exception"))
+					obj.put("error_message", res.message.getString("error_exception"));
 			}
 
 		}

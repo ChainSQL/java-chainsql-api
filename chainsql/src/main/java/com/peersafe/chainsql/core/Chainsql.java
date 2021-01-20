@@ -603,7 +603,6 @@ public class Chainsql extends Submit {
 
 		for(int i=0; i<peerListArr.length(); i++){
 			String Endpoint = (String)peerListArr.get(i);
-			System.out.println(Endpoint);
 			JSONObject subItem = new JSONObject();
 			subItem.put("Endpoint",Util.toHexString(Endpoint));
 
@@ -658,7 +657,6 @@ public class Chainsql extends Submit {
 
 		for(int i=0; i<peerListArr.length(); i++){
 			String Endpoint = (String)peerListArr.get(i);
-			System.out.println(Endpoint);
 			JSONObject subItem = new JSONObject();
 			subItem.put("Endpoint",Util.toHexString(Endpoint));
 

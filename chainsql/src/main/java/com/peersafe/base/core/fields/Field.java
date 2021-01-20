@@ -15,6 +15,7 @@ public enum Field {
     LedgerEntryType(1, Type.UInt16),
     TransactionType(2, Type.UInt16),
     SignerWeight(3, Type.UInt16),
+    TransactionResult(4,Type.UInt16),
     OpType(50, Type.UInt16),
     ContractOpType(51,Type.UInt16),
     
@@ -59,7 +60,6 @@ public enum Field {
     TxnLgrSeq(50,Type.UInt32),   
     CreateLgrSeq(51,Type.UInt32),
     NeedVerify(52,Type.UInt32),
-    Nonce(53,Type.UInt32),
     Gas(55,Type.UInt32),
 
 
@@ -94,7 +94,7 @@ public enum Field {
     PayChannel(22,Type.Hash256),
     ConsensusHash(23, Type.Hash256),
     CheckID(24, Type.Hash256),
-    SchemaID(25,Type.Hash256),
+    ValidatedHash(25,Type.Hash256),
 
     PrevTxnLedgerHash(50,Type.Hash256),
     TxnLedgerHash(51,Type.Hash256), 
@@ -105,6 +105,7 @@ public enum Field {
     FutureTxHash(56,Type.Hash256),
     ChainId(57,Type.Hash256),
     AnchorLedgerHash(58,Type.Hash256),
+    SchemaID(59,Type.Hash256),
 
 //    SF_U256 const sfChainId			 (access,  STI_HASH256, 57, "ChainId");
 //    SF_U256 const sfAnchorLedgerHash (access,  STI_HASH256, 58, "AnchorLedgerHash");
@@ -221,8 +222,10 @@ public enum Field {
 
     CloseResolution(1, Type.UInt8),
     Method(2, Type.UInt8),
-    TransactionResult(3, Type.UInt8),
-    SchemaStrategy(17, Type.UInt8),
+    TickSize(16,Type.UInt8),
+    UNLModifyDisabling(17,Type.UInt8),
+    SchemaStrategy(28, Type.UInt8),
+    Signed(29,Type.UInt8),
 
     TakerPaysCurrency(1, Type.Hash160),
     TakerPaysIssuer(2, Type.Hash160),

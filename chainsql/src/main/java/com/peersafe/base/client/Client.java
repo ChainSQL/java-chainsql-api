@@ -2179,7 +2179,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }
 
         if(params.has("running")){
-            request.json("running",params.getBoolean("run"));
+            request.json("running",params.getBoolean("running"));
         }
 
 

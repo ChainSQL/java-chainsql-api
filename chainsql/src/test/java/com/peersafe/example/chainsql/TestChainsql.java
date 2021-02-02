@@ -3,6 +3,7 @@ package com.peersafe.example.chainsql;
 import java.io.*;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Ripple;
+import com.peersafe.chainsql.core.Submit.SchemaOpType;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
 
@@ -25,52 +27,23 @@ public class TestChainsql {
 	
 	public static String userSecret = "xnnUqirFepEKzVdsoBKkMf577upwT";
 	public static String userAddress = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-	public static String userPublicKey = "cB4pxq1LUfwPxNP9Xyj223mqM8zfeW6t2DqP1Ek3UQWaUVb9ciCZ";
-
-
-
-	public static String smRootSecret = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
-	public static String smRootAddress = "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj";
-
-
-	public static String smUserSecret  = "pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV";
-	public static String smUserAddress = "zKzpkRTZPtsaQ733G8aRRG5x5Z2bTqhGbt";
-
-	public static String smUserPublicKey =  "pYvKjFb71Qrx26jpfMPAkpN1zfr5WTQoHCpsEtE98ZrBCv2EoxEs4rmWR7DcqTwSwEY81opTgL7pzZ2rZ3948vHi4H23vnY3";
-
-
-	public static String smNewUserSecret  = "p96dJiLZfazo4gicnt1UCumwP6LJfFuo6iR4EVLwzYBWqKrJVgf";
-	public static String smNewUserAddress = "zQA9xJDn2qzdexq2PMXjLhdoNffW1qdXq";
-
-	public static String smNewUserPublicKey =  "pYvNX91FDmctDr7F9PPk8kEJz5XddiXyRfjHVWPP8Rekpb9Qc6WBrN1PBoNwMhkF1dHb46KpeUMzZahwL1sRqg3FDyGkRqhs";
-
+	
+	
 	public static void main(String[] args) {
 
+		try{
+			c.connect("ws://127.0.0.1:6006");
+			//c.connect("ws://221.7.246.149/ws");
 
 
-//		JSONObject ret = c.generateAddress();
-//
-//
-//		System.out.println(ret);
+//			testRipple();
+//			testChainSql();
+			testSchema();
 
-		c.connect("ws://192.168.29.116:7017");
+		}catch (Exception e){
 
-//
-		sTableName = "B19";
-//		sTableName2 = "tTable2";
-//		sReName = "tTable3";
-//
-//		// {"address":"zKvWitcHvViJ7iVk8U313rkrp8ChYcJUk4","secret":"xhhMqARTEB2aUJgJs4pxvKxcKxHAj","publicKey":"cBQNvNdVSQqPXqWnUMvnsoDhGxzCZfxmoJpVMGzBCdDboDTgLvBv"}
-//		sNewAccountId = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-		c.as(rootAddress, rootSecret);
-//
-//		//c.generateAddress()
-//
-//		//String pemContent = readCertFile("D:\\git\\ca\\test\\userCert.cert");
-//		//c.useCert(pemContent);
-//
-		testRipple();
-	//	testChainSql();
+			e.printStackTrace();
+		}
 	}
 
 
@@ -110,48 +83,64 @@ public class TestChainsql {
 	
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
-
 		//建表
-		//test.testCreateTable();
+		test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
-		test.testinsert();
+		//test.testinsert();
 //		//更新表数据
-		test.testUpdateTable();
+//		test.testUpdateTable();
 //		//删除表数据
-		test.testdelete();
+//		test.testdelete();
 //		//重命名表
-		test.testrename();
+//		test.testrename();
 //		//查询表数据
-		test.testget();
+	test.testget();
 //		//删除表
-		test.testdrop();
+//		test.testdrop();
 //		//授权
-		test.grant();
+//		test.grant();
 //		//授权后使用被授权账户插入数据
-		test.insertAfterGrant();
+//		test.insertAfterGrant();
 		
 		//根据sql语句查询，有签名检测
 
 	//	test.testGetBySqlUser();
 		
 		//根据sql语句查询，admin权限，无签名检测
-		//test.testGetBySqlAdmin();
-
-
-		//test.testTxnHash();
+//		test.testGetBySqlAdmin();
 	}
+	
+	private static void testSchema() {
+		TestChainsql test = new TestChainsql();
+		c.as(rootAddress, rootSecret);
+		
+//		test.testSchemaList();
+		
+//		test.testSchemaCreate();
+		
+//		sTableName = "hello_123";
+//		c.setSchema("57256592FD987D4256DDCE4812484BDE9B9193A70DDEC983541A182275045FE0");
+//		test.testCreateTable();
+		
+		test.testSchemaModify();
+	}
+	
 	
 	private static void testRipple() {
 		TestChainsql test = new TestChainsql();
-
 //		//查询根账户余额
 //		test.getAccountBalance();
 //		//生成新账户
 //		test.generateAccount();
 //		//给新账户打钱
-		test.activateAccount(userAddress);
+		test.activateAccount(sNewAccountId);
+
+
+
+		//c.trustSet()
+
 		
 //		test.getTransactions();
 //		test.getTransaction();
@@ -178,40 +167,68 @@ public class TestChainsql {
 //			
 //		});
 	}
+	
+	public void testSchemaList() {
+		JSONObject option = new JSONObject();
+		JSONObject list = c.getSchemaList(option);
+		System.out.println(list);
+	}
+	
+	public void testSchemaCreate() {
+		JSONObject schemaInfo = new JSONObject();
+		schemaInfo.put("SchemaName","hello1");
+		schemaInfo.put("WithState",false);
 
+		schemaInfo.put("SchemaAdmin",rootAddress);
 
+		List<String> validators = new ArrayList<String>();
+		validators.add("03C53D4B7E4D558DBD8EA67E68AD97844FCCF48DD4C7A5C10E05B293A11DC9BB40");
+		validators.add("021D3E9C571DF23054DBB2005E76EA5BE5227D381FB9B4A52467B5E6412ABAFBA0");
+		validators.add("0317B5CAEBE6C778D133B1CA670D00E994D3AFAC2C0E6AA8F11B0DA277309F193E");
+		JSONArray validatorsJsonArray = new JSONArray(validators);
+		schemaInfo.put("Validators",validatorsJsonArray);
 
+		List<String> peerList = new ArrayList<String>();
+		peerList.add("127.0.0.1:5125");
+		peerList.add("127.0.0.1:5126");
+		peerList.add("127.0.0.1:5127");
+		JSONArray peerListJsonArray = new JSONArray(peerList);
 
-	public  void testTxnHash(){
-
-		String sTestTableName = "testTxnHash5";
-		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
-				"{'field':'txn_hash','type':'text'}", "{'field':'age','type':'int'}");
-
-		JSONObject obj;
-		obj = c.createTable(sTestTableName,args,false).submit(SyncCond.db_success);
-		System.out.println("create result:" + obj);
-
-		// 插入交易
-		List<String> orgs = Util.array("{'id':22,'age': 333}");
-		obj = c.table(sTestTableName).insert(orgs,"","txn_hash").submit(SyncCond.db_success);
-		System.out.println("insert result:" + obj);
-
-		// 更新交易
-		List<String> arr1 = Util.array("{'id': 22}");
-
-		for(int i=0;i<10;i++){
-			obj = c.table(sTestTableName).get(arr1).update("{'age':100}","","txn_hash").submit(SyncCond.db_success);
-			//System.out.println("update result:" + obj);
-
-			if(i%10 ==0){
-				System.out.println(i);
-			}
+		schemaInfo.put("PeerList",peerListJsonArray);
+		schemaInfo.put("SchemaAdmin",rootAddress);
+		
+		try {
+			JSONObject ret = c.createSchema(schemaInfo).submit(SyncCond.validate_success);
+			System.out.println(ret);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+	}
+	
+	public void testSchemaModify() {
+		JSONObject schemaInfo = new JSONObject();
+		schemaInfo.put("SchemaID", "312242E6D2DB07BF1F856A2525A2DBA4199F9B60CF38584C5815CD79808572FD");
+		
+		List<String> validators = new ArrayList<String>();
+		validators.add("02DB6543999A94815F7FC5F61D3AB1BA60938F15BC004E70613F7824DA70D5CCAB");
+		JSONArray validatorsJsonArray = new JSONArray(validators);
+		schemaInfo.put("Validators",validatorsJsonArray);
 
-		//查询所有数据
-		obj = c.table(sTestTableName).get().submit();
-		System.out.println("get result:" + obj);
+		List<String> peerList = new ArrayList<String>();
+		peerList.add("127.0.0.1:5128");
+		JSONArray peerListJsonArray = new JSONArray(peerList);
+
+		schemaInfo.put("PeerList",peerListJsonArray);
+		
+		try {
+			JSONObject obj = c.modifySchema(SchemaOpType.schema_add, schemaInfo).submit(SyncCond.validate_success);
+			System.out.println(obj);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void generateAccount() {
@@ -308,28 +325,27 @@ public class TestChainsql {
 //		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 //		System.out.println("insert result:" + obj);
 		for(int i= 0; i<1; i++) {
-			List<String> orgs = Util.array("{'id':11,'age': 333,'name':'hello'}");
+			List<String> orgs = Util.array("{'id':1,'age': 333,'name':'你好'}");
 			JSONObject obj;
 			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 			System.out.println("insert result:" + obj);
-			orgs = Util.array("{'id':22,'age': 444,'name':'sss'}");
-			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
-			System.out.println("insert result:" + obj);
-			orgs = Util.array("{'id':33,'age': 555,'name':'rrr'}");
-			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
-			System.out.println("insert result:" + obj);
+//			orgs = Util.array("{'id':2,'age': 444,'name':'sss'}");
+//			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//			System.out.println("insert result:" + obj);
+//			orgs = Util.array("{'id':3,'age': 555,'name':'rrr'}");
+//			obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
+//			System.out.println("insert result:" + obj);
 		}
 		
 	}
 
 	public void insertAfterGrant(){
-		c.as(smNewUserAddress, smNewUserSecret);
-		c.use(smRootAddress);
-		List<String> orgs = Util.array("{'id':105,'age': 333,'name':'hello'}","{'id':106,'age': 444,'name':'sss'}","{'id':107,'age': 555,'name':'rrr'}");
+		c.as(sNewAccountId, sNewSecret);
+		List<String> orgs = Util.array("{'id':100,'age': 333,'name':'hello'}","{'id':101,'age': 444,'name':'sss'}","{'id':102,'age': 555,'name':'rrr'}");
 		JSONObject obj;
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert after grant result:" + obj);
-		//c.as(rootAddress, rootSecret);
+		c.as(rootAddress, rootSecret);
 	}
 	
 	public void testUpdateTable() {
@@ -385,7 +401,7 @@ public class TestChainsql {
 			public void called(JSONObject args) {
 				System.out.println(args);
 				if(args.has("nameInDB")) {
-					String sql = "select * from t_1d02efd954bfe9eb895f5cf14191eb819cc88c2e" + args.getString("nameInDB");
+					String sql = "select * from t_" + args.getString("nameInDB");
 					c.getBySqlAdmin(sql,new Callback<JSONObject>() {
 
 						@Override
@@ -412,7 +428,7 @@ public class TestChainsql {
 	
 	public void grant() {
 		JSONObject obj = new JSONObject();
-		obj = c.grant(sTableName, smNewUserAddress,smNewUserPublicKey,"{insert:true,update:true}")
+		obj = c.grant(sTableName, sNewAccountId, "{insert:true,update:true}")
 				   .submit(SyncCond.validate_success);
 		System.out.println("grant result:" + obj.toString());
 	}

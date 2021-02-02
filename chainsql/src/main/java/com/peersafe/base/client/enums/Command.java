@@ -69,5 +69,7 @@ public enum Command {
     validation_seed,
     wallet_accounts,
     wallet_propose,
-    wallet_seed
+    wallet_seed,
+    schema_list,
+    schema_info,
 }

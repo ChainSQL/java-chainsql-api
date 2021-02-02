@@ -13,9 +13,8 @@ public class Connection implements Closeable {
 	public String secret;
 	public String scope;
 	public Client client;
-
-
 	public String userCert;
+	public String schemaID="";
 
 
 

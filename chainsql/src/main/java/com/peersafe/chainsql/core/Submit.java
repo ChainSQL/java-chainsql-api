@@ -47,6 +47,10 @@ public abstract class Submit {
 	protected Map<GenericPair<String,String>,String> mapToken =
 			new HashMap<GenericPair<String,String>,String>();
 	protected boolean transaction = false;
+
+	protected boolean schemaCreateTx = false;
+	protected boolean schemaModifyTx = false;
+
 	protected Integer needVerify = 1;
 	//严格模式
 	protected boolean strictMode = false;
@@ -70,6 +74,11 @@ public abstract class Submit {
 		sync_response,
 	}
 
+	public enum SchemaOpType {
+		schema_add,
+		schema_del,
+	}
+	
 	public class CrossChainArgs{
 		public String originalAddress;
 		public int 	  txnLedgerSeq;
@@ -171,9 +180,9 @@ public abstract class Submit {
 		if(signed == null){
 			return getError("Signing failed,maybe ripple node error");
 		}
-
-		submit_state = SubmitState.waiting_submit;
-		sync_state = SyncState.waiting_sync;
+		
+        submit_state = SubmitState.waiting_submit;
+        sync_state = SyncState.waiting_sync;
 
 		Account account = connection.client.accountFromSeed(connection.secret);
 		TransactionManager tm = account.transactionManager();
@@ -310,7 +319,10 @@ public abstract class Submit {
 			if (res.message.has("result")) {
 				res.result = res.message.getJSONObject("result");
 			} else {
-				obj.put("error_message", res.message.getString("error_message"));
+				if(res.message.has("error_message"))
+					obj.put("error_message", res.message.getString("error_message"));
+				else if(res.message.has("error_exception"))
+					obj.put("error_message", res.message.getString("error_exception"));
 			}
 
 		}
@@ -371,6 +383,7 @@ public abstract class Submit {
 		if(connection.client.serverInfo.primed()) {
 			drops_per_byte = connection.client.serverInfo.drops_per_byte;
 			fee = connection.client.serverInfo.transactionFee(tx);
+
 			if(!json.has(UInt32.LastLedgerSequence.toString())) {
 				tx.put(UInt32.LastLedgerSequence, new UInt32(connection.client.serverInfo.ledger_index + 20));
 			}
@@ -389,15 +402,15 @@ public abstract class Submit {
 
 		tx.as(Amount.Fee, fee);
 
-		AccountID account = AccountID.fromAddress(this.connection.address);
-		JSONObject obj = connection.client.accountInfo(account);
-		if(obj.has("error")) {
-			throw new Exception(obj.getString("error_message"));
-		}else {
-			tx.as(UInt32.Sequence, obj.getJSONObject("account_data").getInt("Sequence"));
-		}
-
-		try {
+  		AccountID account = AccountID.fromAddress(this.connection.address);
+  		JSONObject obj = connection.client.accountInfo(account);
+  		if(obj.has("error")) {
+  			throw new Exception(obj.getString("error_message"));
+  		}else {
+  			tx.as(UInt32.Sequence, obj.getJSONObject("account_data").getInt("Sequence"));
+  		}
+ 		
+		try {  
 		   tx.parseFromJson(json);
 		} catch (JSONException e) {
 		   e.printStackTrace();

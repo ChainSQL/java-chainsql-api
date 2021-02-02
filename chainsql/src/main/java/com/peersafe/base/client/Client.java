@@ -228,6 +228,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private HashMap<AccountID, Account> accounts = new HashMap<AccountID, Account>();
     // Handles [un]subscription requests, also on reconnect
     public SubscriptionManager subscriptions = new SubscriptionManager();
+
+    public String schemaID = "";
     
     private static final int MAX_REQUEST_COUNT = 10; 
     
@@ -667,6 +669,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    
+    public void unsubscribeStreams() {
+    	unsubscribe(prepareSubscription());
+    }
+    public void resubscribeStreams() {
+    	serverInfo.unprime();
+    	subscribe(prepareSubscription());    	
+    }
 
     /* ----------------------- CLIENT THREAD EVENT HANDLER ---------------------- */
 
@@ -924,6 +934,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         Request request = newRequest(Command.subscribe);
         
         request.json(subscription);
+        
         request.on(Request.OnSuccess.class, new Request.OnSuccess() {
             @Override
             public void called(Response response) {
@@ -1207,6 +1218,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public JSONObject accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
+
+        //request.json("schema_id", schemaID);
 
         request.request();
         waiting(request);
@@ -2149,5 +2162,43 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("taker_gets", get.toJSON());
         request.json("taker_pays", pay.toJSON());
         return request;
+    }
+
+
+
+    /**
+     * Get schema_list
+     * @return schema_list data.
+     */
+    public JSONObject getSchemaList(JSONObject params){
+        Request request = newRequest(Command.schema_list);
+        request.request();
+
+        if(params.has("account")){
+            request.json("account", params.getString("account"));
+        }
+
+        if(params.has("running")){
+            request.json("running",params.getBoolean("running"));
+        }
+
+
+        waiting(request);
+        return getResult(request);
+    }
+
+
+    /**
+     * Request for schema_info.
+     * @param schemaID schemaID.
+     * @return Request data.
+     */
+    public JSONObject getSchemaInfo(String schemaID) {
+        Request request = newRequest(Command.schema_info);
+        request.json("schema", schemaID);
+
+        request.request();
+        waiting(request);
+        return getResult(request);
     }
 }

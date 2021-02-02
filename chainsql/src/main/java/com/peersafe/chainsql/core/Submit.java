@@ -309,20 +309,22 @@ public abstract class Submit {
 
 	private void onSubmitError(Response res) {
 		JSONObject obj = new JSONObject();
-
 		obj.put("status", "error");
-
 
 		if(res.result == null){
 
 			res.result = new JSONObject();
-			if (res.message.has("result")) {
+			if (res.message.has("result") && res.message.get("result") instanceof JSONObject ) {
 				res.result = res.message.getJSONObject("result");
 			} else {
 				if(res.message.has("error_message"))
 					obj.put("error_message", res.message.getString("error_message"));
-				else if(res.message.has("error_exception"))
-					obj.put("error_message", res.message.getString("error_exception"));
+
+				if(res.message.has("error"))
+					obj.put("error", res.message.getString("error"));
+
+				if(res.message.has("error_code"))
+					obj.put("error_code", res.message.getInt("error_code"));
 			}
 
 		}
@@ -342,8 +344,6 @@ public abstract class Submit {
 		if(res.result.has("tx_json")){
 			obj.put("tx_json", res.result.getJSONObject("tx_json"));
 		}
-
-
 
 		if(sync || cb != null) {
 			unSubscribeTx(signed.hash.toString());

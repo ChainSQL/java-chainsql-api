@@ -228,6 +228,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private HashMap<AccountID, Account> accounts = new HashMap<AccountID, Account>();
     // Handles [un]subscription requests, also on reconnect
     public SubscriptionManager subscriptions = new SubscriptionManager();
+
+    public String schemaID = "";
     
     private static final int MAX_REQUEST_COUNT = 10; 
     
@@ -620,7 +622,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     @Override
     public void onMessage(final JSONObject msg) {
-//    	System.out.println("onMessage:" + msg);
         resetReconnectStatus();
         run(new Runnable() {
             @Override
@@ -668,6 +669,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    
+    public void unsubscribeStreams() {
+    	unsubscribe(prepareSubscription());
+    }
+    public void resubscribeStreams() {
+    	serverInfo.unprime();
+    	subscribe(prepareSubscription());    	
+    }
 
     /* ----------------------- CLIENT THREAD EVENT HANDLER ---------------------- */
 
@@ -712,6 +721,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                 case contract_event:
                 	emit(OnContractEvent.class,msg);
                 	break;
+                case viewChange:
+                	break;
                 default:
                     unhandledMessage(msg);
                     break;
@@ -751,10 +762,18 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         //deal with reconnect
         if(reconnecting) {
         	log(Level.INFO,"reconnected");
-        	reconnecting = false;
 			emit(OnReconnected.class,null);
 			reconnect_future.cancel(true);
 			reconnect_future = null;
+			if(!reconnecting && serverInfo.primed()) {
+				getLedgerVersion(new Callback<JSONObject>() {
+					@Override
+					public void called(JSONObject args) {
+						serverInfo.ledger_index = args.getInt("ledger_current_index");
+					}
+		    	});	
+			}
+        	reconnecting = false;
         }
         
         subscribe(prepareSubscription());
@@ -865,7 +884,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                     new TransactionManager(this, accountRoot, id, keyPair)
             );
             accounts.put(id, account);
-            subscriptions.addAccount(id);
+//            subscriptions.addAccount(id);
 
             return account;
         }
@@ -911,10 +930,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     /* ------------------------------ SUBSCRIPTIONS ----------------------------- */
 
-    private void subscribe(JSONObject subscription) {
+    public void subscribe(JSONObject subscription) {
         Request request = newRequest(Command.subscribe);
         
         request.json(subscription);
+        
         request.on(Request.OnSuccess.class, new Request.OnSuccess() {
             @Override
             public void called(Response response) {
@@ -946,11 +966,19 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		});
         request.request();
     }
+    
+    public void unsubscribe(JSONObject subscription) {
+        Request request = newRequest(Command.unsubscribe);
+        
+        request.json(subscription);
+        request.request();
+    }
 
     private JSONObject prepareSubscription() {
         subscriptions.pauseEventEmissions();
         subscriptions.addStream(SubscriptionManager.Stream.ledger);
         subscriptions.addStream(SubscriptionManager.Stream.server);
+        subscriptions.addStream(SubscriptionManager.Stream.view_change);
         subscriptions.unpauseEventEmissions();
         return subscriptions.allSubscribed();
     }
@@ -982,9 +1010,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             sendMessage(request.toJSON());
             // Better safe than sorry
         } catch (Exception e) {
-            if (reqLog.isLoggable(Level.WARNING)) {
-                reqLog.log(Level.WARNING, "Exception when trying to request: {0}", e);
-            }
+//            if (reqLog.isLoggable(Level.WARNING)) {
+//                reqLog.log(Level.WARNING, "Exception when trying to request: {0}", e);
+//            }
             nextTickOrWhenConnected(new OnConnected() {
                 @Override
                 public void called(Client args) {
@@ -1190,6 +1218,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public JSONObject accountInfo(AccountID account) {
         Request request = newRequest(Command.account_info);
         request.json("account", account.address);
+
+        //request.json("schema_id", schemaID);
 
         request.request();
         waiting(request);
@@ -2132,5 +2162,43 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("taker_gets", get.toJSON());
         request.json("taker_pays", pay.toJSON());
         return request;
+    }
+
+
+
+    /**
+     * Get schema_list
+     * @return schema_list data.
+     */
+    public JSONObject getSchemaList(JSONObject params){
+        Request request = newRequest(Command.schema_list);
+        request.request();
+
+        if(params.has("account")){
+            request.json("account", params.getString("account"));
+        }
+
+        if(params.has("running")){
+            request.json("running",params.getBoolean("running"));
+        }
+
+
+        waiting(request);
+        return getResult(request);
+    }
+
+
+    /**
+     * Request for schema_info.
+     * @param schemaID schemaID.
+     * @return Request data.
+     */
+    public JSONObject getSchemaInfo(String schemaID) {
+        Request request = newRequest(Command.schema_info);
+        request.json("schema", schemaID);
+
+        request.request();
+        waiting(request);
+        return getResult(request);
     }
 }

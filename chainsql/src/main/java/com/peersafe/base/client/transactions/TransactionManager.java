@@ -398,7 +398,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		}catch(Exception e){
 			ter = EngineResult.telNormalFailure;
 		}
-		final UInt32 submitSequence = res.getSubmitSequence();
+//		final UInt32 submitSequence = res.getSubmitSequence();
 		switch (ter) {
 		case tesSUCCESS:
 			txn.emit(ManagedTxn.OnSubmitSuccess.class, res);

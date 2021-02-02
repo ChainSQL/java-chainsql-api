@@ -58,6 +58,17 @@ public class Table extends Submit{
 	    return dealWithTransaction();
 	}
 
+	public  Table insert(JSONArray jsonArray){
+		for(Object json: jsonArray){
+			if(!"".equals(json) && json != null){
+				String jsonStr = json.toString();
+				this.query.add(jsonStr);
+			}
+		}
+		this.exec = "r_insert";
+		return dealWithTransaction();
+	}
+
 	/**
 	 * Insert data to a table.
 	 * @param orgs  Insert parameters.

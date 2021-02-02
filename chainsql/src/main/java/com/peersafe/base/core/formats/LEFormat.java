@@ -72,7 +72,6 @@ public class LEFormat extends Format {
             Field.TransferFeeMax,	   Requirement.OPTIONAL,
             Field.TransferFeeMin,	   Requirement.OPTIONAL,
             Field.StorageOverlay,	   Requirement.OPTIONAL,
-            Field.Nonce,			   Requirement.OPTIONAL,
             Field.ContractCode,		   Requirement.OPTIONAL
     );
 

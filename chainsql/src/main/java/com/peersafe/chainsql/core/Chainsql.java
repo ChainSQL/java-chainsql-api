@@ -2,6 +2,7 @@ package com.peersafe.chainsql.core;
 
 import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
@@ -10,6 +11,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.peersafe.base.core.coretypes.Currency;
+import com.peersafe.base.core.formats.Format;
+import com.peersafe.base.core.formats.TxFormat;
 import com.peersafe.chainsql.pool.ChainsqlPool;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -53,11 +57,15 @@ public class Chainsql extends Submit {
 	
 	// Logger
     public static final Logger logger = Logger.getLogger(Chainsql.class.getName());
+
+
     
 	private JSONObject mRetJson;
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
+
+	public static String MAIN_SCHEMA = "";
 	
 	/**
 	 * Assigning the operating user.
@@ -83,9 +91,20 @@ public class Chainsql extends Submit {
 
 	public void useCert(String userCert) {
 		this.connection.userCert = userCert;
-
 	}
 
+	/**
+	 * 设置操作链的ID
+	 * @param schemaID schemaID="" 代表操作的是主链;
+	 */
+	public void setSchema(String schemaID) {
+		if(!this.connection.client.schemaID.equals(schemaID)) 
+		{
+			this.connection.client.unsubscribeStreams();
+			this.connection.client.schemaID = schemaID;	
+			this.connection.client.resubscribeStreams();
+		}
+	}
 
 	/**
 	 * Assigning table owner.
@@ -384,6 +403,28 @@ public class Chainsql extends Submit {
 	protected
 	JSONObject prepareSigned() {
 		try {
+
+			if(schemaCreateTx){
+
+				Transaction payment;
+				payment = toTransaction(mTxJson,TransactionType.SchemaCreate);
+				signed  = payment.sign(this.connection.secret);
+
+				schemaCreateTx = false;
+				return Util.successObject();
+			}
+
+			if(schemaModifyTx){
+
+				Transaction payment;
+				payment = toTransaction(mTxJson,TransactionType.SchemaModify);
+				signed  = payment.sign(this.connection.secret);
+
+				schemaModifyTx = false;
+				return Util.successObject();
+			}
+
+
 			if(mTxJson.toString().equals("{}")) {
 				return Util.errorObject("Exception occured");
 			}
@@ -396,6 +437,7 @@ public class Chainsql extends Submit {
 
 			if (this.connection.userCert != null) {
 				String sCert = Util.toHexString(this.connection.userCert);
+				System.out.println(sCert);
 				mTxJson.put("Certificate", sCert);
 			}
 
@@ -407,6 +449,11 @@ public class Chainsql extends Submit {
 				mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
 				crossChainArgs = null;
 			}
+
+
+
+
+
 			
 	    	JSONObject tx_json = this.connection.client.tablePrepare(mTxJson);
 	    	if(tx_json.has("error")){
@@ -422,13 +469,25 @@ public class Chainsql extends Submit {
 	    	}else{
 	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
 	    	}
-			
+
 			signed = payment.sign(this.connection.secret);
-			
+
 			return Util.successObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Util.errorObject(e.getMessage());
+		}
+	}
+
+	/**
+	 * @param extraDrop 额外的费用,单位为drop
+	 * @throws Exception
+	 */
+	public void setExtraFee(int extraDrop) throws Exception {
+		if ((extraDrop <= 1000000) && (extraDrop > 0)) {
+			this.extraDrop = extraDrop;
+		} else {
+			throw new Exception("设置的额外费用超过1ZXC或低于0drop");
 		}
 	}
 
@@ -441,7 +500,7 @@ public class Chainsql extends Submit {
 	public Chainsql createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
-	
+
 	/**
 	 * Create table with operation-rule
 	 * @param name Table name
@@ -479,6 +538,144 @@ public class Chainsql extends Submit {
 	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
 		return createTable(name,rawList,null,confidential);
 	}
+
+
+	/**
+	 * SchemaName String
+	 *
+	 * withState  ture
+	 *
+	 * 锚定区块
+	 *
+	 * @return
+	 */
+	public Chainsql createSchema(JSONObject schemaInfo) throws Exception{
+
+		boolean bValid = schemaInfo.has("SchemaName") && schemaInfo.has("WithState") &&
+				 schemaInfo.has("Validators") && schemaInfo.has("PeerList");
+
+		if(!bValid){
+			throw new Exception("Invalid schemaInfo parameter");
+		}
+
+		JSONObject params = new JSONObject();
+		params.put("Account", this.connection.address);
+		params.put("SchemaName",Util.toHexString(schemaInfo.getString("SchemaName")));
+
+
+		if( schemaInfo.has("SchemaAdmin")){
+			params.put("SchemaAdmin",schemaInfo.getString("SchemaAdmin"));
+		}
+
+		if( schemaInfo.getBoolean("WithState")){
+
+			//继承主链的节点状态
+			if(! schemaInfo.has("AnchorLedgerHash")){
+				throw new Exception("Missing field AnchorLedgerHash");
+			}
+			params.put("AnchorLedgerHash",schemaInfo.getString("AnchorLedgerHash"));
+			params.put("SchemaStrategy",2);
+		}else{
+			// 不继承主链的节点状态
+			params.put("SchemaStrategy",1);
+		}
+
+		this.schemaCreateTx = true;
+
+		JSONArray validatorsArr = schemaInfo.getJSONArray("Validators");
+		JSONArray peerListArr   = schemaInfo.getJSONArray("PeerList");
+
+
+		JSONArray jsonValidators = new JSONArray();
+		for(int i=0; i<validatorsArr.length(); i++){
+			String validator = (String)validatorsArr.get(i);
+
+			//System.out.println(validator);
+			JSONObject subItem = new JSONObject();
+			subItem.put("PublicKey",validatorsArr.get(i));
+
+			JSONObject item = new JSONObject();
+			item.put("Validator",subItem);
+			jsonValidators.put(item);
+		}
+
+		JSONArray jsonPeerList = new JSONArray();
+
+		for(int i=0; i<peerListArr.length(); i++){
+			String Endpoint = (String)peerListArr.get(i);
+			JSONObject subItem = new JSONObject();
+			subItem.put("Endpoint",Util.toHexString(Endpoint));
+
+			JSONObject item = new JSONObject();
+			item.put("Peer",subItem);
+			jsonPeerList.put(item);
+		}
+
+		params.put("Validators",jsonValidators);
+		params.put("PeerList",jsonPeerList);
+
+		this.mTxJson = params;
+		return this;
+	}
+
+
+	public Chainsql modifySchema(SchemaOpType type,JSONObject schemaInfo)   throws Exception{
+
+		boolean bValid = schemaInfo.has("SchemaID")  && schemaInfo.has("Validators") && schemaInfo.has("PeerList");
+
+		if(!bValid){
+			throw new Exception("Invalid schemaInfo parameter");
+		}
+
+		this.schemaModifyTx = true;
+
+		JSONObject params = new JSONObject();
+
+		if(type == SchemaOpType.schema_del){
+			params.put("OpType","2");
+		}else{
+			params.put("OpType","1");
+		}
+
+		JSONArray validatorsArr = schemaInfo.getJSONArray("Validators");
+		JSONArray peerListArr   = schemaInfo.getJSONArray("PeerList");
+
+		JSONArray jsonValidators = new JSONArray();
+		for(int i=0; i<validatorsArr.length(); i++){
+			String validator = (String)validatorsArr.get(i);
+
+			//System.out.println(validator);
+			JSONObject subItem = new JSONObject();
+			subItem.put("PublicKey",validatorsArr.get(i));
+
+			JSONObject item = new JSONObject();
+			item.put("Validator",subItem);
+			jsonValidators.put(item);
+		}
+
+		JSONArray jsonPeerList = new JSONArray();
+
+		for(int i=0; i<peerListArr.length(); i++){
+			String Endpoint = (String)peerListArr.get(i);
+			JSONObject subItem = new JSONObject();
+			subItem.put("Endpoint",Util.toHexString(Endpoint));
+
+			JSONObject item = new JSONObject();
+			item.put("Peer",subItem);
+			jsonPeerList.put(item);
+		}
+
+		params.put("Account", this.connection.address);
+		params.put("SchemaID",schemaInfo.getString("SchemaID"));
+
+		params.put("Validators",jsonValidators);
+		params.put("PeerList",jsonPeerList);
+
+		this.mTxJson = params;
+		return this;
+	}
+
+
 	
 	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
@@ -1594,5 +1791,22 @@ public class Chainsql extends Submit {
 	public void getLedgerTxs(Integer ledgerSeq,boolean bIncludeSuccess,boolean bIncludefailure,Callback<JSONObject> cb)
 	{
 		connection.client.getLedgerTxs(ledgerSeq,bIncludeSuccess,bIncludefailure,cb);
+	}
+
+
+	/**
+	 * Get schema list.
+	 * @return schema information.
+	 */
+	public JSONObject getSchemaList(JSONObject params){
+		return connection.client.getSchemaList(params);
+	}
+
+	/**
+	 *  查询子链的信息
+	 * @param schemaID schemaID
+	 */
+	public JSONObject getSchemaInfo(String schemaID){
+		return connection.client.getSchemaInfo(schemaID);
 	}
 }

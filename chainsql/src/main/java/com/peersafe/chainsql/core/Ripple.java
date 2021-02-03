@@ -28,8 +28,9 @@ public class Ripple extends Submit {
 	private JSONObject mTxJson;
 
 	public Ripple(Chainsql chainsql) {
-		this.connection = chainsql.connection;
+		this.connection   = chainsql.connection;
 		this.eventManager = chainsql.eventManager;
+		this.extraDrop    = chainsql.extraDrop;
 	}
 
 	public void setTxJson(JSONObject obj) {

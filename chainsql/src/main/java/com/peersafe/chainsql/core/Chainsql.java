@@ -287,6 +287,7 @@ public class Chainsql extends Submit {
 		tab.connection = this.connection;
 		tab.setCrossChainArgs(this.crossChainArgs);
 		tab.eventManager = this.eventManager;
+		tab.extraDrop    = this.extraDrop;
 		return tab;
 	}
 	

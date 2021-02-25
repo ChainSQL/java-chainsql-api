@@ -24,12 +24,33 @@ public class ChainsqlTest extends TestCase {
     public void setUp() throws Exception {
         try{
 
-
-            c.connect("ws://192.168.29.116:7017");
+            c.connect("ws://192.168.29.116:6006");
            // c.connect("ws://192.168.29.69:5003");
             c.as(rootAddress, rootSecret);
         }catch (Exception e){
             c.disconnect();
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    public void testAccountSet(){
+
+        try{
+
+            JSONObject jsonObj = c.accountSet("1.2", "3", "5").submit(Submit.SyncCond.validate_success);
+            System.out.println(jsonObj);
+
+            jsonObj = c.accountSet("1.2", "3", "0").submit(Submit.SyncCond.validate_success);
+            System.out.println(jsonObj);
+
+            jsonObj = c.accountSet("1.2", "0", "0").submit(Submit.SyncCond.validate_success);
+            System.out.println(jsonObj);
+
+            jsonObj = c.accountSet("1.0", "0", "0").submit(Submit.SyncCond.validate_success);
+            System.out.println(jsonObj);
+
+        }catch (Exception e){
             e.printStackTrace();
             Assert.fail();
         }
@@ -66,15 +87,75 @@ public class ChainsqlTest extends TestCase {
         }
     }
 
+    /**
+     * 测试行级控制表
+     */
+    public void testRuleTable(){
+
+
+        try {
+
+
+            sTableName = "rule_20002";
+            List<String> args = Util.array("{'field':'id','type':'int','length':11,'UQ':1,'PK':1}",
+                    "{'field':'name','type':'varchar','length':50,'default':null}",
+                    "{'field':'age','type':'int'}",
+                    "{'field':'account','type':'varchar','length':64}",
+                    "{'field':'txid','type':'varchar','length':64}");
+            String operationRule = "{" +
+                    "'Insert':{" +
+                    " 'Condition':{'txid':'$tx_hash','account':'$account'},"+
+                    " 'Count':{'AccountField':'account','CountLimit':3}" +
+                    "}," +
+                    "'Update':{" +
+                    "  'Condition':{'id':{'$lt':5}}," +
+                    "  'Fields':['name','age','txid']" +
+                    "}," +
+                    "'Delete':{" +
+                    "  'Condition':{'account':'$account'}" +
+                    "}," +
+                    "'Get':{" +
+                    "  'Condition':{'id':{'$ge':5}}" +
+                    "}" +
+
+                    "}";
+            JSONObject obj;
+            obj = c.createTable(sTableName, args, Util.StrToJson(operationRule)).submit(Submit.SyncCond.db_success);
+            System.out.println("create result:" + obj);
+
+            List<String> orgs1 = Util.array("{'id':9,'name':'aabbcc'}");
+            obj = c.table(sTableName).insert(orgs1).submit(Submit.SyncCond.db_success);
+            System.out.println("insert result:" + obj);
+
+
+
+////            // 1、 建表
+////            List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
+////                    "{'field':'id','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+//
+//            boolean bEncrypted = false;
+//            JSONObject obj;
+//            obj = c.createTable(sTableName, args, bEncrypted).submit(Submit.SyncCond.db_success);
+//            System.out.println("创建行级控制表的结果为:" + obj);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+
+    }
+
 
     public void testCreateTable() {
 
         try {
             // 1、 建表
             List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
-                    "{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+                    "{'field':'id','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
-            boolean bEncrypted = true;
+            boolean bEncrypted = false;
             JSONObject obj;
             obj = c.createTable(sTableName, args, bEncrypted).submit(Submit.SyncCond.db_success);
             System.out.println("create result:" + obj);

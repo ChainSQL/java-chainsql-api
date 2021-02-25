@@ -325,62 +325,49 @@ public class Ripple extends Submit {
 	/**
 	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setTransferFee.
 	 * @param transferRate    decimal number string
-	 * (1.0 - 2.0] : set transferRate
-	 * 0/1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
+	 * [1.0 - 2.0] : set transferRate
+	 * 1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
 	 * @param transferFeeMin  decimal number string
 	 * @param transferFeeMax  decimal number string
 	 * @return You can use this to call other Ripple functions continually.
 	 */
 	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax) throws Exception
 	{
-		//
+
 		double rate = 1.0;double feeMin;double feeMax;
-//		try {
-			rate = Double.parseDouble(transferRate);
-			if((rate != 0) && rate<1.0 || rate>2.0)
-			{
-				throw new Exception("TransferRate must be 0 or a number >= 1.0 && <= 2.0");
-//				Client.logger.log(Level.WARNING, "TransferRate must be 0 or a number >= 1.0 && <= 2.0");
-//				return null;
-			}
-			feeMin = Double.parseDouble(transferFeeMin);
-			feeMax = Double.parseDouble(transferFeeMax);
-			if(feeMin < 0 || feeMax <0)
-			{
-				throw new Exception("min or max cannot be less than 0");
-//				Client.logger.log(Level.WARNING, "min or max cannot be less than 0");
-//				return null;
-			}
-			if(feeMin > feeMax)
-			{
-				throw new Exception("min cannot be greater than max");
-//				Client.logger.log(Level.WARNING, "min cannot be greater than max");
-//				return null;
-			}
-			//
-			if(feeMin == feeMax && feeMin>0)
-			{
-				if(rate>PRECISION && rate-1.0 > PRECISION)
-				{
-					throw new Exception("fee mismatch transferRate");
-//					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
-//					return null;
-				}
-			}
-			if(feeMin < feeMax) {
-				if(rate<PRECISION || rate-1.0 < PRECISION)
-				{
-					throw new Exception("fee mismatch transferRate");
-//					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
-//					return null;
-				}
-			}
-//		}
-//		catch(Exception e)
+
+		rate = Double.parseDouble(transferRate);
+		if( rate < 1.0 || rate > 2.0)
+		{
+			throw new Exception("TransferRate must be  a number >= 1.0 && <= 2.0");
+		}
+
+		feeMin = Double.parseDouble(transferFeeMin);
+		feeMax = Double.parseDouble(transferFeeMax);
+		if(feeMin < 0.0 || feeMax < 0.0)
+		{
+			throw new Exception("min or max cannot be less than 0");
+		}
+
+		if( feeMin > feeMax && feeMax  - 0.0 > PRECISION)
+		{
+			throw new Exception("min cannot be greater than max when max != 0.0");
+		}
+//
+//		if(feeMin == feeMax)
 //		{
-//			Client.logger.log(Level.WARNING, e + "\nTransferRate must be a number >= 1.0 && <= 2.0; TransferFeeMin and TransferFeeMax must be decimal number string.");
-//			return null;
+//			if(rate>PRECISION && rate-1.0 > PRECISION)
+//			{
+//				throw new Exception("fee mismatch transferRate");
+//			}
 //		}
+//		if(feeMin < feeMax) {
+//			if(rate<PRECISION || rate-1.0 < PRECISION)
+//			{
+//				throw new Exception("fee mismatch transferRate");
+//			}
+//		}
+
 		transferRate = transferRate.replace(".", "");
 		int nLen = 10 - transferRate.length();
 		while (nLen>0)
@@ -390,15 +377,13 @@ public class Ripple extends Submit {
 		}
 		transferFeeMin = Util.toHexString(transferFeeMin);
 		transferFeeMax = Util.toHexString(transferFeeMax);
-		
-		//
+
 		mTxJson = new JSONObject();
 		mTxJson.put("Account", this.connection.address);
 		mTxJson.put("TransferRate", transferRate);
 		mTxJson.put("TransferFeeMin", transferFeeMin);
 		mTxJson.put("TransferFeeMax", transferFeeMax);
 		mTxJson.put("TransactionType", "AccountSet");
-		//
 		return this;
 	}
 

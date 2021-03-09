@@ -438,7 +438,6 @@ public class Chainsql extends Submit {
 
 			if (this.connection.userCert != null) {
 				String sCert = Util.toHexString(this.connection.userCert);
-				System.out.println(sCert);
 				mTxJson.put("Certificate", sCert);
 			}
 
@@ -1484,6 +1483,7 @@ public class Chainsql extends Submit {
 		JSONObject ret = new JSONObject();
 		ret.put("seed", secretKey);
 		ret.put("publickey", validationPub);
+		ret.put("validation_public_key_hex" , Util.bytesToHex(keyPair.canonicalPubBytes()));
 		return ret;
 	}
 

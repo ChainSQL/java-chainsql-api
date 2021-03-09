@@ -405,6 +405,11 @@ public class Chainsql extends Submit {
 	JSONObject prepareSigned() {
 		try {
 
+			if (this.connection.userCert != null) {
+				String sCert = Util.toHexString(this.connection.userCert);
+				mTxJson.put("Certificate", sCert);
+			}
+
 			if(schemaCreateTx){
 
 				Transaction payment;
@@ -434,11 +439,6 @@ public class Chainsql extends Submit {
 			if(mTxJson.has("OpType") && mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
 					!this.connection.address.equals(connection.scope)){
 				mTxJson.put("Owner",  connection.scope);
-			}
-
-			if (this.connection.userCert != null) {
-				String sCert = Util.toHexString(this.connection.userCert);
-				mTxJson.put("Certificate", sCert);
 			}
 
 			//for cross chain

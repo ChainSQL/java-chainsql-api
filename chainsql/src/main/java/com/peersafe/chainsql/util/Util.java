@@ -24,6 +24,7 @@ import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.EncryptCommon;
+import com.peersafe.chainsql.net.Connection;
 
 
 public class Util {
@@ -445,5 +446,48 @@ public class Util {
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		return bytesToHex(pubBytes);
+	}
+	
+	public static String getUserToken(Connection connection,String address,String name) throws Exception{
+		JSONObject res = connection.client.getUserToken(connection.scope,address,name);
+		String token = "";
+		if(res.has("error")){
+			throw new Exception(res.getString("error_message"));
+		}else if(res.has("token")) {
+			token = res.getString("token");
+		}
+		return token;
+	}
+	
+	public static String encryptRaw(Connection connection,String token,String strRaw) throws Exception{
+		if(token.equals("")) {
+			strRaw = Util.toHexString(strRaw);
+			return strRaw;
+		}
+		try {
+			byte[] seedBytes = null;
+
+			boolean bSoftGM = Utils.getAlgType(connection.secret).equals("softGMAlg");
+			if(!connection.secret.isEmpty()){
+
+				if(bSoftGM){
+					seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(connection.secret);
+				}else{
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
+				}
+
+			}
+
+			byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
+			if(password == null){
+				throw new Exception("Exception: decrypt token failed");
+			}
+			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password,bSoftGM);
+			strRaw = Util.bytesToHex(rawBytes);
+			return strRaw;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return strRaw;
+		}
 	}
 }

@@ -578,6 +578,9 @@ public class Chainsql extends Submit {
 		}else{
 			// 不继承主链的节点状态
 			params.put("SchemaStrategy",1);
+			if(schemaInfo.has("AnchorLedgerHash")){
+				throw new Exception("Field 'AnchorLedgerHash' is unnecessary");
+			}
 		}
 
 		this.schemaCreateTx = true;

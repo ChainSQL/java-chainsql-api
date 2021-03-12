@@ -801,7 +801,78 @@ public class Chainsql extends Submit {
 		}
 		this.mTxJson = json;
 		return this;
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the new fields. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql addTableFields(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_add_fields"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the new fields. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql deleteTableFields(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_delete_fields"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the fields to modify. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql modifyTableFields(String name,List<String> rawList) throws Exception{
+		return modifyTable(Constant.opType.get("t_modify_fields"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the index to create. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql createIndex(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_create_index"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Indexes name to delete. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql deleteIndex(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_delete_index"),name,rawList);
+	}
+	
+	private Chainsql modifyTable(int opType,String name,List<String> rawList)throws Exception{
+		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
+		String strRaw = listRaw.toString();
 		
+		String token = Util.getUserToken(this.connection, this.connection.address, name);
+		strRaw = Util.encryptRaw(connection,token,strRaw);
+
+		JSONObject json = new JSONObject();
+		json.put("OpType", opType);
+		json.put("Tables", getTableArray(name));
+		json.put("Raw", strRaw);
+		
+		this.mTxJson = json;
+		
+		return this;
 	}
 	/**
 	 * check if publickey matches user

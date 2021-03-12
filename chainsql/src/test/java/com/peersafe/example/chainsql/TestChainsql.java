@@ -37,8 +37,8 @@ public class TestChainsql {
 
 
 //			testRipple();
-//			testChainSql();
-			testSchema();
+			testChainSql();
+//			testSchema();
 
 		}catch (Exception e){
 
@@ -84,7 +84,7 @@ public class TestChainsql {
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-		test.testCreateTable();
+//		test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
@@ -96,7 +96,7 @@ public class TestChainsql {
 //		//重命名表
 //		test.testrename();
 //		//查询表数据
-	test.testget();
+//	test.testget();
 //		//删除表
 //		test.testdrop();
 //		//授权
@@ -110,6 +110,8 @@ public class TestChainsql {
 		
 		//根据sql语句查询，admin权限，无签名检测
 //		test.testGetBySqlAdmin();
+		
+		test.testModifyTable();
 	}
 	
 	private static void testSchema() {
@@ -317,6 +319,35 @@ public class TestChainsql {
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
+	}
+	
+	public void testModifyTable() {
+		try {
+			c.as("zKgETUCoBkuPpd1PmFgsdJLLhqFgWVAwS4", "xxSxPdbdiH7HVr2biczWHYVMEZuKh");
+			String sTableName = "hi33";
+			List<String> args = Util.array("{'field':'name','type':'varchar','length':50,'default':null}");
+			JSONObject obj; 
+//			obj= c.addTableFields(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("addTableFields result:" + obj);
+			
+//			args = Util.array("{'field':'name','type':'text'}");
+//			obj = c.modifyTableFields(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("modifyTableFields result:" + obj);
+			
+//			args = Util.array("{'field':'height'}");
+//			obj = c.deleteTableFields(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("deleteTableFields result:" + obj);
+			
+//			args = Util.array("{'index':'PIndex'}","{'field':'id'}","{'field':'firmname'}");
+//			obj = c.createIndex(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("createIndex result:" + obj);
+//			
+			args = Util.array("{'index':'PIndex'}");
+			obj = c.deleteIndex(sTableName, args).submit(SyncCond.db_success);
+			System.out.println("deleteIndex result:" + obj);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void testinsert() {

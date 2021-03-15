@@ -344,40 +344,12 @@ public class Table extends Submit{
 			}
 		}
 
-		if(token.equals("")) {
-			strRaw = Util.toHexString(strRaw);
-			return strRaw;
-		}
-
 		//有加密则不验证
 		if(this.transaction){
 			this.needVerify = 0;
 		}
-		try {
-			byte[] seedBytes = null;
 
-			boolean bSoftGM = Utils.getAlgType(this.connection.secret).equals("softGMAlg");
-			if(!this.connection.secret.isEmpty()){
-
-				if(bSoftGM){
-					seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
-				}else{
-					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
-				}
-
-			}
-
-			byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
-			if(password == null){
-				System.out.println("Exception: decrypt token failed");
-			}
-			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password,bSoftGM);
-			strRaw = Util.bytesToHex(rawBytes);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return strRaw;
+		return Util.encryptRaw(this.connection,token,strRaw);
 	}
 	
 	private JSONObject prepareSQLStatement() {

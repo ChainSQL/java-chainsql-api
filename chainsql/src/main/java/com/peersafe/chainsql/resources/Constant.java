@@ -25,6 +25,11 @@ public class Constant {
 			put("t_grant",11);
 			put("t_recreate",12);
 			put("t_report",13);
+			put("t_add_fields",14);
+			put("t_delete_fields",15);
+			put("t_modify_fields",16);
+			put("t_create_index",17);
+			put("t_delete_index",18);
 		}}; 
 		
 		

@@ -3,17 +3,12 @@ package com.peersafe.example.chainsql;
 import java.io.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Ripple;
-import com.peersafe.chainsql.core.Submit.SchemaOpType;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
 
@@ -37,8 +32,8 @@ public class TestChainsql {
 
 
 //			testRipple();
-//			testChainSql();
-			testSchema();
+			testChainSql();
+//			testSchema();
 
 		}catch (Exception e){
 
@@ -84,7 +79,7 @@ public class TestChainsql {
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-		test.testCreateTable();
+//		test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
@@ -96,7 +91,7 @@ public class TestChainsql {
 //		//重命名表
 //		test.testrename();
 //		//查询表数据
-	test.testget();
+//	test.testget();
 //		//删除表
 //		test.testdrop();
 //		//授权
@@ -110,21 +105,8 @@ public class TestChainsql {
 		
 		//根据sql语句查询，admin权限，无签名检测
 //		test.testGetBySqlAdmin();
-	}
-	
-	private static void testSchema() {
-		TestChainsql test = new TestChainsql();
-		c.as(rootAddress, rootSecret);
 		
-//		test.testSchemaList();
-		
-//		test.testSchemaCreate();
-		
-//		sTableName = "hello_123";
-//		c.setSchema("57256592FD987D4256DDCE4812484BDE9B9193A70DDEC983541A182275045FE0");
-//		test.testCreateTable();
-		
-		test.testSchemaModify();
+		test.testModifyTable();
 	}
 	
 	
@@ -166,69 +148,6 @@ public class TestChainsql {
 //			}
 //			
 //		});
-	}
-	
-	public void testSchemaList() {
-		JSONObject option = new JSONObject();
-		JSONObject list = c.getSchemaList(option);
-		System.out.println(list);
-	}
-	
-	public void testSchemaCreate() {
-		JSONObject schemaInfo = new JSONObject();
-		schemaInfo.put("SchemaName","hello1");
-		schemaInfo.put("WithState",false);
-
-		schemaInfo.put("SchemaAdmin",rootAddress);
-
-		List<String> validators = new ArrayList<String>();
-		validators.add("03C53D4B7E4D558DBD8EA67E68AD97844FCCF48DD4C7A5C10E05B293A11DC9BB40");
-		validators.add("021D3E9C571DF23054DBB2005E76EA5BE5227D381FB9B4A52467B5E6412ABAFBA0");
-		validators.add("0317B5CAEBE6C778D133B1CA670D00E994D3AFAC2C0E6AA8F11B0DA277309F193E");
-		JSONArray validatorsJsonArray = new JSONArray(validators);
-		schemaInfo.put("Validators",validatorsJsonArray);
-
-		List<String> peerList = new ArrayList<String>();
-		peerList.add("127.0.0.1:5125");
-		peerList.add("127.0.0.1:5126");
-		peerList.add("127.0.0.1:5127");
-		JSONArray peerListJsonArray = new JSONArray(peerList);
-
-		schemaInfo.put("PeerList",peerListJsonArray);
-		schemaInfo.put("SchemaAdmin",rootAddress);
-		
-		try {
-			JSONObject ret = c.createSchema(schemaInfo).submit(SyncCond.validate_success);
-			System.out.println(ret);
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public void testSchemaModify() {
-		JSONObject schemaInfo = new JSONObject();
-		schemaInfo.put("SchemaID", "312242E6D2DB07BF1F856A2525A2DBA4199F9B60CF38584C5815CD79808572FD");
-		
-		List<String> validators = new ArrayList<String>();
-		validators.add("02DB6543999A94815F7FC5F61D3AB1BA60938F15BC004E70613F7824DA70D5CCAB");
-		JSONArray validatorsJsonArray = new JSONArray(validators);
-		schemaInfo.put("Validators",validatorsJsonArray);
-
-		List<String> peerList = new ArrayList<String>();
-		peerList.add("127.0.0.1:5128");
-		JSONArray peerListJsonArray = new JSONArray(peerList);
-
-		schemaInfo.put("PeerList",peerListJsonArray);
-		
-		try {
-			JSONObject obj = c.modifySchema(SchemaOpType.schema_add, schemaInfo).submit(SyncCond.validate_success);
-			System.out.println(obj);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	public void generateAccount() {
@@ -317,6 +236,35 @@ public class TestChainsql {
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
+	}
+	
+	public void testModifyTable() {
+		try {
+			c.as("zKgETUCoBkuPpd1PmFgsdJLLhqFgWVAwS4", "xxSxPdbdiH7HVr2biczWHYVMEZuKh");
+			String sTableName = "hi33";
+			List<String> args = Util.array("{'field':'name','type':'varchar','length':50,'default':null}");
+			JSONObject obj; 
+//			obj= c.addTableFields(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("addTableFields result:" + obj);
+			
+//			args = Util.array("{'field':'name','type':'text'}");
+//			obj = c.modifyTableFields(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("modifyTableFields result:" + obj);
+			
+//			args = Util.array("{'field':'height'}");
+//			obj = c.deleteTableFields(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("deleteTableFields result:" + obj);
+			
+//			args = Util.array("{'index':'PIndex'}","{'field':'id'}","{'field':'firmname'}");
+//			obj = c.createIndex(sTableName, args).submit(SyncCond.db_success);
+//			System.out.println("createIndex result:" + obj);
+//			
+			args = Util.array("{'index':'PIndex'}");
+			obj = c.deleteIndex(sTableName, args).submit(SyncCond.db_success);
+			System.out.println("deleteIndex result:" + obj);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void testinsert() {

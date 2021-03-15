@@ -57,7 +57,7 @@ public class ServerInfo {
         }
 
         double fee_unit = (double) fee_base / fee_ref, fee;
-        fee_unit *= load_factor / load_base;
+        fee_unit *= (double)load_factor / load_base;
         fee = units * fee_unit * Config.getFeeCushion();
         String s = String.valueOf((long) Math.ceil(fee));
         return Amount.fromString(s);

@@ -187,7 +187,6 @@ public class SM2Util extends GMBaseUtil {
         ParametersWithRandom pwr = new ParametersWithRandom(pubKeyParameters, new SecureRandom());
         engine.init(true, pwr);
 
-        // 保持与Chainsql节点端的统一，需去除头部的第一个字节 0x4
         byte[] rawBytes = engine.processBlock(srcData, 0, srcData.length);
         byte[] ret;
         try {
@@ -217,17 +216,11 @@ public class SM2Util extends GMBaseUtil {
         } catch (Exception e) {
             throw new InvalidCipherTextException(e.toString());
         }
-        
-        // 保持与Chainsql节点端的统一，头部需增加一个字节 0x4
-        // byte[] sm2Cipher = new byte[cipherData.length + 1];
-        // sm2Cipher[0] = 0x4;
-        // System.arraycopy(cipherData, 0, sm2Cipher, 1, cipherData.length);
 
         ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(
                 new BigInteger(1,privBytes), SM2Util.DOMAIN_PARAMS);
 
         return  SM2Util.decrypt(decryptMode, priKey, cipherData);
-
     }
 
 

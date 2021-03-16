@@ -18,18 +18,23 @@ public class TestRipple {
 			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // root
 			"zLLV3G8RfBXY4EAYDvnSaAz4q4PQg8PEe6", // user1
 			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // user
-			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS"  // issuer
+			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS", // issuer
+            "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj" // gmRoot
 
 	};
 	private static String[] sSec = {
 			"xnoPBzXtMeMyMHUVTgbuqAfg1SUTb", // root sec
 			"xnBWT67xXecGGWPCrTYtE1MHjKQqW", // user1 sec
 			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // user sec
-			"xxRjxBvT7ABczPh2CMikpNUwjiuLU"  // issuer sec
+			"xxRjxBvT7ABczPh2CMikpNUwjiuLU",  // issuer sec
+            "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb" // gmRoot sec
 
 	};
 	public static String rootAddress = sAddr[0];
 	public static String rootSecret = sSec[0];
+
+    public static String gmRootAddress = sAddr[4];
+	public static String gmRootSecret = sSec[4];
 
 	public static String sUser1 = sAddr[1];
 	public static String sUserSec1 = sSec[1];
@@ -43,7 +48,7 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://192.168.29.115:5217");
+		c.connect("ws://127.0.0.1:6006");
 		//
 		String sCurrency = "abc";
 		JSONObject jsonObj;

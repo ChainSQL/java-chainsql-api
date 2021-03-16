@@ -172,6 +172,7 @@ public class SM2Util extends GMBaseUtil {
             throws InvalidCipherTextException {
 
         assert (pubBytes.length == 65);
+        Mode encryptMode = Mode.C1C3C2;
 
         byte[] xBytes = new byte[32];
         byte[] yBytes = new byte[32];
@@ -182,15 +183,20 @@ public class SM2Util extends GMBaseUtil {
         String yHex = ByteUtils.toHexString(yBytes);
         ECPublicKeyParameters pubKeyParameters = BCECUtil.createECPublicKeyParameters(xHex, yHex, SM2Util.CURVE, SM2Util.DOMAIN_PARAMS);
 
-        SM2Engine engine = new SM2Engine(Mode.C1C2C3);
+        SM2Engine engine = new SM2Engine(encryptMode);
         ParametersWithRandom pwr = new ParametersWithRandom(pubKeyParameters, new SecureRandom());
         engine.init(true, pwr);
 
         // 保持与Chainsql节点端的统一，需去除头部的第一个字节 0x4
         byte[] rawBytes = engine.processBlock(srcData, 0, srcData.length);
-        byte[] ret = new byte[rawBytes.length -1];
-        System.arraycopy(rawBytes, 1, ret, 0, rawBytes.length -1);
-
+        byte[] ret;
+        try {
+            ret = encodeSM2CipherToDER(encryptMode, rawBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            ret = null;
+        }
+        
         return ret;
     }
 
@@ -201,18 +207,26 @@ public class SM2Util extends GMBaseUtil {
      * @return 根据mode不同，输出的密文C1C2C3排列顺序不同。C1为65字节第1字节为压缩标识，这里固定为0x04，后面64字节为xy分量各32字节。C3为32字节。C2长度与原文一致。
      * @throws InvalidCipherTextException
      */
-    public static byte[] decrypt(byte[] privBytes, byte[] cipherData)
+    public static byte[] decrypt(byte[] privBytes, byte[] cipherDataDer)
             throws InvalidCipherTextException {
-
+        
+        Mode decryptMode = Mode.C1C3C2;
+        byte[] cipherData = null;
+        try {
+            cipherData = decodeDERSM2Cipher(decryptMode, cipherDataDer);
+        } catch (Exception e) {
+            throw new InvalidCipherTextException(e.toString());
+        }
+        
         // 保持与Chainsql节点端的统一，头部需增加一个字节 0x4
-        byte[] sm2Cipher = new byte[cipherData.length + 1];
-        sm2Cipher[0] = 0x4;
-        System.arraycopy(cipherData, 0, sm2Cipher, 1, cipherData.length);
+        // byte[] sm2Cipher = new byte[cipherData.length + 1];
+        // sm2Cipher[0] = 0x4;
+        // System.arraycopy(cipherData, 0, sm2Cipher, 1, cipherData.length);
 
         ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(
                 new BigInteger(1,privBytes), SM2Util.DOMAIN_PARAMS);
 
-        return  SM2Util.decrypt(Mode.C1C2C3,priKey, sm2Cipher);
+        return  SM2Util.decrypt(decryptMode, priKey, cipherData);
 
     }
 

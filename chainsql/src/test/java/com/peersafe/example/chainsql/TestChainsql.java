@@ -11,6 +11,7 @@ import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Ripple;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
+import com.peersafe.base.crypto.sm.SM2UtilTest;
 
 public class TestChainsql {
 	public static final Chainsql c = new Chainsql();
@@ -19,6 +20,9 @@ public class TestChainsql {
 
 	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
 	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
+
+    public static String gmRootAddress = "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj";
+	public static String gmRootSecret = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
 	
 	public static String userSecret = "xnnUqirFepEKzVdsoBKkMf577upwT";
 	public static String userAddress = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
@@ -30,10 +34,12 @@ public class TestChainsql {
 			c.connect("ws://127.0.0.1:6006");
 			//c.connect("ws://221.7.246.149/ws");
 
-
-//			testRipple();
-			testChainSql();
+            c.as(gmRootAddress, gmRootSecret);
+            
+			// testRipple();
+			// testChainSql();
 //			testSchema();
+            // testGM();
 
 		}catch (Exception e){
 
@@ -79,7 +85,7 @@ public class TestChainsql {
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-//		test.testCreateTable();
+		test.testCreateTable();
 		//建表，用于重命名，删除
 //		test.testCreateTable1();
 //		//插入数据
@@ -106,16 +112,20 @@ public class TestChainsql {
 		//根据sql语句查询，admin权限，无签名检测
 //		test.testGetBySqlAdmin();
 		
-		test.testModifyTable();
+		// test.testModifyTable();
 	}
 	
-	
+	private static void testGM() {
+        SM2UtilTest sm2utilTest = new SM2UtilTest();
+        sm2utilTest.testEncryptAndDecrypt();
+    }
+
 	private static void testRipple() {
 		TestChainsql test = new TestChainsql();
 //		//查询根账户余额
 //		test.getAccountBalance();
 //		//生成新账户
-//		test.generateAccount();
+		test.generateAccount();
 //		//给新账户打钱
 		test.activateAccount(sNewAccountId);
 
@@ -151,7 +161,9 @@ public class TestChainsql {
 	}
 	
 	public void generateAccount() {
-		JSONObject obj = c.generateAddress();
+        JSONObject options = new JSONObject();
+        options.put("algorithm","softGMAlg");
+		JSONObject obj = c.generateAddress(options);
 		System.out.println("new account:" + obj);
 		sNewAccountId = obj.getString("address");
 		sNewSecret = obj.getString("secret");
@@ -230,11 +242,12 @@ public class TestChainsql {
 	}
 
 	public void testCreateTable() {
+        String sTableName = "gmTest1";
 		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1}",
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 
 		JSONObject obj;
-		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
+		obj = c.createTable(sTableName,args,true).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
 	}
 	

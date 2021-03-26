@@ -1178,6 +1178,16 @@ public class Chainsql extends Submit {
 	public JSONObject getServerInfo(){
 		return connection.client.getServerInfo();
 	}
+
+	/**
+	 * Get server info.
+	 * @return Server's informations.
+	 */
+	public JSONObject getPeers(){
+		return connection.client.getPeers();
+	}
+
+
 	public JSONObject getChainInfo(){
 		JSONObject obj = new JSONObject();
 		try{

@@ -1853,7 +1853,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 		waiting(request);
 		return getResult(request);
 	}
-	
+
+    /**
+     * Get peers
+     * @return peers data.
+     */
+    public JSONObject getPeers(){
+        Request request = newRequest(Command.peers);
+        request.request();
+        waiting(request);
+        return getResult(request);
+    }
 
     /**
      * Request for account_lines.

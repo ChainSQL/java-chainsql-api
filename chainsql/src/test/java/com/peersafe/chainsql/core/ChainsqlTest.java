@@ -33,8 +33,8 @@ public class ChainsqlTest extends TestCase {
 
     public void setUp() throws Exception {
         try{
-//           c.connect("ws://192.168.29.69:16006");
-//           c.as(rootAddress, rootSecret);
+           c.connect("ws://192.168.29.69:16006");
+           c.as(rootAddress, rootSecret);
         }catch (Exception e){
             c.disconnect();
             e.printStackTrace();
@@ -65,6 +65,24 @@ public class ChainsqlTest extends TestCase {
         }
     }
 
+
+    public void testGetPeers(){
+
+        try{
+
+            JSONObject obj =  c.getPeers();
+            if(obj.has("peers") && obj.get("peers").toString() == "null"){
+                System.out.println("getPeers = null. Server has no peers");
+            }else{
+                System.out.println(obj);
+            }
+
+        }catch (Exception e){
+//            c.disconnect();
+//            e.printStackTrace();
+            Assert.fail();
+        }
+    }
 
     public void testGenerateAddress(){
         try{

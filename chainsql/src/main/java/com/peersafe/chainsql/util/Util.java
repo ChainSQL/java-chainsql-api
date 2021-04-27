@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.peersafe.base.crypto.sm.SMKeyPair;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.json.JSONArray;
@@ -436,6 +437,13 @@ public class Util {
 		}else {
 			pubBytes = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
 		}
+
+		if(pubBytes.length == 65 && pubBytes[0] == 0x47){
+			// 软国密
+			SMKeyPair smKeyPair = new SMKeyPair(null,null,Utils.uBigInt(pubBytes));
+			return smKeyPair.verifySignature(message, signature);
+		}
+
         
         K256KeyPair keyPair = new K256KeyPair(null,Utils.uBigInt(pubBytes));
         return keyPair.verifySignature(message, signature);

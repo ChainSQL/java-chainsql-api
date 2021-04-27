@@ -106,16 +106,20 @@ public class SMKeyPair implements IKeyPair {
 	}
 
 
-	public boolean verifySignature(byte[] message, byte[] sigBytes) {
+	public boolean verifySignature(byte[] message, byte[] signedBytes) {
 
 		try {
 
-			byte[] pub = new byte[33];
-			System.arraycopy(this.pubBytes_, 1, pub, 0, 33);
+			assert (this.pubBytes_.length == 65 && this.pubBytes_[0] == 0x47);
+			byte[] pubX = new byte[32];
+			System.arraycopy(this.pubBytes_, 1, pubX, 0, 32);
 
-			ECPoint pt =   SM2Util.CURVE.decodePoint(pub);
-			ECPublicKeyParameters sm2PublicKey = new  ECPublicKeyParameters(pt,SM2Util.DOMAIN_PARAMS);
-			boolean flag = SM2Util.verify(sm2PublicKey,message , sigBytes);
+			byte[] pubY = new byte[32];
+			System.arraycopy(this.pubBytes_, 33, pubY, 0, 32);
+
+			ECPublicKeyParameters pubKey = BCECUtil.createECPublicKeyParameters(pubX, pubY, SM2Util.CURVE, SM2Util.DOMAIN_PARAMS);
+			byte[] derSigned = SM2Util.encodeSM2SignToDER(signedBytes);
+			boolean flag = SM2Util.verify(pubKey,message , derSigned);
 			return flag;
 		} catch (Exception e) {
 			throw new RuntimeException(e);

@@ -16,30 +16,37 @@ public class ChainsqlTest extends TestCase {
 
     public static final Chainsql  c    = new Chainsql();
 
-    public static String rootAddress   = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
-    public static String rootSecret    = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
+    public static String rootAddress      = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
+    public static String rootSecret       = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
+    public static String rootPublicKey    = "cBQG8RQArjx1eTKFEAQXz2gS4utaDiEC9wmi7pfUPTi27VCchwgw";
 
-    public static String userSecret = "xnnUqirFepEKzVdsoBKkMf577upwT";
-    public static String userAddress = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
-    public static String sTableName   = "T1";
+
+    public static String userSecret    = "xnnUqirFepEKzVdsoBKkMf577upwT";
+    public static String userAddress   = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
+    public static String sTableName    = "T1";
     public static String userPublicKey = "cB4pxq1LUfwPxNP9Xyj223mqM8zfeW6t2DqP1Ek3UQWaUVb9ciCZ";
 
 
-    public static String smRootSecret  = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
-    public static String smRootAddress = "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj";
+    public static String smRootSecret    = "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb";
+    public static String smRootAddress   = "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj";
+    public static String smRootPublicKey = "pYvWhW4azFwanovo5MhL71j5PyTWSJi2NVurPYUrE9UYaSVLp29RhtxxQB7xeGvFmdjbtKRzBQ4g9bCW5hjBQSeb7LePMwFM";
+
+    //pYvWhW4azFwanovo5MhL71j5PyTWSJi2NVurPYUrE9UYaSVLp29RhtxxQB7xeGvFmdjbtKRzBQ4g9bCW5hjBQSeb7LePMwFM
+
+
     public static String smUserSecret  = "pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV";
     public static String smUserAddress = "zKzpkRTZPtsaQ733G8aRRG5x5Z2bTqhGbt";
 
 
     public void setUp() throws Exception {
-        try{
-           c.connect("ws://192.168.29.69:16006");
-           c.as(rootAddress, rootSecret);
-        }catch (Exception e){
-            c.disconnect();
-            e.printStackTrace();
-            Assert.fail();
-        }
+//        try{
+//           c.connect("ws://192.168.29.69:16006");
+//           c.as(rootAddress, rootSecret);
+//        }catch (Exception e){
+//            c.disconnect();
+//            e.printStackTrace();
+//            Assert.fail();
+//        }
     }
 
     public void tearDown() throws Exception {
@@ -481,6 +488,47 @@ public class ChainsqlTest extends TestCase {
         }
 
     }
+
+    public  void testSignAndVerify(){
+
+
+        try{
+
+            String hello = "hello world";
+
+            // gm
+            byte[] signature = c.sign(hello.getBytes(), smRootSecret);
+         //   signature = Util.hexToBytes("EAEC0A8917FF60BB22943EC16CFE95BFFFFD0CEF65EFF6B6B7BDCCBD69C8933A60B235442094671281B788221AD650EA00CB54346EAFB935B70170ABF62AFF21");
+            if(c.verify(hello.getBytes(), signature, smRootPublicKey))
+            {
+                System.out.println("gm verify success");
+            }else {
+                System.out.println("gm verify failed");
+            }
+
+           // System.out.println(Util.bytesToHex(signature));
+
+            // Secp256k1
+            signature = c.sign(hello.getBytes(), rootSecret);
+            if(c.verify(hello.getBytes(), signature, rootPublicKey))
+            {
+                System.out.println("Secp256k1 verify success");
+            }else {
+                System.out.println("Secp256k1 verify failed");
+            }
+
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+            Assert.fail("testSignAndVerify failure");
+        }
+
+
+
+    }
+
+
 
     private static  String readFile(String pemPath){
 

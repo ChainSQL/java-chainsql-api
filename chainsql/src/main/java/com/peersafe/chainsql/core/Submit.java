@@ -51,7 +51,7 @@ public abstract class Submit {
 	//严格模式
 	protected boolean strictMode = false;
 	//合約嵌套调用交易，发送到委员会处理
-	protected boolean priority = true;
+	protected boolean priority = false;
 	
 	public enum SyncCond {
 		send_success,

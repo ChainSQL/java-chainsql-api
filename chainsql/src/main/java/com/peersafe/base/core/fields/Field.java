@@ -200,7 +200,7 @@ public enum Field {
     Table(50, Type.STObject),
     Validator(51, Type.STObject),
     Peer(52, Type.STObject),
-
+    WhiteList(54,Type.STObject),
 
     ArrayEndMarker(1, Type.STArray),
 //    SigningAccounts(2, Type.STArray),
@@ -218,7 +218,7 @@ public enum Field {
     Users(52, Type.STArray),
     Validators(53, Type.STArray),
     PeerList(54, Type.STArray),
-
+    WhiteLists(56, Type.STArray),
 
     CloseResolution(1, Type.UInt8),
     Method(2, Type.UInt8),

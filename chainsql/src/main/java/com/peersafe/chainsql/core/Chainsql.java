@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.peersafe.base.core.coretypes.Currency;
+import com.peersafe.base.core.coretypes.STArray;
+import com.peersafe.base.core.coretypes.uint.UInt32;
 import com.peersafe.base.core.formats.Format;
 import com.peersafe.base.core.formats.TxFormat;
 import com.peersafe.chainsql.pool.ChainsqlPool;
@@ -1124,6 +1126,12 @@ public class Chainsql extends Submit {
 	{
 		Ripple ripple = new Ripple(this);
 		return ripple.accountSet(transferRate, transferFeeMin, transferFeeMax);
+	}
+	
+	public Ripple whitelistSet(JSONArray whitelists, int setFlag) throws Exception
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.whitelistSet(whitelists, setFlag);
 	}
 
 	/**

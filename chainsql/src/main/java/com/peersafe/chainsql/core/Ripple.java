@@ -8,7 +8,10 @@ import java.math.BigInteger;
 import java.util.logging.Level;
 
 import com.peersafe.base.core.coretypes.*;
+import com.peersafe.base.core.coretypes.uint.UInt32;
+
 import org.bouncycastle.util.encoders.Hex;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.client.Client;
@@ -383,6 +386,16 @@ public class Ripple extends Submit {
 		mTxJson.put("TransferRate", transferRate);
 		mTxJson.put("TransferFeeMin", transferFeeMin);
 		mTxJson.put("TransferFeeMax", transferFeeMax);
+		mTxJson.put("TransactionType", "AccountSet");
+		return this;
+	}
+	
+	public Ripple whitelistSet(JSONArray whitelists, int setFlag) {
+		
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		mTxJson.put("WhiteLists", whitelists);
+		mTxJson.put("SetFlag", setFlag);
 		mTxJson.put("TransactionType", "AccountSet");
 		return this;
 	}

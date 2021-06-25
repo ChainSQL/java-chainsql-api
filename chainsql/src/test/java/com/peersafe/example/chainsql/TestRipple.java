@@ -1,11 +1,15 @@
 package com.peersafe.example.chainsql;
 
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.core.coretypes.RippleDate;
+import com.peersafe.base.core.coretypes.STArray;
+import com.peersafe.base.core.coretypes.STObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
+import com.peersafe.chainsql.util.Util;
 
 import java.nio.channels.ScatteringByteChannel;
 
@@ -16,17 +20,17 @@ public class TestRipple {
 	//account,secret
 	private static String[] sAddr = {
 			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // root
-			"zLLV3G8RfBXY4EAYDvnSaAz4q4PQg8PEe6", // user1
+			"zLi3jhvjkJp32cKyNScQx6GXZaLoXuEJ2u", // user1
 			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // user
-			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS", // issuer
+			"zKXfeKXkTtLSTkEzaJyu2cRmRBFRvTW2zc", // issuer
             "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj" // gmRoot
 
 	};
 	private static String[] sSec = {
 			"xnoPBzXtMeMyMHUVTgbuqAfg1SUTb", // root sec
-			"xnBWT67xXecGGWPCrTYtE1MHjKQqW", // user1 sec
+			"xx3fkguaAC3dom5pVmx93Fxn8BdYN", // user1 sec
 			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // user sec
-			"xxRjxBvT7ABczPh2CMikpNUwjiuLU",  // issuer sec
+			"xhtBo8BLBZtTgc3LHnRspaFro5P4H",  // issuer sec
             "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb" // gmRoot sec
 
 	};
@@ -48,7 +52,7 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://127.0.0.1:6006");
+		c.connect("ws://localhost:5510");
 		//
 		String sCurrency = "abc";
 		JSONObject jsonObj;
@@ -59,7 +63,7 @@ public class TestRipple {
 			//
 			c.as(rootAddress, rootSecret);
 			//
-			boolean bActive = false;
+			boolean bActive = true;
 			boolean bTrust = true;
 			boolean bPay = false;
 			if(bActive)
@@ -87,6 +91,22 @@ public class TestRipple {
 				{
 					System.out.print(e);
 				}
+				JSONObject user = new JSONObject();
+				user.put("User", "zLi3jhvjkJp32cKyNScQx6GXZaLoXuEJ2u");
+				JSONObject whitelist = new JSONObject();
+				whitelist.put("WhiteList", user);
+				STObject object = STObject.fromJSONObject(whitelist);
+				STArray arry = new STArray();
+				arry.add(object);
+				
+				String tablestr = "{\"WhiteList\":{\"User\":\"" + sUser1+ "\"}}";
+				JSONArray array =  Util.strToJSONArray(tablestr);
+				jsonObj = c.whitelistSet(array, 10).submit(SyncCond.validate_success);
+				System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
+				
+				//jsonObj = c.whitelistSet(array, 11).submit(SyncCond.validate_success);
+				//System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
+				
 				c.as(sUser, sUserSec);
 				jsonObj = c.trustSet("1000000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
 				System.out.print("     user: " + jsonObj + "\n");

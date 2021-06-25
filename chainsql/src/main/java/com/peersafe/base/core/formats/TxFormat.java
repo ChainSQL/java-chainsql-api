@@ -77,7 +77,8 @@ public class TxFormat extends Format {
             Field.TransferFeeMin,  Requirement.OPTIONAL,
             Field.TransferFeeMax,  Requirement.OPTIONAL,
             Field.SetFlag,         Requirement.OPTIONAL,
-            Field.ClearFlag,       Requirement.OPTIONAL);
+            Field.ClearFlag,       Requirement.OPTIONAL,
+    		Field.WhiteLists,      Requirement.OPTIONAL);
 
     static public TxFormat TrustSet = new TxFormat(
             TransactionType.TrustSet,

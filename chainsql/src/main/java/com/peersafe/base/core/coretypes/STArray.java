@@ -103,4 +103,5 @@ public class STArray extends ArrayList<STObject> implements SerializedType {
     static public STArrayField Tables = starrayField(Field.Tables);
     static public STArrayField TableEntries = starrayField(Field.TableEntries);
     static public STArrayField Validators = starrayField(Field.Validators);
+    static public STArrayField WhiteLists = starrayField(Field.WhiteLists);
 }

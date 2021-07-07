@@ -164,6 +164,15 @@ public abstract class Submit {
 		return obj;
 	}
 
+	private JSONObject getError(String err,String hash){
+		JSONObject obj = new JSONObject();
+		obj.put("status", "error");
+		obj.put("tx_hash",hash);
+		obj.put("error_message", err);
+		return obj;
+	}
+
+
 	public EventManager eventManager() {
 		return eventManager;
 	}
@@ -216,7 +225,7 @@ public abstract class Submit {
 			Util.waiting();
 			if(--count <= 0){
 				submit_state = SubmitState.submit_error;
-				submitRes = getError("waiting submit result timeout,tx_hash=" + tx.hash.toString());
+				submitRes = getError("waiting submit result timeout",tx.hash.toString());
 				break;
 			}
 		}
@@ -230,7 +239,7 @@ public abstract class Submit {
 				while(sync_state != SyncState.sync_response){
 					Util.waiting();
 					if(--count <= 0){
-						syncRes = getError("waiting sync result timeout,tx_hash=" + tx.hash.toString());
+						syncRes = getError("waiting sync result timeout",tx.hash.toString());
 						break;
 					}
 				}

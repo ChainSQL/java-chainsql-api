@@ -198,8 +198,9 @@ public enum Field {
     // 17 unused
     Majority(18, Type.STObject),
     Table(50, Type.STObject),
-    Validator(51, Type.STObject),
-    Peer(52, Type.STObject),
+    Rule(51, Type.STObject),
+    Validator(52, Type.STObject),
+    Peer(53 , Type.STObject),
     WhiteList(54,Type.STObject),
 
     ArrayEndMarker(1, Type.STArray),

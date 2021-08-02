@@ -273,7 +273,8 @@ public abstract class Submit {
 					res.put("tx_hash", hash);
 
 					boolean bUnsubcribe = true;
-					if(condition == SyncCond.validate_success && obj.get("status").equals("validate_success")){
+					if(condition == SyncCond.validate_success &&
+							(obj.get("status").equals("validate_success") || obj.get("status").equals("db_success"))){
 						res.put("status", "validate_success");
 					}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
 						res.put("status", "db_success");

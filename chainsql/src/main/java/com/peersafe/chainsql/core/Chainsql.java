@@ -438,11 +438,6 @@ public class Chainsql extends Submit {
 			}
 			mTxJson.put("Account",this.connection.address);
 
-			if(mTxJson.has("OpType") && mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
-					!this.connection.address.equals(connection.scope)){
-				mTxJson.put("Owner",  connection.scope);
-			}
-
 			//for cross chain
 			if(crossChainArgs != null){
 				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);

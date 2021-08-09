@@ -169,6 +169,8 @@ public enum Field {
     SchemaName (68,Type.Blob),
     Endpoint (69,Type.Blob),
     TxsHashFillField(70,Type.Blob),
+    LedgerSeqField(76,Type.Blob),
+    LedgerTimeField(77,Type.Blob),
 
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),

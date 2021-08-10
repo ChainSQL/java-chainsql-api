@@ -18,9 +18,11 @@ import com.peersafe.abi.datatypes.generated.Bytes1;
 import com.peersafe.abi.datatypes.generated.Bytes4;
 import com.peersafe.abi.datatypes.generated.Bytes6;
 import com.peersafe.abi.datatypes.generated.Int64;
+import com.peersafe.abi.datatypes.generated.StaticArray2;
 import com.peersafe.abi.datatypes.generated.Uint64;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 
@@ -206,16 +208,17 @@ public class TypeEncoderTest {
 
     @Test
     public void testFixedArray() {
-        StaticArray<Ufixed> array = new StaticArray<>(
-                new Ufixed(BigInteger.valueOf(0x2), BigInteger.valueOf(0x2)),
-                new Ufixed(BigInteger.valueOf(0x8), BigInteger.valueOf(0x8))
-        );
+        StaticArray<Ufixed> array =
+                new StaticArray2<>(
+                        Ufixed.class,
+                        new Ufixed(BigInteger.valueOf(0x2), BigInteger.valueOf(0x2)),
+                        new Ufixed(BigInteger.valueOf(0x8), BigInteger.valueOf(0x8)));
 
-        assertThat(TypeEncoder.encodeArrayValues(array),
-                is("0000000000000000000000000000000220000000000000000000000000000000"
+        assertEquals(
+                TypeEncoder.encodeArrayValues(array),
+                ("0000000000000000000000000000000220000000000000000000000000000000"
                         + "0000000000000000000000000000000880000000000000000000000000000000"));
     }
-
     @Test
     public void testDynamicArray() {
         DynamicArray<Uint> array = new DynamicArray<>(

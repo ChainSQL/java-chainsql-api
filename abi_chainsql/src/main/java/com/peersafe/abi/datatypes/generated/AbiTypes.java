@@ -1,225 +1,398 @@
+/*
+ * Copyright 2019 Web3 Labs Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.peersafe.abi.datatypes.generated;
 
 import com.peersafe.abi.datatypes.Address;
 import com.peersafe.abi.datatypes.Bool;
 import com.peersafe.abi.datatypes.DynamicBytes;
+import com.peersafe.abi.datatypes.Type;
+import com.peersafe.abi.datatypes.Uint;
 import com.peersafe.abi.datatypes.Utf8String;
+import com.peersafe.abi.datatypes.generated.Bytes1;
+import com.peersafe.abi.datatypes.generated.Bytes10;
+import com.peersafe.abi.datatypes.generated.Bytes11;
+import com.peersafe.abi.datatypes.generated.Bytes12;
+import com.peersafe.abi.datatypes.generated.Bytes13;
+import com.peersafe.abi.datatypes.generated.Bytes14;
+import com.peersafe.abi.datatypes.generated.Bytes15;
+import com.peersafe.abi.datatypes.generated.Bytes16;
+import com.peersafe.abi.datatypes.generated.Bytes17;
+import com.peersafe.abi.datatypes.generated.Bytes18;
+import com.peersafe.abi.datatypes.generated.Bytes19;
+import com.peersafe.abi.datatypes.generated.Bytes2;
+import com.peersafe.abi.datatypes.generated.Bytes20;
+import com.peersafe.abi.datatypes.generated.Bytes21;
+import com.peersafe.abi.datatypes.generated.Bytes22;
+import com.peersafe.abi.datatypes.generated.Bytes23;
+import com.peersafe.abi.datatypes.generated.Bytes24;
+import com.peersafe.abi.datatypes.generated.Bytes25;
+import com.peersafe.abi.datatypes.generated.Bytes26;
+import com.peersafe.abi.datatypes.generated.Bytes27;
+import com.peersafe.abi.datatypes.generated.Bytes28;
+import com.peersafe.abi.datatypes.generated.Bytes29;
+import com.peersafe.abi.datatypes.generated.Bytes3;
+import com.peersafe.abi.datatypes.generated.Bytes30;
+import com.peersafe.abi.datatypes.generated.Bytes31;
+import com.peersafe.abi.datatypes.generated.Bytes32;
+import com.peersafe.abi.datatypes.generated.Bytes4;
+import com.peersafe.abi.datatypes.generated.Bytes5;
+import com.peersafe.abi.datatypes.generated.Bytes6;
+import com.peersafe.abi.datatypes.generated.Bytes7;
+import com.peersafe.abi.datatypes.generated.Bytes8;
+import com.peersafe.abi.datatypes.generated.Bytes9;
+import com.peersafe.abi.datatypes.generated.Int104;
+import com.peersafe.abi.datatypes.generated.Int112;
+import com.peersafe.abi.datatypes.generated.Int120;
+import com.peersafe.abi.datatypes.generated.Int128;
+import com.peersafe.abi.datatypes.generated.Int136;
+import com.peersafe.abi.datatypes.generated.Int144;
+import com.peersafe.abi.datatypes.generated.Int152;
+import com.peersafe.abi.datatypes.generated.Int16;
+import com.peersafe.abi.datatypes.generated.Int160;
+import com.peersafe.abi.datatypes.generated.Int168;
+import com.peersafe.abi.datatypes.generated.Int176;
+import com.peersafe.abi.datatypes.generated.Int184;
+import com.peersafe.abi.datatypes.generated.Int192;
+import com.peersafe.abi.datatypes.generated.Int200;
+import com.peersafe.abi.datatypes.generated.Int208;
+import com.peersafe.abi.datatypes.generated.Int216;
+import com.peersafe.abi.datatypes.generated.Int224;
+import com.peersafe.abi.datatypes.generated.Int232;
+import com.peersafe.abi.datatypes.generated.Int24;
+import com.peersafe.abi.datatypes.generated.Int240;
+import com.peersafe.abi.datatypes.generated.Int248;
+import com.peersafe.abi.datatypes.generated.Int256;
+import com.peersafe.abi.datatypes.generated.Int32;
+import com.peersafe.abi.datatypes.generated.Int40;
+import com.peersafe.abi.datatypes.generated.Int48;
+import com.peersafe.abi.datatypes.generated.Int56;
+import com.peersafe.abi.datatypes.generated.Int64;
+import com.peersafe.abi.datatypes.generated.Int72;
+import com.peersafe.abi.datatypes.generated.Int8;
+import com.peersafe.abi.datatypes.generated.Int80;
+import com.peersafe.abi.datatypes.generated.Int88;
+import com.peersafe.abi.datatypes.generated.Int96;
+import com.peersafe.abi.datatypes.generated.Uint104;
+import com.peersafe.abi.datatypes.generated.Uint112;
+import com.peersafe.abi.datatypes.generated.Uint120;
+import com.peersafe.abi.datatypes.generated.Uint128;
+import com.peersafe.abi.datatypes.generated.Uint136;
+import com.peersafe.abi.datatypes.generated.Uint144;
+import com.peersafe.abi.datatypes.generated.Uint152;
+import com.peersafe.abi.datatypes.generated.Uint16;
+import com.peersafe.abi.datatypes.generated.Uint160;
+import com.peersafe.abi.datatypes.generated.Uint168;
+import com.peersafe.abi.datatypes.generated.Uint176;
+import com.peersafe.abi.datatypes.generated.Uint184;
+import com.peersafe.abi.datatypes.generated.Uint192;
+import com.peersafe.abi.datatypes.generated.Uint200;
+import com.peersafe.abi.datatypes.generated.Uint208;
+import com.peersafe.abi.datatypes.generated.Uint216;
+import com.peersafe.abi.datatypes.generated.Uint224;
+import com.peersafe.abi.datatypes.generated.Uint232;
+import com.peersafe.abi.datatypes.generated.Uint24;
+import com.peersafe.abi.datatypes.generated.Uint240;
+import com.peersafe.abi.datatypes.generated.Uint248;
+import com.peersafe.abi.datatypes.generated.Uint256;
+import com.peersafe.abi.datatypes.generated.Uint32;
+import com.peersafe.abi.datatypes.generated.Uint40;
+import com.peersafe.abi.datatypes.generated.Uint48;
+import com.peersafe.abi.datatypes.generated.Uint56;
+import com.peersafe.abi.datatypes.generated.Uint64;
+import com.peersafe.abi.datatypes.generated.Uint72;
+import com.peersafe.abi.datatypes.generated.Uint8;
+import com.peersafe.abi.datatypes.generated.Uint80;
+import com.peersafe.abi.datatypes.generated.Uint88;
+import com.peersafe.abi.datatypes.generated.Uint96;
+import com.peersafe.abi.datatypes.primitive.Byte;
+import com.peersafe.abi.datatypes.primitive.Char;
+import com.peersafe.abi.datatypes.primitive.Double;
+import com.peersafe.abi.datatypes.primitive.Float;
+import com.peersafe.abi.datatypes.primitive.Int;
+import com.peersafe.abi.datatypes.primitive.Long;
+import com.peersafe.abi.datatypes.primitive.Short;
 
 /**
- * Auto generated code.
- * <p><strong>Do not modifiy!</strong>
- * <p>Please use org.web3j.codegen.AbiTypesMapperGenerator in the 
- * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
+ * Maps Solidity types to web3j data types, allowing to use Java primitive types for numbers. The
+ * used primitive type is the smallest that can hold a Solidity value for a specific bit length,
+ * e.g. {@link java.lang.Short} for <code>int8</code>, <code>int16</code> and <code>uint8</code>;
+ * {@link java.lang.Integer} for <code>int24</code>, <code>int32</code>, <code>uint16</code> and
+ * <code>uint24</code>, etc.
  */
 public final class AbiTypes {
-    private AbiTypes() {
+    private AbiTypes() {}
+
+    /**
+     * Returns the web3j data type for the given type, without using primitive types.
+     *
+     * @param type A Solidity type.
+     * @return The web3j Java class to represent this Solidity type.
+     */
+    public static Class<? extends Type> getType(String type) {
+        return getType(type, false);
     }
 
-    public static Class<?> getType(String type) {
+    /**
+     * Returns the web3j data type for the given type.
+     *
+     * @param type A Solidity type.
+     * @param primitives Use Java primitive types to wrap contract parameters.
+     * @return The web3j Java class to represent this Solidity type.
+     */
+    @SuppressWarnings("unchecked")
+    public static Class<? extends Type> getType(String type, boolean primitives) {
         switch (type) {
             case "address":
-                    return Address.class;
+                return Address.class;
             case "bool":
-                    return Bool.class;
+            case "boolean":
+                return Bool.class;
             case "string":
-                    return Utf8String.class;
+                return Utf8String.class;
             case "bytes":
-                    return DynamicBytes.class;
+                return DynamicBytes.class;
+            case "byte":
+                return Byte.class;
+            case "char":
+                return Char.class;
+            case "double":
+                return Double.class;
+            case "float":
+                return Float.class;
+            case "uint":
+                return Uint.class;
+            case "int":
+                return primitives ? Int.class : com.peersafe.abi.datatypes.Int.class;
+            case "long":
+                return Long.class;
+            case "short":
+                return Short.class;
             case "uint8":
-                    return Uint8.class;
+                return Uint8.class;
             case "int8":
-                    return Int8.class;
+                return primitives ? Short.class : Int8.class;
             case "uint16":
-                    return Uint16.class;
+                return primitives ? Int.class : Uint16.class;
             case "int16":
-                    return Int16.class;
+                return primitives ? Int.class : Int16.class;
             case "uint24":
-                    return Uint24.class;
+                return primitives ? Int.class : Uint24.class;
             case "int24":
-                    return Int24.class;
+                return primitives ? Int.class : Int24.class;
             case "uint32":
-                    return Uint32.class;
+                return primitives ? Long.class : Uint32.class;
             case "int32":
-                    return Int32.class;
+                return primitives ? Int.class : Int32.class;
             case "uint40":
-                    return Uint40.class;
+                return primitives ? Long.class : Uint40.class;
             case "int40":
-                    return Int40.class;
+                return primitives ? Long.class : Int40.class;
             case "uint48":
-                    return Uint48.class;
+                return primitives ? Long.class : Uint48.class;
             case "int48":
-                    return Int48.class;
+                return primitives ? Long.class : Int48.class;
             case "uint56":
-                    return Uint56.class;
+                return primitives ? Long.class : Uint56.class;
             case "int56":
-                    return Int56.class;
+                return primitives ? Long.class : Int56.class;
             case "uint64":
-                    return Uint64.class;
+                return Uint64.class;
             case "int64":
-                    return Int64.class;
+                return primitives ? Long.class : Int64.class;
             case "uint72":
-                    return Uint72.class;
+                return Uint72.class;
             case "int72":
-                    return Int72.class;
+                return Int72.class;
             case "uint80":
-                    return Uint80.class;
+                return Uint80.class;
             case "int80":
-                    return Int80.class;
+                return Int80.class;
             case "uint88":
-                    return Uint88.class;
+                return Uint88.class;
             case "int88":
-                    return Int88.class;
+                return Int88.class;
             case "uint96":
-                    return Uint96.class;
+                return Uint96.class;
             case "int96":
-                    return Int96.class;
+                return Int96.class;
             case "uint104":
-                    return Uint104.class;
+                return Uint104.class;
             case "int104":
-                    return Int104.class;
+                return Int104.class;
             case "uint112":
-                    return Uint112.class;
+                return Uint112.class;
             case "int112":
-                    return Int112.class;
+                return Int112.class;
             case "uint120":
-                    return Uint120.class;
+                return Uint120.class;
             case "int120":
-                    return Int120.class;
+                return Int120.class;
             case "uint128":
-                    return Uint128.class;
+                return Uint128.class;
             case "int128":
-                    return Int128.class;
+                return Int128.class;
             case "uint136":
-                    return Uint136.class;
+                return Uint136.class;
             case "int136":
-                    return Int136.class;
+                return Int136.class;
             case "uint144":
-                    return Uint144.class;
+                return Uint144.class;
             case "int144":
-                    return Int144.class;
+                return Int144.class;
             case "uint152":
-                    return Uint152.class;
+                return Uint152.class;
             case "int152":
-                    return Int152.class;
+                return Int152.class;
             case "uint160":
-                    return Uint160.class;
+                return Uint160.class;
             case "int160":
-                    return Int160.class;
+                return Int160.class;
             case "uint168":
-                    return Uint168.class;
+                return Uint168.class;
             case "int168":
-                    return Int168.class;
+                return Int168.class;
             case "uint176":
-                    return Uint176.class;
+                return Uint176.class;
             case "int176":
-                    return Int176.class;
+                return Int176.class;
             case "uint184":
-                    return Uint184.class;
+                return Uint184.class;
             case "int184":
-                    return Int184.class;
+                return Int184.class;
             case "uint192":
-                    return Uint192.class;
+                return Uint192.class;
             case "int192":
-                    return Int192.class;
+                return Int192.class;
             case "uint200":
-                    return Uint200.class;
+                return Uint200.class;
             case "int200":
-                    return Int200.class;
+                return Int200.class;
             case "uint208":
-                    return Uint208.class;
+                return Uint208.class;
             case "int208":
-                    return Int208.class;
+                return Int208.class;
             case "uint216":
-                    return Uint216.class;
+                return Uint216.class;
             case "int216":
-                    return Int216.class;
+                return Int216.class;
             case "uint224":
-                    return Uint224.class;
+                return Uint224.class;
             case "int224":
-                    return Int224.class;
+                return Int224.class;
             case "uint232":
-                    return Uint232.class;
+                return Uint232.class;
             case "int232":
-                    return Int232.class;
+                return Int232.class;
             case "uint240":
-                    return Uint240.class;
+                return Uint240.class;
             case "int240":
-                    return Int240.class;
+                return Int240.class;
             case "uint248":
-                    return Uint248.class;
+                return Uint248.class;
             case "int248":
-                    return Int248.class;
+                return Int248.class;
             case "uint256":
-                    return Uint256.class;
+                return Uint256.class;
             case "int256":
-                    return Int256.class;
+                return Int256.class;
             case "bytes1":
-                    return Bytes1.class;
+                return Bytes1.class;
             case "bytes2":
-                    return Bytes2.class;
+                return Bytes2.class;
             case "bytes3":
-                    return Bytes3.class;
+                return Bytes3.class;
             case "bytes4":
-                    return Bytes4.class;
+                return Bytes4.class;
             case "bytes5":
-                    return Bytes5.class;
+                return Bytes5.class;
             case "bytes6":
-                    return Bytes6.class;
+                return Bytes6.class;
             case "bytes7":
-                    return Bytes7.class;
+                return Bytes7.class;
             case "bytes8":
-                    return Bytes8.class;
+                return Bytes8.class;
             case "bytes9":
-                    return Bytes9.class;
+                return Bytes9.class;
             case "bytes10":
-                    return Bytes10.class;
+                return Bytes10.class;
             case "bytes11":
-                    return Bytes11.class;
+                return Bytes11.class;
             case "bytes12":
-                    return Bytes12.class;
+                return Bytes12.class;
             case "bytes13":
-                    return Bytes13.class;
+                return Bytes13.class;
             case "bytes14":
-                    return Bytes14.class;
+                return Bytes14.class;
             case "bytes15":
-                    return Bytes15.class;
+                return Bytes15.class;
             case "bytes16":
-                    return Bytes16.class;
+                return Bytes16.class;
             case "bytes17":
-                    return Bytes17.class;
+                return Bytes17.class;
             case "bytes18":
-                    return Bytes18.class;
+                return Bytes18.class;
             case "bytes19":
-                    return Bytes19.class;
+                return Bytes19.class;
             case "bytes20":
-                    return Bytes20.class;
+                return Bytes20.class;
             case "bytes21":
-                    return Bytes21.class;
+                return Bytes21.class;
             case "bytes22":
-                    return Bytes22.class;
+                return Bytes22.class;
             case "bytes23":
-                    return Bytes23.class;
+                return Bytes23.class;
             case "bytes24":
-                    return Bytes24.class;
+                return Bytes24.class;
             case "bytes25":
-                    return Bytes25.class;
+                return Bytes25.class;
             case "bytes26":
-                    return Bytes26.class;
+                return Bytes26.class;
             case "bytes27":
-                    return Bytes27.class;
+                return Bytes27.class;
             case "bytes28":
-                    return Bytes28.class;
+                return Bytes28.class;
             case "bytes29":
-                    return Bytes29.class;
+                return Bytes29.class;
             case "bytes30":
-                    return Bytes30.class;
+                return Bytes30.class;
             case "bytes31":
-                    return Bytes31.class;
+                return Bytes31.class;
             case "bytes32":
-                    return Bytes32.class;
+                return Bytes32.class;
             default:
-                    throw new UnsupportedOperationException("Unsupported type encountered: "
-                            + type);
+                {
+                    try {
+                        return (Class<? extends Type>) Class.forName(type);
+                    } catch (ClassNotFoundException e) {
+                        throw new UnsupportedOperationException(
+                                "Unsupported type encountered: " + type);
+                    }
+                }
+        }
+    }
+
+    /**
+     * Returns the provided class type as a string. In case of a struct, it will return the struct
+     * name. For the tuple notation of a struct, example ((string,uint256)), think of taking an
+     * instance of the struct and calling the <code>instance.getTypeAsString()</code> method.
+     */
+    public static String getTypeAString(Class<? extends Type> type) {
+        if (Utf8String.class.equals(type)) {
+            return "string";
+        } else if (DynamicBytes.class.equals(type)) {
+            return "bytes";
+        } else {
+            return type.getSimpleName().toLowerCase();
         }
     }
 }

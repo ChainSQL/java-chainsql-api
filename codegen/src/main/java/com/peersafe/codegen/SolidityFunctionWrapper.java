@@ -690,23 +690,28 @@ public class SolidityFunctionWrapper extends Generator {
                     builder.addField(typeName, component.getName(), Modifier.PUBLIC);
                     constructorBuilder.addParameter(typeName, component.getName());
                     nativeConstructorBuilder.addParameter(typeName, component.getName());
-
+                    constructorBuilder.addStatement(
+                            "this." + component.getName() + " = "  + component.getName());
                 } else {
                     final TypeName nativeTypeName =
                             buildTypeName(component.getType(), false);
                     final TypeName wrappedTypeName = getWrapperType(nativeTypeName);
-                    builder.addField(wrappedTypeName, component.getName(), Modifier.PUBLIC);
+                    // TODO
+                  //  builder.addField(wrappedTypeName, component.getName(), Modifier.PUBLIC);
+                    builder.addField(nativeTypeName, component.getName(), Modifier.PUBLIC);
                     constructorBuilder.addParameter(wrappedTypeName, component.getName());
                     nativeConstructorBuilder.addParameter(nativeTypeName, component.getName());
+                    constructorBuilder.addStatement(
+                            "this." + component.getName() + " = new "  + nativeTypeName.toString() +"("+ component.getName() + ")"
+                            );
                 }
-                constructorBuilder.addStatement(
-                        "this." + component.getName() + " = " + component.getName());
+              
                 nativeConstructorBuilder.addStatement(
                         "this."
                                 + component.getName()
                                 + " = "
-                                + component.getName()
-                                + (useNativeJavaTypes
+                                + component.getName());
+                              /*  + (useNativeJavaTypes
                                                 && structClassNameMap.keySet().stream()
                                                         .noneMatch(
                                                                 i ->
@@ -714,7 +719,7 @@ public class SolidityFunctionWrapper extends Generator {
                                                                                 == component
                                                                                         .structIdentifier())
                                         ? ".getValue()"
-                                        : ""));
+                                        : ""));*/
             }
 
             builder.superclass(namedType.isDynamic() ? DynamicStruct.class : StaticStruct.class);
@@ -738,7 +743,7 @@ public class SolidityFunctionWrapper extends Generator {
         }
         return structs;
     }
-
+    
     
     private String createMappedParameterTypes(ParameterSpec parameterSpec) {
         if (parameterSpec.type instanceof ParameterizedTypeName) {

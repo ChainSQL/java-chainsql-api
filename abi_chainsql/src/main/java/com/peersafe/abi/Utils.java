@@ -81,10 +81,24 @@ public class Utils {
     static <T extends Type, U extends Type> String getParameterizedTypeName(
             TypeReference<T> typeReference, Class<?> type) {
 
-        try {
-            if (type.equals(DynamicArray.class)) {
+        try {            if (type.equals(DynamicArray.class)) {
                 Class<U> parameterizedType = getParameterizedTypeFromArray(typeReference);
-                String parameterizedTypeName = getSimpleTypeName(parameterizedType);
+                String parameterizedTypeName = "";
+                if (StructType.class.isAssignableFrom(parameterizedType)) {
+                	 // 获取实体类的所有属性，返回Field数组  
+                	 Field[] fields = parameterizedType.getDeclaredFields();  
+                	 for(Field field:fields) {                		 
+                		 String typeName = getSimpleTypeName(field.getType());
+                		 if(parameterizedTypeName != "")
+                			 parameterizedTypeName += ",";
+                		 else 
+                			 parameterizedTypeName += "(";
+                		 parameterizedTypeName += typeName;
+                	 }
+                	 parameterizedTypeName += ")";
+                }else {
+                	parameterizedTypeName = getSimpleTypeName(parameterizedType);
+                }
                 return parameterizedTypeName + "[]";
             } else if (type.equals(StaticArray.class)) {
                 Class<U> parameterizedType = getParameterizedTypeFromArray(typeReference);
@@ -100,7 +114,6 @@ public class Utils {
             throw new UnsupportedOperationException("Invalid class reference provided", e);
         }
     }
-
     @SuppressWarnings("unchecked")
     static <T extends Type> Class<T> getParameterizedTypeFromArray(TypeReference typeReference)
             throws ClassNotFoundException {

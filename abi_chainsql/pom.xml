@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.peersafe</groupId>
     <artifactId>abi_chainsql</artifactId>
-    <version>1.4.5</version>
+    <version>3.0.0</version>
     <name>abi_chainsql</name>
     <url>https://github.com/ChainSQL/java-chainsql-api/tree/feature/contract</url>
     <description>abi_chainsql is a toolkit for ChainSQL JAVA API</description>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>utils</artifactId>
-            <version>3.4.0</version>
+            <version>4.8.1</version>
         </dependency>
     </dependencies>
     <profiles>

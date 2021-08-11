@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>1.5.7</version>
+	<version>3.0.0</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
 	<url>https://github.com/chainsql/java-chainsql-api</url>
@@ -34,7 +34,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<web3j.version>3.4.0</web3j.version>
+		<web3j.version>4.8.1</web3j.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
@@ -77,7 +77,7 @@
   		<dependency>
 		    <groupId>com.peersafe</groupId>
 		    <artifactId>abi_chainsql</artifactId>
-		    <version>1.4.5</version>
+		    <version>3.0.0</version>
 		</dependency><!-- 
 		<dependency>
 		    <groupId>io.reactivex</groupId>
@@ -188,8 +188,8 @@
 			</properties>
 		</profile>
     </profiles>
-	<!-- 
-	<build>
+	
+	<!-- <build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -220,6 +220,6 @@
 			</plugin>
 
 		</plugins>
-	</build>
-	 -->
+	</build> -->
+	
 </project>

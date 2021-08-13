@@ -52,7 +52,7 @@ public class Utils {
                 return getParameterizedTypeName(typeReference, type);
             } else {
                 type = Class.forName(reflectedType.getTypeName());
-                return getSimpleTypeName(type);
+                return getBasicTypeName(type);
             }
         } catch (ClassNotFoundException e) {
             throw new UnsupportedOperationException("Invalid class reference provided", e);
@@ -78,31 +78,54 @@ public class Utils {
         }
     }
 
+    static String getBasicTypeName(Class<?> type) {
+        String simpleName = type.getSimpleName().toLowerCase();
+
+        if (type.equals(Uint.class)
+                || type.equals(Int.class)
+                || type.equals(Ufixed.class)
+                || type.equals(Fixed.class)) {
+            return simpleName + "256";
+        } else if (type.equals(Utf8String.class)) {
+            return "string";
+        } else if (type.equals(DynamicBytes.class)) {
+            return "bytes";
+        } else if (StructType.class.isAssignableFrom(type)) {
+        	 // 获取实体类的所有属性，返回Field数组 
+        	 String parameterizedTypeName = "";
+       	 	Field[] fields = type.getDeclaredFields();  
+       	 	for(Field field:fields) { 
+       	 	if(parameterizedTypeName == "")
+	 				parameterizedTypeName += "(";
+	 			else 	 
+	 				parameterizedTypeName += ",";
+       	 		Class<?> classType = (Class<?>) field.getType();
+       	 		if (StructType.class.isAssignableFrom(classType)) {
+       	 			parameterizedTypeName += getBasicTypeName(classType);
+       	 		}else {
+       	 			String typeName = getBasicTypeName(field.getType());
+       	 			
+       	 			parameterizedTypeName += typeName;
+       	 		}	
+       	 	}
+       	 parameterizedTypeName += ")";
+            return parameterizedTypeName;
+        } else {
+            return simpleName;
+        }
+    }
+    
     static <T extends Type, U extends Type> String getParameterizedTypeName(
             TypeReference<T> typeReference, Class<?> type) {
 
         try {            if (type.equals(DynamicArray.class)) {
                 Class<U> parameterizedType = getParameterizedTypeFromArray(typeReference);
                 String parameterizedTypeName = "";
-                if (StructType.class.isAssignableFrom(parameterizedType)) {
-                	 // 获取实体类的所有属性，返回Field数组  
-                	 Field[] fields = parameterizedType.getDeclaredFields();  
-                	 for(Field field:fields) {                		 
-                		 String typeName = getSimpleTypeName(field.getType());
-                		 if(parameterizedTypeName != "")
-                			 parameterizedTypeName += ",";
-                		 else 
-                			 parameterizedTypeName += "(";
-                		 parameterizedTypeName += typeName;
-                	 }
-                	 parameterizedTypeName += ")";
-                }else {
-                	parameterizedTypeName = getSimpleTypeName(parameterizedType);
-                }
+                parameterizedTypeName = getBasicTypeName(parameterizedType);
                 return parameterizedTypeName + "[]";
             } else if (type.equals(StaticArray.class)) {
                 Class<U> parameterizedType = getParameterizedTypeFromArray(typeReference);
-                String parameterizedTypeName = getSimpleTypeName(parameterizedType);
+                String parameterizedTypeName = getBasicTypeName(parameterizedType);
                 return parameterizedTypeName
                         + "["
                         + ((TypeReference.StaticArrayTypeReference) typeReference).getSize()

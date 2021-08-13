@@ -311,9 +311,9 @@ public class SolidityFunctionWrapper extends Generator {
             		functionDefinition.setPayable(true);
                 if (functionDefinition.getType().equals("function")) {
                 	 methodSpecs.addAll(buildFunctions(functionDefinition));
-                    /*if(functionDefinition.isConstant()) {
+                    if(functionDefinition.isConstant()) {
                     	methodSpecs.add(buildConstantFunctionAsync(functionDefinition));
-                    }*/
+                    }
                 } else if (functionDefinition.getType().equals("constructor")) {
                     constructor = true;
                     methodSpecs.add(buildDeploy(

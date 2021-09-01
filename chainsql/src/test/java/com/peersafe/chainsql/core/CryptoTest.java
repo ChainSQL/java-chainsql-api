@@ -1,16 +1,19 @@
 package com.peersafe.chainsql.core;
 
-import com.peersafe.chainsql.util.Util;
-import junit.framework.TestCase;
-import org.json.JSONObject;
-import org.junit.Assert;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Assert;
+
+import com.peersafe.base.crypto.ecdsa.IKeyPair;
+import com.peersafe.base.crypto.ecdsa.Seed;
+import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.chainsql.crypto.EncryptCommon;
+import com.peersafe.chainsql.util.Util;
+
+import junit.framework.TestCase;
 
 public class CryptoTest extends TestCase {
 
@@ -36,21 +39,39 @@ public class CryptoTest extends TestCase {
 
             String plainText = "hello world";
             List<String> pubList = new ArrayList<>();
-            pubList.add(userPublicKey);
+            pubList.add("cBP7JPfSVPgqGfGXVJVw168sJU5HhQfPbvDRZyriyKNeYjYLVL8M");
+            pubList.add("cBPaLRSCwtsJbz4Rq4K2NvoiDZWJyL2RnfdGv5CQ2UFWqyJ7ekHM");
 
             String cipherText = c.encrypt(plainText,pubList);
             System.out.println("加密后的密文为 : " + cipherText);
 
 
-            String plain = c.decrypt(cipherText,userSecret);
+            String plain = c.decrypt(cipherText,"xpvPjSRCtmQ3G99Pfu1VMDMd9ET3W");
             System.out.println("解密后的明文为 : " + plain);
-
+            plain = c.decrypt(cipherText,"xnHAcvtn1eVLDskhxPKNrhTsYKqde");
+            System.out.println("解密后的明文为 : " + plain);
+        	
+        	byte[] password = Util.getRandomBytes(16);
+            byte[] rawBytes = EncryptCommon.symEncrypt(plainText.getBytes(),password, true);
+            byte[] newBytes = EncryptCommon.symDecrypt(rawBytes, password, true);
+            System.out.println("解密后的明文为 : " +  new String(newBytes));
+            
+        	byte [] pubBytes = getB58IdentiferCodecs().decode("pYvXDbsUUr5dpumrojYApjG8nLfFMXhu3aDvxq5oxEa4ZSeyjrMzisdPsYjfxyg9eN3ZJsNjtNENbzXPL89st39oiSp5yucU", B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+            rawBytes = EncryptCommon.asymEncrypt(plainText.getBytes(),pubBytes);
+            byte[] seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate("pwRdHmA4cSUKKtFyo4m2vhiiz5g6ym58Noo9dTsUU97mARNjevj");
+            newBytes = EncryptCommon.asymDecrypt(rawBytes, seedBytes, true);
+            System.out.println("解密后的明文为 : " +  new String(newBytes));
+            
+        	IKeyPair keyPair = Seed.getKeyPair("xpvPjSRCtmQ3G99Pfu1VMDMd9ET3W");
+            rawBytes = EncryptCommon.asymEncrypt(plainText.getBytes(),keyPair.canonicalPubBytes());
+            seedBytes   = getB58IdentiferCodecs().decodeFamilySeed("xpvPjSRCtmQ3G99Pfu1VMDMd9ET3W");
+            newBytes = EncryptCommon.asymDecrypt(rawBytes, seedBytes, false);
+            System.out.println("解密后的明文为 : " +  new String(newBytes));
+            
         }catch (Exception e){
             e.printStackTrace();
             Assert.fail();
         }
-
-
 
     }
 

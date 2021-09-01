@@ -163,4 +163,15 @@ public class EncryptCommon {
 			return new String(Aes256.decrypt(Util.hexToBytes(cipherText), password.getBytes()));
 		}
 	}
+	
+	//通用对称解密
+		public static byte[] symDecrypt(byte[] cipherText, byte[] password, boolean bSM){
+			if(bSM){
+				return sm4Decrypt(cipherText, password);
+			}else{
+				
+				return Aes256.decrypt(cipherText, password);
+			}
+		}
+	
 }

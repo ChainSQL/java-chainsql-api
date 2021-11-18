@@ -899,7 +899,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private void requestAccountRoot(final AccountID id,
                                     final TrackedAccountRoot accountRoot) {
 
-        makeManagedRequest(Command.ledger_entry, new Manager<JSONObject>() {
+        makeManagedRequest(Command.account_info, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
                 return r == null || r.rpcerr == null || r.rpcerr != RPCErr.entryNotFound;

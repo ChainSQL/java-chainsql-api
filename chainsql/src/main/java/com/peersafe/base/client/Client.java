@@ -346,6 +346,22 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+    public Client connect(final String uri, final String[] trustCAsPath, final String sslKeyPath, final String sslCertPath){
+        manuallyDisconnected = false;
+
+        schedule(50, new Runnable() {
+            @Override
+            public void run() {
+                try {
+					doConnect(uri, trustCAsPath, sslKeyPath, sslCertPath);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        });
+        return this;
+    }
+
     /**
      * Connect.
      * @param uri Connect uri.
@@ -360,6 +376,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         log(Level.INFO, "Connecting to " + uri);
         previousUri = uri;
         ws.connectSSL(URI.create(uri),serverCertPath,storePass);
+    }
+
+    public void doConnect(String uri, String[] trustCAsPath, String sslKeyPath, String sslCertPath) throws Exception {
+        log(Level.INFO, "Connecting to " + uri);
+        previousUri = uri;
+        ws.connectSSL(URI.create(uri),trustCAsPath,sslKeyPath,sslCertPath);
     }
     /**
      * Disconnect from websocket-url

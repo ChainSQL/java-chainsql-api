@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 
 import com.peersafe.base.client.Client;
-import com.peersafe.base.client.transport.WebSocketTransport;
 import com.peersafe.base.client.transport.impl.JavaWebSocketTransportImpl;
 
 public class Connection implements Closeable {
@@ -30,6 +29,11 @@ public class Connection implements Closeable {
 	
 	public Connection connect(String url,String serverCertPath,String storePass){
 		this.client = new Client(new JavaWebSocketTransportImpl()).connect(url,serverCertPath,storePass);
+		return this;  
+	}
+
+	public Connection connect(String url, String[] trustCAsPath, String sslKeyPath, String sslCertPath){
+		this.client = new Client(new JavaWebSocketTransportImpl()).connect(url, trustCAsPath, sslKeyPath, sslCertPath);
 		return this;  
 	}
 	

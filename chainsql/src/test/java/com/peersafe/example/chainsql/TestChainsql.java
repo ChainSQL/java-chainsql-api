@@ -31,18 +31,20 @@ public class TestChainsql {
 	public static void main(String[] args) {
 
 		try{
-			c.connect("ws://127.0.0.1:6006");
-			//c.connect("ws://221.7.246.149/ws");
+			// c.connect("ws://127.0.0.1:6006");
+			String sslKeyPath = "/Users/lascion/lcworkspace/cafile/cafile/client/client.key";
+			String sslCertPath = "/Users/lascion/lcworkspace/cafile/cafile/client/client.crt";
+			String[] trustCAsPath = {"/Users/lascion/lcworkspace/cafile/cafile/root/root.crt"};
+			c.connect("wss://127.0.0.1:6006", trustCAsPath, sslKeyPath, sslCertPath);
+			// c.connect("wss://127.0.0.1:6006", trustCAsPath);
 
-            c.as(gmRootAddress, gmRootSecret);
+            c.as(rootAddress, rootSecret);
             
-			// testRipple();
+			testRipple();
 			// testChainSql();
-//			testSchema();
+			// testSchema();
             // testGM();
-
 		}catch (Exception e){
-
 			e.printStackTrace();
 		}
 	}

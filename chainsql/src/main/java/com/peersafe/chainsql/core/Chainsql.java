@@ -143,6 +143,32 @@ public class Chainsql extends Submit {
 		return connection;
 	}
 	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param trustCAsPath all trust ca path
+	 * @param sslKeyPath ssl key path
+	 * @param sslCertPath ssl cert path
+	 * @return Connection
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url, String[] trustCAPath, String sslKeyPath, String sslCertPath) {
+		connection = new Connection().connect(url, trustCAPath, sslKeyPath, sslCertPath);
+		doWhenConnect();
+		return connection;
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param trustCAsPath all trust ca path
+	 * @return Connection
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url, String[] trustCAPath) {
+		connection = new Connection().connect(url, trustCAPath, null, null);
+		doWhenConnect();
+		return connection;
+	}
+	/**
 	 * Connect to a websocket url.
 	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
 	 * @param connectCb callback when connected
@@ -213,8 +239,6 @@ public class Chainsql extends Submit {
 		System.out.println("connect success");
 		this.eventManager.init(this.connection);
 		//jdk1.8
-//		this.connection.client.onReconnecting(this::onReconnecting);
-//		this.connection.client.onReconnected(this::onReconnected);
 		this.connection.client.onReconnecting(this::onReconnecting);
 		this.connection.client.onReconnected(this::onReconnected);
 	}

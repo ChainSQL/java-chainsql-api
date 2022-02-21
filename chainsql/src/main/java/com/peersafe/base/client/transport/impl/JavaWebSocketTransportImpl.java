@@ -2,14 +2,21 @@ package com.peersafe.base.client.transport.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.security.KeyStore;
+import java.security.*;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
-
+import javax.net.ssl.KeyManagerFactory;
+import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.io.IOException;
+import org.bouncycastle.openssl.*;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -152,7 +159,43 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 		SSLSocketFactory factory = sslContext.getSocketFactory();
 
 		client.setSocket( factory.createSocket() );
-		client.connectBlocking();			
+		client.connectBlocking();
+	}
+    @Override
+	public void connectSSL(URI uri, String[] trustCAsPath, String sslKeyPath, String sslCertPath) throws Exception{
+        TransportEventHandler curHandler = handler.get();
+        if (curHandler == null) {
+            throw new RuntimeException("must call setEventHandler() before connect(...)");
+        }
+        disconnect();
+        client = new WS(uri);
+
+        client.setEventHandler(curHandler);
+        curHandler.onConnecting(1);
+
+        KeyStore tks;
+        tks = getKeyStore(trustCAsPath[0], null, null);
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
+		tmf.init(tks);
+        
+        SSLContext sslContext = SSLContext.getInstance( "TLS" );
+        KeyStore ks;
+        if(sslKeyPath != null)
+        {
+            ks = getKeyStore(sslCertPath, sslKeyPath, null);
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
+		    kmf.init(ks, null);
+            sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
+        }
+        else
+        {
+            sslContext.init( null, tmf.getTrustManagers(), null );
+        }
+		SSLSocketFactory socketFactory = sslContext.getSocketFactory();
+
+        client.setSocketFactory(socketFactory);
+		client.connectBlocking();
 	}
 
     @Override
@@ -166,6 +209,54 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             client.muteEventHandler();
             client.close();
             client = null;
+        }
+    }
+    private static Certificate readCert(String path) throws IOException, CertificateException {
+        try (FileInputStream fin = new FileInputStream(path)) {
+            return CertificateFactory.getInstance("X.509").generateCertificate(fin);
+        }
+    }
+    private PrivateKey getPemPrivateKey(String filename) throws Exception {
+        if(filename == null)
+        {
+            throw new Exception("ssl key can not be null");
+        }
+        PEMParser pem = new PEMParser(new FileReader(filename));
+        PrivateKey priKey = new JcaPEMKeyConverter().getPrivateKey((PrivateKeyInfo)pem.readObject());
+        pem.close();
+        return priKey;
+    }
+    
+    private KeyStore getKeyStore(String certPath, String keyPath, String pwd) throws IOException {
+        try {
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            if(certPath == null)
+            {
+                throw new IOException("certPath can not be null");
+            }
+            // Reading the cert
+            Certificate cert = readCert(certPath);
+
+            // KeyStore keystore = KeyStore.getInstance("PKCS12");
+
+            if( pwd == null){
+                keystore.load(null, null);
+            } else {
+                keystore.load(null, pwd.toCharArray());
+            }
+            // Adding the cert to the keystore
+            keystore.setCertificateEntry("cert-alias", cert);
+
+            if(keyPath != null)
+            {
+                PrivateKey priKey = getPemPrivateKey(keyPath);
+                keystore.setKeyEntry("key-alias", priKey, null, new Certificate[] {cert});
+            }
+
+            return keystore;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

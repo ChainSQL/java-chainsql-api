@@ -1711,6 +1711,78 @@ public class Chainsql extends Submit {
 	}
 	
 	/**
+	 * 对称加密接口
+	 * @param plainText 明文
+	 * @param password 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 密文
+	 */
+	public String symEncrypt(String plainText, byte[] password, boolean bSM) {
+		if(password == null) {
+			logger.log(Level.SEVERE, "password is empty");
+			return "";
+		}
+		byte[] cipher = EncryptCommon.symEncrypt(plainText.getBytes(),password, bSM);
+		if(cipher == null)
+			return "";
+		return Util.bytesToHex(cipher);
+	}
+	
+	/**
+	 * 对称解密接口
+	 * @param cipher 密文
+	 * @param password 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 明文，解密失败返回""
+	 */
+	public String symDecrypt(String cipher, byte[] password, boolean bSM) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] newBytes = EncryptCommon.symDecrypt(cipherBytes, password, bSM);
+		return new String(newBytes);
+	}
+	
+	/**
+	 * 非对称加密接口
+	 * @param plainText 明文
+	 * @param publicKey 加密公钥
+	 * @param bSM 是否使用国密算法
+	 * @return 密文
+	 */
+	public String asymEncrypt(String plainText, String publicKey, boolean bSM) {
+		if(publicKey == null || publicKey.isEmpty()) {
+			logger.log(Level.SEVERE, "publicKey is empty");
+			return "";
+		}
+		byte [] pubKey = null;
+		pubKey = getB58IdentiferCodecs().decodeAccountPublic(publicKey);
+		byte[] cipher = EncryptCommon.asymEncrypt(plainText.getBytes(),pubKey);
+		if(cipher == null)
+			return "";
+		return Util.bytesToHex(cipher);
+	}
+	
+	/**
+	 * 非对称解密接口
+	 * @param cipher 密文
+	 * @param password 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 明文，解密失败返回""
+	 */
+	public String asymDecrypt(String cipher, String privateKey, boolean bSM) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] seedBytes = null;
+		if(bSM) {
+			seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+		}else {
+			seedBytes   = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+		}
+		
+        byte[] newBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, bSM);
+		return new String(newBytes);
+	}
+	
+	
+	/**
 	 * 获取账户建的表
 	 * @param address 账户地址
 	 * @param bGetDetail 是否获取详细信息（建表的raw字段）

@@ -1697,7 +1697,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Response response = request.response;
     	if(response != null) {
     		if(response.result != null) {
-    			return response.result;	
+    			return response.result;
     		}else if(response.message != null) {
     			return response.message;
     		}else {

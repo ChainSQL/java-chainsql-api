@@ -31,14 +31,14 @@ public class TestChainsql {
 	public static void main(String[] args) {
 
 		try{
-			// c.connect("ws://127.0.0.1:6006");
-			String sslKeyPath = "/Users/lascion/lcworkspace/cafile/cafile/client/client.key";
-			String sslCertPath = "/Users/lascion/lcworkspace/cafile/cafile/client/client.crt";
-			String[] trustCAsPath = {"/Users/lascion/lcworkspace/cafile/cafile/root/root.crt"};
+			String sslKeyPath = "/Path/to/your/client.key";
+			String sslCertPath = "/Path/to/your/client.crt";
+			String[] trustCAsPath = {"/Path/to/your/root.crt",
+									"/Path/to/your/root2.crt"};
 			c.connect("wss://127.0.0.1:6006", trustCAsPath, sslKeyPath, sslCertPath);
 			// c.connect("wss://127.0.0.1:6006", trustCAsPath);
-
-            c.as(rootAddress, rootSecret);
+			// c.connect("ws://127.0.0.1:6006");
+            c.as(gmRootAddress, gmRootSecret);
             
 			testRipple();
 			// testChainSql();
@@ -49,39 +49,25 @@ public class TestChainsql {
 		}
 	}
 
-
 	private static  String readCertFile(String pemPath){
-
-
 		String str="";
-
 		File file=new File(pemPath);
 
 		try {
-
 			FileInputStream in=new FileInputStream(file);
 			int size=in.available();
 
 			byte[] buffer=new byte[size];
-
 			in.read(buffer);
-
 			in.close();
 
 			str=new String(buffer,"GB2312");
-
 		} catch (IOException e) {
-
-			// TODO Auto-generated catch block
-
 			e.printStackTrace();
-
 			return null;
-
 		}
 
 		return str;
-
 	}
 	
 	private static void testChainSql() {

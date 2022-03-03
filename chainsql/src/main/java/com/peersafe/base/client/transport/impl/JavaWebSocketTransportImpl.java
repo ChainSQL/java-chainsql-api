@@ -205,6 +205,12 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         {
             isGM = true;
         }
+
+        KeyStore tks;
+        tks = getKeyStore(trustCAsPath, null);
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(tks);
     
         if(isGM)
         {
@@ -214,7 +220,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
                 final int port = uri.getPort();
                 SslContext sslCtx = SslContextBuilder.forClient().sslProvider(SslProvider.OPENSSL)
                     .keyManager(new File(sslCertPath), new File(sslKeyPath))
-                    .trustManager(new File(trustCAsPath[0]))
+                    .trustManager(tmf)
                     .protocols(new String[]{"TLSv1.2"})
                     .ciphers(Arrays.asList("ECDHE-SM2-WITH-SMS4-GCM-SM3"))
                     .build();
@@ -256,12 +262,6 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 
             client.setEventHandler(curHandler);
             curHandler.onConnecting(1);
-
-            KeyStore tks;
-            tks = getKeyStore(trustCAsPath, null);
-
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-            tmf.init(tks);
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
             KeyStore ks;

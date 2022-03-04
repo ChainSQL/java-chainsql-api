@@ -121,6 +121,14 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
     WebSocketClientHandler wscHandler = null;
     boolean isGM=false;
 
+    public JavaWebSocketTransportImpl(){
+        try {
+            X509CryptoSuite.enableX509CertificateWithGM();
+            Security.addProvider(new BouncyCastleProvider());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     public void setHandler(TransportEventHandler events) {
         handler = new WeakReference<TransportEventHandler>(events);
@@ -198,8 +206,6 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             throw new RuntimeException("must call setEventHandler() before connect(...)");
         }
 
-        X509CryptoSuite.enableX509CertificateWithGM();
-        Security.addProvider(new BouncyCastleProvider());
         String certSigAlg = ((X509Certificate)readCert(trustCAsPath[0])).getSigAlgName();
         if(certSigAlg.equals("SM3withSM2"))
         {
@@ -208,7 +214,6 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 
         KeyStore tks;
         tks = getKeyStore(trustCAsPath, null);
-
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(tks);
     
@@ -218,14 +223,13 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             try {
                 final String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
                 final int port = uri.getPort();
-                SslContext sslCtx = SslContextBuilder.forClient().sslProvider(SslProvider.OPENSSL)
-                    .keyManager(new File(sslCertPath), new File(sslKeyPath))
+                SslContextBuilder sslCtxBuilder = SslContextBuilder.forClient().sslProvider(SslProvider.OPENSSL)
                     .trustManager(tmf)
                     .protocols(new String[]{"TLSv1.2"})
-                    .ciphers(Arrays.asList("ECDHE-SM2-WITH-SMS4-GCM-SM3"))
-                    .build();
+                    .ciphers(Arrays.asList("ECDHE-SM2-WITH-SMS4-GCM-SM3"));
+                SslContext sslCtx = sslKeyPath == null ? sslCtxBuilder.build() : 
+                            sslCtxBuilder.keyManager(new File(sslCertPath), new File(sslKeyPath)).build();
 
-                // final WebSocketClientHandler handler =
                 wscHandler = new WebSocketClientHandler(
                                 WebSocketClientHandshakerFactory.newHandshaker(
                                         uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders()));

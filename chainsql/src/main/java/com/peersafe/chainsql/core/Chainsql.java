@@ -2,7 +2,6 @@ package com.peersafe.chainsql.core;
 
 import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
@@ -11,11 +10,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.peersafe.base.core.coretypes.Currency;
-import com.peersafe.base.core.coretypes.STArray;
-import com.peersafe.base.core.coretypes.uint.UInt32;
-import com.peersafe.base.core.formats.Format;
-import com.peersafe.base.core.formats.TxFormat;
 import com.peersafe.chainsql.pool.ChainsqlPool;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -25,10 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.client.Client;
-import com.peersafe.base.client.Client.OnReconnected;
-import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
-import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.config.Config;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
@@ -37,7 +28,6 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
-import com.peersafe.base.crypto.ecdsa.K256KeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.utils.Utils;
@@ -164,9 +154,7 @@ public class Chainsql extends Submit {
 	 */
 	@SuppressWarnings("resource")
 	public Connection connect(String url, String[] trustCAPath) {
-		connection = new Connection().connect(url, trustCAPath, null, null);
-		doWhenConnect();
-		return connection;
+		return connect(url, trustCAPath, null, null);
 	}
 	/**
 	 * Connect to a websocket url.

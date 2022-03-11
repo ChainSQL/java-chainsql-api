@@ -205,7 +205,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     // Keeps track of the `id` doled out to Request objects
     private int cmdIDs;
     // The last uri we were connected to
-    String previousUri;
+    public String previousUri;
 
     // Every x ms, we clean up timed out requests
     public long maintenanceSchedule = 10000; //ms
@@ -739,6 +739,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     private void doOnDisconnected() {
     	log(Level.INFO, getClass().getName() + ": doOnDisconnected");
+        System.out.println("disconnected " + previousUri);
     	if(connected)
     		connected = false;
     	else
@@ -892,7 +893,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     private TrackedAccountRoot accountRoot(AccountID id) {
         TrackedAccountRoot accountRoot = new TrackedAccountRoot();
-        requestAccountRoot(id, accountRoot);
+        // requestAccountRoot(id, accountRoot);
         return accountRoot;
     }
 
@@ -918,7 +919,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }, new Request.Builder<JSONObject>() {
             @Override
             public void beforeRequest(Request request) {
-                request.json("account_root", id);
+                request.json("account", id);
             }
 
             @Override
@@ -1101,12 +1102,20 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                                 final Manager<T> manager,
                                 final Request.Builder<T> builder,
                                 final int depth) {
-        schedule(ms, new Runnable() {
-            @Override
-            public void run() {
-                makeManagedRequest(cmd, manager, builder,depth + 1);
+        if (!manuallyDisconnected)
+        {
+            try {
+                // Maybe service shutdown
+                schedule(ms, new Runnable() {
+                    @Override
+                    public void run() {
+                        makeManagedRequest(cmd, manager, builder,depth + 1);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     private void logRetry(Request request, String reason) {

@@ -210,7 +210,7 @@ public class Chainsql extends Submit {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("connect success");
+		System.out.println("connect success to " + connection.client.previousUri);
 		this.eventManager.init(this.connection);
 		//jdk1.8
 //		this.connection.client.onReconnecting(this::onReconnecting);

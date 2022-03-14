@@ -120,6 +120,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
     WS client = null;
     WebSocketClientHandler wscHandler = null;
     boolean isGM=false;
+    boolean isSSL = false;
 
     public JavaWebSocketTransportImpl(){
         try {
@@ -140,9 +141,14 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
     @Override
     public void sendMessage(JSONObject msg) {
         // System.out.println(msg.toString());
-        if(isGM)
+        if(isSSL)
         {
-            wscHandler.sendMessage(msg.toString());
+            if(wscHandler != null) {
+                wscHandler.sendMessage(msg.toString());
+            }
+            else {
+                System.out.println("wscHandler is null");
+            }
         }
         else
         {
@@ -201,6 +207,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 	}
     @Override
 	public void connectSSL(URI uri, String[] trustCAsPath, String sslKeyPath, String sslCertPath) throws Exception{
+        isSSL = true;
         TransportEventHandler curHandler = handler.get();
         if (curHandler == null) {
             throw new RuntimeException("must call setEventHandler() before connect(...)");
@@ -217,71 +224,45 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(tks);
     
-        if(isGM)
-        {
-            EventLoopGroup group = new NioEventLoopGroup();
-            try {
-                final String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
-                final int port = uri.getPort();
-                SslContextBuilder sslCtxBuilder = SslContextBuilder.forClient().sslProvider(SslProvider.OPENSSL)
-                    .trustManager(tmf)
-                    .protocols(new String[]{"TLSv1.2"})
-                    .ciphers(Arrays.asList("ECDHE-SM2-WITH-SMS4-GCM-SM3"));
-                SslContext sslCtx = sslKeyPath == null ? sslCtxBuilder.build() : 
-                            sslCtxBuilder.keyManager(new File(sslCertPath), new File(sslKeyPath)).build();
-
-                wscHandler = new WebSocketClientHandler(
-                                WebSocketClientHandshakerFactory.newHandshaker(
-                                        uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders()));
-    
-                Bootstrap b = new Bootstrap();
-                b.group(group)
-                 .channel(NioSocketChannel.class)
-                 .handler(new ChannelInitializer<SocketChannel>() {
-                     @Override
-                     protected void initChannel(SocketChannel ch) {
-                         ChannelPipeline p = ch.pipeline();
-                         if (sslCtx != null) {
-                             p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
-                         }
-                         p.addLast(
-                                 new HttpClientCodec(),
-                                 new HttpObjectAggregator(8192),
-                                 WebSocketClientCompressionHandler.INSTANCE,
-                                 wscHandler);
-                    }
-                });
-
-                wscHandler.setEventHandler(curHandler);
-                wscHandler.doConnect(b, uri);
-            } catch (Exception e){
-                e.printStackTrace();
-                group.shutdownGracefully();
+        EventLoopGroup group = new NioEventLoopGroup();
+        try {
+            final String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
+            final int port = uri.getPort();
+            SslContextBuilder sslCtxBuilder = SslContextBuilder.forClient().sslProvider(SslProvider.OPENSSL)
+                .trustManager(tmf);
+            if(isGM){
+                sslCtxBuilder = sslCtxBuilder.ciphers(Arrays.asList("ECDHE-SM2-WITH-SMS4-GCM-SM3"));
             }
-        }
-        else
-        {
-            disconnect();
-            client = new WS(uri);
+            SslContext sslCtx = sslKeyPath == null ? sslCtxBuilder.build() : 
+                        sslCtxBuilder.keyManager(new File(sslCertPath), new File(sslKeyPath)).build();
+            wscHandler = new WebSocketClientHandler(
+                            WebSocketClientHandshakerFactory.newHandshaker(
+                                    uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders()));
 
-            client.setEventHandler(curHandler);
-            curHandler.onConnecting(1);
-
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            KeyStore ks;
-            if (sslKeyPath != null) {
-                ks = getKeyStore(sslCertPath, sslKeyPath, null);
-                KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-                kmf.init(ks, null);
-                sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-            } else {
-                sslContext.init(null, tmf.getTrustManagers(), null);
-            }
-            SSLSocketFactory socketFactory = sslContext.getSocketFactory();
-            client.setSocketFactory(socketFactory);
-		    client.connectBlocking();
+            Bootstrap b = new Bootstrap();
+            b.group(group)
+             .channel(NioSocketChannel.class)
+             .handler(new ChannelInitializer<SocketChannel>() {
+                 @Override
+                 protected void initChannel(SocketChannel ch) {
+                     ChannelPipeline p = ch.pipeline();
+                     if (sslCtx != null) {
+                         p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
+                     }
+                     p.addLast(
+                             new HttpClientCodec(),
+                             new HttpObjectAggregator(8192),
+                             WebSocketClientCompressionHandler.INSTANCE,
+                             wscHandler);
+                }
+            });
+            wscHandler.setEventHandler(curHandler);
+            wscHandler.doConnect(b, uri);
+        } catch (Exception e){
+            e.printStackTrace();
+            group.shutdownGracefully();
         }
-	}
+    }
 
     @Override
     public void disconnect() {

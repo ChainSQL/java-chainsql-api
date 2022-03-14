@@ -58,4 +58,7 @@ public class B58IdentiferCodecs {
     public byte[] decodeNodePrivate(String secret) {
         return decode(secret, VER_NODE_PRIVATE);
     }
+    public byte[] decodeAccountPublic(String publicKey) {
+        return decode(publicKey, VER_ACCOUNT_PUBLIC);
+    }
 }

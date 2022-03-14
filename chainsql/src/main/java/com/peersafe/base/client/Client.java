@@ -52,7 +52,7 @@ import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.chainsql.util.Util;
 
 final class ConnectInfo {
-    String url = null;
+    public String url = null;
     String [] trustCAsPath = null;
     String sslKeyPath = null;
     String sslCertPath = null;
@@ -305,6 +305,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     public static JSONObject parseJSON(String s) {
         return new JSONObject(s);
+    }
+
+    public String getConUrl() {
+        return conInfo.url;
     }
 
 
@@ -777,6 +781,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     private void doOnDisconnected() {
     	log(Level.INFO, getClass().getName() + ": doOnDisconnected");
+        System.out.println("disconnected " + conInfo.url);
     	if(connected)
     		connected = false;
     	else
@@ -934,7 +939,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     private TrackedAccountRoot accountRoot(AccountID id) {
         TrackedAccountRoot accountRoot = new TrackedAccountRoot();
-        requestAccountRoot(id, accountRoot);
+        // requestAccountRoot(id, accountRoot);
         return accountRoot;
     }
 
@@ -960,7 +965,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }, new Request.Builder<JSONObject>() {
             @Override
             public void beforeRequest(Request request) {
-                request.json("account_root", id);
+                request.json("account", id);
             }
 
             @Override
@@ -1143,12 +1148,20 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                                 final Manager<T> manager,
                                 final Request.Builder<T> builder,
                                 final int depth) {
-        schedule(ms, new Runnable() {
-            @Override
-            public void run() {
-                makeManagedRequest(cmd, manager, builder,depth + 1);
+        if (!manuallyDisconnected)
+        {
+            try {
+                // Maybe service shutdown
+                schedule(ms, new Runnable() {
+                    @Override
+                    public void run() {
+                        makeManagedRequest(cmd, manager, builder,depth + 1);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     private void logRetry(Request request, String reason) {

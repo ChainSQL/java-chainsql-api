@@ -6,6 +6,7 @@ public enum Command {
     account_lines,
     account_offers,
     account_tx,
+    contract_tx,
     blacklist,
     book_offers,
     connect,

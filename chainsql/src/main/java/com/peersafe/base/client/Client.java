@@ -61,7 +61,7 @@ final class ConnectInfo {
 public class Client extends Publisher<Client.events> implements TransportEventHandler {
     // Logger
     public static final Logger logger = Logger.getLogger(Client.class.getName());
-
+	public static final int DEFAULT_TX_LIMIT = 20;
     // Events
     public static interface events<T> extends Publisher.Callback<T> {}
     public static interface OnLedgerClosed extends events<ServerInfo> {}
@@ -1677,6 +1677,94 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         });
     }
+    
+	/**
+	 * Request for transaction information.
+	 * @param contractAddress 
+	 * @param ledgerIndexMin query range
+	 * @param ledgerIndexMax query range
+	 * @param limit  limit Max transaction count to get.
+	 * @param marker Marker from previous call response.
+	 * @return 
+	 */
+    public JSONObject getContractTransactions(final String contractAddress,final int ledgerIndexMin, final int ledgerIndexMax, final int limit, final JSONObject marker) {
+    	Request request = newRequest(Command.contract_tx);
+    	request.json("contract_address", contractAddress);
+    	if(ledgerIndexMin > 0)
+    		request.json("ledger_index_min", ledgerIndexMin);
+    	else 
+    		request.json("ledger_index_min", -1);
+    	if(ledgerIndexMax > 0)
+    		request.json("ledger_index_max", ledgerIndexMax);
+    	else 
+    		request.json("ledger_index_max", -1);
+    	if(limit > 0)
+    		request.json("limit", limit);
+    	else 
+    		request.json("limit", DEFAULT_TX_LIMIT);
+      	if(marker != null) {
+      		 request.json("marker",marker);
+      	 }
+      	request.request();
+      	
+ 		waiting(request);
+ 		UnhexResult(request.response); 		
+ 		return getResult(request);	
+    }
+    
+	/**
+	 * Request for transaction information.
+	 * @param contractAddress 
+	 * @param ledgerIndexMin query range
+	 * @param ledgerIndexMax query range
+	 * @param limit  limit Max transaction count to get.
+	 * @param marker Marker from previous call response.
+	 * @return cb Callback.
+	 */
+    public  void getContractTransactions(final String contractAddress,final int ledgerIndexMin, final int ledgerIndexMax, final int limit,final JSONObject marker,final Callback<JSONObject> cb){
+    	makeManagedRequest(Command.contract_tx, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	if(response.succeeded) {
+            		cb.called(jsonObject);
+            	}else {
+            		JSONObject res = getResult(response.request);
+            		cb.called(res);
+            	}
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("contract_address", contractAddress);
+            	if(ledgerIndexMin > 0)
+            		request.json("ledger_index_min", ledgerIndexMin);
+            	else 
+            		request.json("ledger_index_min", -1);
+            	if(ledgerIndexMax > 0)
+            		request.json("ledger_index_max", ledgerIndexMax);
+            	else 
+            		request.json("ledger_index_max", -1);
+              	request.json("limit", limit);
+              	if(marker != null) {
+              		 request.json("marker",marker);
+              	 }
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+            	UnhexResult(response);            	
+                return getResult(response.request);
+            }
+        });
+    }
+    
+    
+    
     
     /**
      * Request for transaction information.

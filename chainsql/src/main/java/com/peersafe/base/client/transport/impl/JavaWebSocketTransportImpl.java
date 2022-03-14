@@ -143,7 +143,12 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         // System.out.println(msg.toString());
         if(isSSL)
         {
-            wscHandler.sendMessage(msg.toString());
+            if(wscHandler != null) {
+                wscHandler.sendMessage(msg.toString());
+            }
+            else {
+                System.out.println("wscHandler is null");
+            }
         }
         else
         {

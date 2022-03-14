@@ -45,6 +45,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
@@ -64,6 +65,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     private ChannelPromise handshakeFuture;
     WeakReference<TransportEventHandler> tranEventh;
     private Channel channel_;
+    String appendframeData_ = "";
 
     public WebSocketClientHandler(WebSocketClientHandshaker handshaker) {
         this.handshaker = handshaker;
@@ -95,9 +97,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                         teHandler.onDisconnected(false);
                     }
                 } else {
-                    if (teHandler != null) {
-                        teHandler.onConnected();
-                    }
                     channel_ = future.channel();
                     //add a listener to detect the connection lost
                     addCloseDetectListener(future.channel());
@@ -113,7 +112,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                         if (teHandler != null) {
                             teHandler.onDisconnected(false);
                         }
-                        // scheduleConnect( 5 );
                     }
                 });
             }
@@ -143,12 +141,19 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel ch = ctx.channel();
         if (!handshaker.isHandshakeComplete()) {
+            TransportEventHandler teHandler = tranEventh.get();
             try {
                 handshaker.finishHandshake(ch, (FullHttpResponse) msg);
                 System.out.println("WebSocket Client connected!");
+                if (teHandler != null) {
+                    teHandler.onConnected();
+                }
                 handshakeFuture.setSuccess();
             } catch (WebSocketHandshakeException e) {
                 System.out.println("WebSocket Client failed to connect");
+                if (teHandler != null) {
+                    teHandler.onDisconnected(false);
+                }
                 handshakeFuture.setFailure(e);
             }
             return;
@@ -165,9 +170,33 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         if (frame instanceof TextWebSocketFrame) {
             TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
             // System.out.println("WebSocket Client received message: " + textFrame.text());
-            TransportEventHandler teHandler = tranEventh.get();
-            if (teHandler != null) {
-                teHandler.onMessage(new JSONObject(textFrame.text()));
+            String frameStr = textFrame.text();
+            if(textFrame.isFinalFragment()){
+                TransportEventHandler teHandler = tranEventh.get();
+                if (teHandler != null) {
+                    try {
+                        teHandler.onMessage(new JSONObject(frameStr));
+                    } catch (Exception e) {
+                       e.printStackTrace();
+                    }
+                }
+            } else {
+                appendframeData_ += frameStr;
+            }
+        } else if (frame instanceof ContinuationWebSocketFrame) {
+            String nextFrameStr = ((ContinuationWebSocketFrame) frame).text();
+            appendframeData_ += nextFrameStr;
+            if(frame.isFinalFragment()) {
+                TransportEventHandler teHandler = tranEventh.get();
+                if (teHandler != null) {
+                    // System.out.println("****Pingjie String Ret****: " + appendframeData_);
+                    try {
+                        teHandler.onMessage(new JSONObject(appendframeData_));
+                        appendframeData_ = "";
+                    } catch (Exception e) {
+                       e.printStackTrace();
+                    }
+                }
             }
         } else if (frame instanceof PongWebSocketFrame) {
             System.out.println("WebSocket Client received pong");

@@ -35,7 +35,10 @@ public class Connection implements Closeable {
 
 	public Connection connect(String url, String[] trustCAsPath, String sslKeyPath, String sslCertPath){
 		String disableCurves = Security.getProperty("jdk.disabled.namedCurves");
-		disableCurves = disableCurves.replace("secp256k1, ", "");
+		if(disableCurves != null) {
+			disableCurves = disableCurves.replace("secp256k1, ", "");
+		}
+		else disableCurves = "";
 		Security.setProperty("jdk.disabled.namedCurves", disableCurves);
 		System.setProperty("jdk.tls.namedGroups", "secp256k1, sm2p256v1");
 		this.client = new Client(new JavaWebSocketTransportImpl()).connect(url, trustCAsPath, sslKeyPath, sslCertPath);

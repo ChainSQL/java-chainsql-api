@@ -4,6 +4,7 @@ package com.peersafe.example.chainsql;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.RippleDate;
 import com.peersafe.base.core.coretypes.STArray;
 import com.peersafe.base.core.coretypes.STObject;
@@ -68,6 +69,7 @@ public class TestRipple {
 			boolean bPay = false;
 			if(bActive)
 			{
+				//c.connection.client.subscribeAccount(AccountID.fromString(rootAddress));
 				System.out.print("activate >>>>>>>>>>>>>>>\n");
 				jsonObj = c.pay(sGateWay, "100000000").submit(SyncCond.validate_success);
 				System.out.print("     gateWay:" + jsonObj + "\n");

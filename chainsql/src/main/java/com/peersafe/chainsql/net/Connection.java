@@ -2,9 +2,9 @@ package com.peersafe.chainsql.net;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.security.Security;
 
 import com.peersafe.base.client.Client;
-import com.peersafe.base.client.transport.WebSocketTransport;
 import com.peersafe.base.client.transport.impl.JavaWebSocketTransportImpl;
 
 public class Connection implements Closeable {
@@ -31,6 +31,18 @@ public class Connection implements Closeable {
 	public Connection connect(String url,String serverCertPath,String storePass){
 		this.client = new Client(new JavaWebSocketTransportImpl()).connect(url,serverCertPath,storePass);
 		return this;  
+	}
+
+	public Connection connect(String url, String[] trustCAsPath, String sslKeyPath, String sslCertPath){
+		String disableCurves = Security.getProperty("jdk.disabled.namedCurves");
+		if(disableCurves != null) {
+			disableCurves = disableCurves.replace("secp256k1, ", "");
+		}
+		else disableCurves = "";
+		Security.setProperty("jdk.disabled.namedCurves", disableCurves);
+		System.setProperty("jdk.tls.namedGroups", "secp256k1, sm2p256v1");
+		this.client = new Client(new JavaWebSocketTransportImpl()).connect(url, trustCAsPath, sslKeyPath, sslCertPath);
+		return this;
 	}
 	
 	/**

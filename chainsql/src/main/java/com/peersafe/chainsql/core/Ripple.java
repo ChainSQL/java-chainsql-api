@@ -5,17 +5,12 @@ package com.peersafe.chainsql.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.logging.Level;
 
 import com.peersafe.base.core.coretypes.*;
-import com.peersafe.base.core.coretypes.uint.UInt32;
 
-import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.base.client.Client;
-import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.util.Util;

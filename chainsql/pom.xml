@@ -47,7 +47,19 @@
 		    <scope>system</scope>  
 		    <systemPath>${project.basedir}/libs/sansec_sdkey2.1.1.jar</systemPath>  
 		</dependency>
-	 -->  
+	 -->
+	 	<dependency>
+			<groupId>io.netty.tcnative</groupId>
+			<artifactId>netty-tcnative</artifactId>
+			<version>2.0.44</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/netty-tcnative-openssl-static-2.0.44.Final.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.70.Final</version>
+		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
@@ -67,12 +79,17 @@
         <dependency>    
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.65</version>
+            <version>1.70</version>
+        </dependency>
+		<dependency>    
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
         </dependency>
 		<dependency>  
 		    <groupId>com.google.protobuf</groupId>  
 		    <artifactId>protobuf-java</artifactId>  
-		    <version>2.5.0</version>  
+		    <version>4.0.0-rc-2</version>  
 		</dependency>
   		<dependency>
 		    <groupId>com.peersafe</groupId>
@@ -85,21 +102,6 @@
 		    <version>1.2.4</version>
 		</dependency> -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.21</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.web3j</groupId>
-		    <artifactId>tuples</artifactId>
-		    <version>${web3j.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>RELEASE</version>
@@ -110,6 +112,15 @@
         <profile>
             <id>release</id>
             <build>
+				<resources>
+					<resource>
+						<directory>libs</directory>
+      					<targetPath>./BOOT-INF/libs/</targetPath>
+      					<includes>
+        					<include>**/*.jar</include>
+      					</includes>
+					</resource>
+				</resources>
                 <plugins>
                       <plugin>
 				        <groupId>org.apache.maven.plugins</groupId>
@@ -189,7 +200,7 @@
 		</profile>
     </profiles>
 	
-	<!-- <build>
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -220,6 +231,6 @@
 			</plugin>
 
 		</plugins>
-	</build> -->
+	</build>
 	
 </project>

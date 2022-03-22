@@ -28,7 +28,6 @@ import com.peersafe.base.client.enums.Command;
 import com.peersafe.base.client.enums.Message;
 import com.peersafe.base.client.enums.RPCErr;
 import com.peersafe.base.client.pubsub.Publisher;
-import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.client.requests.Request.Manager;
 import com.peersafe.base.client.responses.Response;
@@ -40,7 +39,6 @@ import com.peersafe.base.client.transactions.AccountTxPager;
 import com.peersafe.base.client.transactions.TransactionManager;
 import com.peersafe.base.client.transport.TransportEventHandler;
 import com.peersafe.base.client.transport.WebSocketTransport;
-import com.peersafe.base.client.types.AccountLine;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Issue;
 import com.peersafe.base.core.coretypes.STObject;
@@ -53,6 +51,13 @@ import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.chainsql.util.Util;
 
+final class ConnectInfo {
+    public String url = null;
+    String [] trustCAsPath = null;
+    String sslKeyPath = null;
+    String sslCertPath = null;
+    boolean isSSL = false;
+}
 public class Client extends Publisher<Client.events> implements TransportEventHandler {
     // Logger
     public static final Logger logger = Logger.getLogger(Client.class.getName());
@@ -204,8 +209,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     // Keeps track of the `id` doled out to Request objects
     private int cmdIDs;
-    // The last uri we were connected to
-    String previousUri;
 
     // Every x ms, we clean up timed out requests
     public long maintenanceSchedule = 10000; //ms
@@ -236,6 +239,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private ScheduledFuture reconnect_future = null;
     
     private boolean reconnecting = false;
+    private ConnectInfo conInfo = new ConnectInfo();
     /**
      *  Constructor
      * @param ws Websocket implementation.
@@ -303,6 +307,10 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return new JSONObject(s);
     }
 
+    public String getConUrl() {
+        return conInfo.url;
+    }
+
 
     /* --------------------------- CONNECT / RECONNECT -------------------------- */
 
@@ -320,6 +328,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      */
     public Client connect(final String uri) {
         manuallyDisconnected = false;
+        conInfo.url = uri;
 
         schedule(50, new Runnable() {
             @Override
@@ -332,6 +341,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     
     public Client connect(final String uri,final String serverCertPath,final String storePass){
         manuallyDisconnected = false;
+        conInfo.url = uri;
 
         schedule(50, new Runnable() {
             @Override
@@ -346,20 +356,44 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return this;
     }
 
+    public Client connect(final String uri, final String[] trustCAsPath, final String sslKeyPath, final String sslCertPath){
+        manuallyDisconnected = false;
+        conInfo.isSSL = true;
+        conInfo.url = uri;
+        conInfo.trustCAsPath = trustCAsPath;
+        conInfo.sslCertPath = sslCertPath;
+        conInfo.sslKeyPath = sslKeyPath;
+
+        schedule(50, new Runnable() {
+            @Override
+            public void run() {
+                try {
+					doConnect(uri, trustCAsPath, sslKeyPath, sslCertPath);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        });
+        return this;
+    }
+
     /**
      * Connect.
      * @param uri Connect uri.
      */
     public void doConnect(String uri) {
         log(Level.INFO, "Connecting to " + uri);
-        previousUri = uri;
         ws.connect(URI.create(uri));
     }
 
     public void doConnect(String uri,String serverCertPath,String storePass) throws Exception {
         log(Level.INFO, "Connecting to " + uri);
-        previousUri = uri;
         ws.connectSSL(URI.create(uri),serverCertPath,storePass);
+    }
+
+    public void doConnect(String uri, String[] trustCAsPath, String sslKeyPath, String sslCertPath) throws Exception {
+        log(Level.INFO, "Connecting to " + uri);
+        ws.connectSSL(URI.create(uri),trustCAsPath,sslKeyPath,sslCertPath);
     }
     /**
      * Disconnect from websocket-url
@@ -439,9 +473,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 			@Override
 			public void run() {
 				disconnectInner();
-				doConnect(previousUri);
+                if(conInfo.isSSL) {
+                    try {
+                        doConnect(conInfo.url, conInfo.trustCAsPath, conInfo.sslKeyPath, conInfo.sslCertPath);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } 
+                }
+                else {
+                    doConnect(conInfo.url);
+                }
 			}
-        	
         }, 0,2000, TimeUnit.MILLISECONDS);
     }
 
@@ -739,6 +781,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     private void doOnDisconnected() {
     	log(Level.INFO, getClass().getName() + ": doOnDisconnected");
+        System.out.println("disconnected " + conInfo.url);
     	if(connected)
     		connected = false;
     	else
@@ -850,13 +893,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         if (randomBugsFrequency != 0) {
             if (randomBugs.nextDouble() > (1D - randomBugsFrequency)) {
                 disconnect();
-                connect(previousUri);
+                if(conInfo.isSSL){
+                    connect(conInfo.url, conInfo.trustCAsPath, conInfo.sslKeyPath, conInfo.sslCertPath);
+                }
+                else {
+                    connect(conInfo.url);
+                }
                 String msg = "I disconnected you, now I'm gonna throw, " +
                         "deal with it suckah! ;)";
                 logger.warning(msg);
                 throw new RuntimeException(msg);
             }
-
         }
     }
 
@@ -892,7 +939,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     private TrackedAccountRoot accountRoot(AccountID id) {
         TrackedAccountRoot accountRoot = new TrackedAccountRoot();
-        requestAccountRoot(id, accountRoot);
+        // requestAccountRoot(id, accountRoot);
         return accountRoot;
     }
 
@@ -918,7 +965,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         }, new Request.Builder<JSONObject>() {
             @Override
             public void beforeRequest(Request request) {
-                request.json("account_root", id);
+                request.json("account", id);
             }
 
             @Override
@@ -1101,17 +1148,25 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
                                 final Manager<T> manager,
                                 final Request.Builder<T> builder,
                                 final int depth) {
-        schedule(ms, new Runnable() {
-            @Override
-            public void run() {
-                makeManagedRequest(cmd, manager, builder,depth + 1);
+        if (!manuallyDisconnected)
+        {
+            try {
+                // Maybe service shutdown
+                schedule(ms, new Runnable() {
+                    @Override
+                    public void run() {
+                        makeManagedRequest(cmd, manager, builder,depth + 1);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     private void logRetry(Request request, String reason) {
         if (logger.isLoggable(Level.WARNING)) {
-            log(Level.WARNING, previousUri + ": " + reason + ", muting listeners " +
+            log(Level.WARNING, conInfo.url + ": " + reason + ", muting listeners " +
                     "for " + request.json() + "and trying again");
         }
     }
@@ -1675,7 +1730,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     	Response response = request.response;
     	if(response != null) {
     		if(response.result != null) {
-    			return response.result;	
+    			return response.result;
     		}else if(response.message != null) {
     			return response.message;
     		}else {

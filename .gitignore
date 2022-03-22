@@ -1,0 +1,8 @@
+# .gitignore
+
+*/target/
+
+# VScode config files
+.vscode/
+
+.DS_store

@@ -201,6 +201,10 @@ public class MockPair {
 				// TODO Auto-generated method stub
 				
 			}
+            @Override
+			public void connectSSL(URI uri, String[] trustCAsPath, String sslKeyPath, String sslCertPath) throws Exception {
+				// TODO Auto-generated method stub
+			}
         }
 
         MockSocket ws;

@@ -413,4 +413,18 @@ public class Ripple extends Submit {
 		//
 		return this;
 	}
+	
+	public Ripple accountAuthorize(int nFlag, boolean bSet, String account)
+	{
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		if(bSet)
+			mTxJson.put("SetFlag", nFlag);
+		else
+			mTxJson.put("ClearFlag", nFlag);
+		mTxJson.put("TransactionType", "Authorize");
+		mTxJson.put("Destination", account);
+		return this;
+	}
+	
 }

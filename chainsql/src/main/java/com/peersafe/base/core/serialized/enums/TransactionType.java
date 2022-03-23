@@ -32,7 +32,11 @@ public enum TransactionType implements SerializedType {
 	SQLTransaction(23),
 	Contract(24),
     SchemaCreate(25),
-    SchemaModify(26);
+    SchemaModify(26),
+	FreezeAccount(27),
+	SchemaDelete(28),
+	Authorize(29);
+	
     public int asInteger() {
         return ord;
     }

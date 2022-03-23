@@ -1154,6 +1154,12 @@ public class Chainsql extends Submit {
 		return ripple.trustSet(value, sCurrency, sIssuer);
 	}
 	
+	public Ripple accountAuthorize(int nFlag, boolean bSet, String account)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.accountAuthorize(nFlag, bSet, account);
+	}
+	
 	/**
 	 * Begin a sql-transaction type operation.
 	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 

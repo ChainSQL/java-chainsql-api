@@ -221,5 +221,12 @@ public class TxFormat extends Format {
             Field.Validators,          Requirement.REQUIRED,
             Field.PeerList,            Requirement.REQUIRED,
             Field.SchemaID,            Requirement.REQUIRED);
+    
+    static public TxFormat Authorize = new TxFormat(
+            TransactionType.Authorize,
+            Field.Account,              Requirement.REQUIRED,
+            Field.SetFlag,          	Requirement.OPTIONAL,
+            Field.ClearFlag,            Requirement.OPTIONAL,
+            Field.Destination,          Requirement.REQUIRED);
 
 }

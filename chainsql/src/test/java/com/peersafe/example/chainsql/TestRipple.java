@@ -4,15 +4,12 @@ package com.peersafe.example.chainsql;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.RippleDate;
 import com.peersafe.base.core.coretypes.STArray;
 import com.peersafe.base.core.coretypes.STObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
-
-import java.nio.channels.ScatteringByteChannel;
 
 public class TestRipple {
 	
@@ -53,20 +50,22 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://localhost:5510");
+		c.connect("ws://localhost:6006");
 		//
 		String sCurrency = "abc";
 		JSONObject jsonObj;
-		boolean bGateWay = true;
+		boolean bGateWay = false;
 		boolean bEscrow = false;
+		boolean authorize = true;
 		if(bGateWay)
 		{
 			//
 			c.as(rootAddress, rootSecret);
 			//
-			boolean bActive = true;
-			boolean bTrust = true;
+			boolean bActive = false;
+			boolean bTrust = false;
 			boolean bPay = false;
+			
 			if(bActive)
 			{
 				//c.connection.client.subscribeAccount(AccountID.fromString(rootAddress));
@@ -178,6 +177,13 @@ public class TestRipple {
 				System.exit(1);
 			}
 			System.exit(1);
+		}
+		else if (authorize) {
+			c.as(rootAddress, rootSecret);
+	        //参数： 授权/取消授权哪个权限、是否是授权、给谁授权
+	        // 12 转账的权限,  13 部署合约的权限, 14 创建表的权限, 15发行数字资产的权限, 16 admin权限
+			jsonObj = c.accountAuthorize(12, false, sUser1).submit(SyncCond.validate_success);
+	        System.out.println("accountAuthorize " + jsonObj);
 		}
 		else
 			System.exit(1);

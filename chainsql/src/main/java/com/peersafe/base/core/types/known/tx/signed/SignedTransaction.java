@@ -18,7 +18,8 @@ import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.crypto.sm.SM3Util;
-import com.peersafe.chainsql.util.Util;
+
+import org.json.JSONObject;
 
 public class SignedTransaction {
     private SignedTransaction(Transaction of) {
@@ -33,6 +34,12 @@ public class SignedTransaction {
     	this.previousSigningData = st.previousSigningData;
     	this.tx_blob = st.tx_blob;
     	this.ca_pem  = st.ca_pem;
+        this.onlySubmitSigned = st.onlySubmitSigned;
+    }
+    public SignedTransaction(JSONObject signedRetObj) {
+        this.hash = Hash256.fromHex(signedRetObj.get("hash").toString());
+        this.tx_blob = signedRetObj.get("tx_blob").toString();
+        this.onlySubmitSigned = true;
     }
     // This will eventually be private
     @Deprecated
@@ -45,7 +52,13 @@ public class SignedTransaction {
     public byte[] previousSigningData;
     public String tx_blob;
 
+    protected boolean onlySubmitSigned = false;
+
     public String ca_pem;// CA
+
+    public boolean isOnlySubmitSigned(){
+        return onlySubmitSigned;
+    }
 
     public void multiSign(String base58Secret){
     	multiSign(Seed.fromBase58(base58Secret).keyPair());

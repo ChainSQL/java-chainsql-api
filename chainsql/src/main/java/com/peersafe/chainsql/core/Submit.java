@@ -215,7 +215,7 @@ public abstract class Submit {
 			public void called(Response args) {
 				onSubmitError(args);
 			}
-		}));
+		}), !tx.isOnlySubmitSigned());
 
 //        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 //        System.out.println("time start waiting:" + df.format(new Date()));// new Date()为获取当前系统时间
@@ -248,6 +248,16 @@ public abstract class Submit {
 		}else{
 			return submitRes;
 		}
+	}
+	public JSONObject submitSigned(JSONObject signedRet) {
+		return submitSigned(signedRet, SyncCond.send_success);
+	}
+	public JSONObject submitSigned(JSONObject signedRet, SyncCond cond) {
+		sync = true;
+		condition = cond;
+		signed = new SignedTransaction(signedRet);
+
+		return doSubmitNoPrepare();
 	}
 
 	private void subscribeTx(String txId){

@@ -642,9 +642,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     protected void onException(Exception e) {
-        e.printStackTrace(System.out);
-        if (logger.isLoggable(Level.WARNING)) {
-            log(Level.WARNING, "Exception {0}", e);
+        if (logger.isLoggable(Level.FINE)) {
+            e.printStackTrace(System.out);
+        }
+        if (logger.isLoggable(Level.SEVERE)) {
+            log(Level.SEVERE, "Exception {0}", e);
         }
     }
 

@@ -162,6 +162,22 @@ public class TestChainsql {
 		JSONObject ret = ripple.pay(account, "200").submit(SyncCond.validate_success);
 		System.out.println("pay result:" + ret);
 	}
+
+	public void signAndsubmit() {
+		JSONObject txObj = new JSONObject();
+		JSONObject tx_json = new JSONObject();
+		tx_json.put("Account", gmRootAddress);
+		tx_json.put("Amount", "10000000");
+		tx_json.put("Destination", gmAddress);
+		tx_json.put("TransactionType", "Payment");
+		tx_json.put("Sequence", 18);
+		txObj.put("tx_json", tx_json);
+		JSONObject ret = c.sign(txObj, gmRootSecret);
+		System.out.println("sign result:" + ret);
+		// JSONObject submitRet = c.submitSigned(ret); //send_success
+		JSONObject submitRet = c.submitSigned(ret, SyncCond.validate_success);
+		System.out.println("submit result:" + submitRet);
+	}
 	
 	public void getAccountBalance() {
 		String balance = c.getAccountBalance(rootAddress);

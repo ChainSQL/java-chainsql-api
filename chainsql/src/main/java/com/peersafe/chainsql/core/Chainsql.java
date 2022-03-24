@@ -45,7 +45,7 @@ public class Chainsql extends Submit {
 	private JSONObject mTxJson;
 	
 	private static final int PASSWORD_LENGTH = 32;  
-	private static final int DEFAULT_TX_LIMIT = 20;
+
 	
 	// Logger
     public static final Logger logger = Logger.getLogger(Chainsql.class.getName());
@@ -1154,6 +1154,12 @@ public class Chainsql extends Submit {
 		return ripple.trustSet(value, sCurrency, sIssuer);
 	}
 	
+	public Ripple accountAuthorize(int nFlag, boolean bSet, String account)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.accountAuthorize(nFlag, bSet, account);
+	}
+	
 	/**
 	 * Begin a sql-transaction type operation.
 	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
@@ -1306,6 +1312,33 @@ public class Chainsql extends Submit {
 	public JSONObject getAccountTransactions(String address,int limit){
 		return this.connection.client.getTransactions(address,limit);
 	}
+	
+	/**
+	 * Request for transaction information.
+	 * @param contractAddress 
+	 * @param ledgerIndexMin query range
+	 * @param ledgerIndexMax query range
+	 * @param limit  limit Max transaction count to get.
+	 * @param marker Marker from previous call response.
+	 * @return 
+	 */
+	public JSONObject getContractTransactions(String contractAddress,int ledgerIndexMin, int ledgerIndexMax, int limit, JSONObject marker){
+		return this.connection.client.getContractTransactions(contractAddress,ledgerIndexMin, ledgerIndexMax, limit, marker);
+	}
+	
+	/**
+	 * Request for transaction information.
+	 * @param contractAddress 
+	 * @param ledgerIndexMin query range
+	 * @param ledgerIndexMax query range
+	 * @param limit  limit Max transaction count to get.
+	 * @param marker Marker from previous call response.
+	 * @return cb Callback.
+	 */
+	public void getContractTransactions(String contractAddress,int ledgerIndexMin, int ledgerIndexMax, int limit, JSONObject marker, Callback<JSONObject> cb){
+		this.connection.client.getContractTransactions(contractAddress,ledgerIndexMin, ledgerIndexMax, limit, marker, cb);
+	}
+	
 	/**
 	 * Get transactions from chain
 	 * @param hash Start tx hash(can be tx_hash,ledger_seq,or "",if "",get from start tx).
@@ -1341,7 +1374,7 @@ public class Chainsql extends Submit {
 	 * @return Result.
 	 */
 	public JSONObject getAccountTransactions(String address){
-		return getAccountTransactions(address,DEFAULT_TX_LIMIT);
+		return getAccountTransactions(address,Client.DEFAULT_TX_LIMIT);
 	}
 	/**
 	 * Get trasactions submitted by notified account,asynchronous.
@@ -1349,7 +1382,7 @@ public class Chainsql extends Submit {
 	 * @param cb Callback.
 	 */
 	public void getAccountTransactions(String address,Callback<JSONObject> cb){
-		this.connection.client.getTransactions(address,DEFAULT_TX_LIMIT,cb);	
+		this.connection.client.getTransactions(address,Client.DEFAULT_TX_LIMIT,cb);	
 	}
 	/**
 	 * Get trasactions submitted by notified account,asynchronous.

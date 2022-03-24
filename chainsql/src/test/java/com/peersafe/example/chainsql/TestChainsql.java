@@ -146,6 +146,8 @@ public class TestChainsql {
 //			}
 //			
 //		});
+		//test.getContractTransactions();
+		test.getContractTransactionsAsyn();
 	}
 	
 	public void generateAccount() {
@@ -192,6 +194,27 @@ public class TestChainsql {
 	public void getTransaction() {
 		JSONObject obj = c.getTransaction("6B20CCA67F70F6CCECD26376EE6913E86B9B0DADD2D14CD4E7E6DF31F910EF03");
 		System.out.println(obj);
+	}
+	
+	public void getContractTransactions() {
+		JSONObject object = new JSONObject();
+		object.put("ledger", 3);
+		object.put("seq", 300000);
+		JSONObject obj = c.getContractTransactions("zpzebvchnEafz5DDYzovuUsJeqy6mEoC5Q", 1,10, 2, object);
+		System.out.println(obj);
+	}
+	
+	public void getContractTransactionsAsyn() {
+		c.getContractTransactions("zpzebvchnEafz5DDYzovuUsJeqy6mEoC5Q", 1,10, 2, null, new Callback<JSONObject>() {
+
+			@Override
+			public void called(JSONObject args) {
+				System.out.println(args);
+			}
+			
+		});
+		
+		
 	}
 	
 	// 创建表

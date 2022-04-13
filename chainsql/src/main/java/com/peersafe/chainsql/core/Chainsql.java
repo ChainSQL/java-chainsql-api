@@ -229,9 +229,10 @@ public class Chainsql extends Submit {
 			//jdk1.8
 			this.connection.client.onReconnecting(this::onReconnecting);
 			this.connection.client.onReconnected(this::onReconnected);
-			return connection;
 		}
-		return null;
+		else connection = null;
+		
+		return connection;
 	}
 
 

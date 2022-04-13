@@ -263,6 +263,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         } catch (Exception e){
             e.printStackTrace();
             group.shutdownGracefully();
+            curHandler.onError(e);
         }
     }
 

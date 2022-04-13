@@ -42,6 +42,7 @@ public class X509CryptoSuite {
             }
         }
         if(getNamesByOID != null) {
+            getNamesByOID.setAccessible(true);
             String[] nameArray = (String [])getNamesByOID.invoke(CurveDB.class, "1.2.156.10197.1.301");
             if(nameArray.length != 0)
             {

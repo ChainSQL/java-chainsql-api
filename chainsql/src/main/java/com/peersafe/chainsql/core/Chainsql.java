@@ -44,7 +44,8 @@ public class Chainsql extends Submit {
 
 	private JSONObject mTxJson;
 	
-	private static final int PASSWORD_LENGTH = 32;  
+	private static final int PASSWORD_LENGTH = 32;
+	private int timeout = 5; //unit:seconds
 
 	
 	// Logger
@@ -116,8 +117,7 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
-		doWhenConnect();
-		return connection;
+		return doWhenConnect();
 	}
 	/**
 	 * Connect to a secure websocket url.
@@ -129,8 +129,7 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url,String serverCertPath,String storePass) {
 		connection = new Connection().connect(url,serverCertPath,storePass);
-		doWhenConnect();
-		return connection;
+		return doWhenConnect();
 	}
 	/**
 	 * Connect to a secure websocket url.
@@ -143,8 +142,7 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url, String[] trustCAPath, String sslKeyPath, String sslCertPath) {
 		connection = new Connection().connect(url, trustCAPath, sslKeyPath, sslCertPath);
-		doWhenConnect();
-		return connection;
+		return doWhenConnect();
 	}
 	/**
 	 * Connect to a secure websocket url.
@@ -216,19 +214,25 @@ public class Chainsql extends Submit {
 		return connection;
 	}
 	
-	private void doWhenConnect(){
-		while (!connection.client.connected) {
+	private Connection doWhenConnect(){
+		long currentTime = System.currentTimeMillis()/1000;
+		while (!connection.client.connected && (System.currentTimeMillis()/1000 - currentTime < timeout)) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("connect success to " + connection.client.getConUrl());
-		this.eventManager.init(this.connection);
-		//jdk1.8
-		this.connection.client.onReconnecting(this::onReconnecting);
-		this.connection.client.onReconnected(this::onReconnected);
+		if(connection.client.connected) {
+			System.out.println("connect success to " + connection.client.getConUrl());
+			this.eventManager.init(this.connection);
+			//jdk1.8
+			this.connection.client.onReconnecting(this::onReconnecting);
+			this.connection.client.onReconnected(this::onReconnected);
+		}
+		else connection = null;
+		
+		return connection;
 	}
 
 

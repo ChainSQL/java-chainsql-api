@@ -10,6 +10,7 @@ import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Ripple;
 import com.peersafe.chainsql.core.Submit.SyncCond;
+import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.base.crypto.sm.SM2UtilTest;
 
@@ -35,9 +36,14 @@ public class TestChainsql {
 			String sslCertPath = "/Path/to/your/client.crt";
 			String[] trustCAsPath = {"/Path/to/your/root.crt",
 									"/Path/to/your/root2.crt"};
-			c.connect("wss://127.0.0.1:6006", trustCAsPath, sslKeyPath, sslCertPath);
+			Connection con = c.connect("wss://127.0.0.1:6006", trustCAsPath, sslKeyPath, sslCertPath);
 			// c.connect("wss://127.0.0.1:6006", trustCAsPath);
 			// c.connect("ws://127.0.0.1:6006");
+			if(con == null)
+			{
+				System.out.println("can not connect");
+				return;
+			}
             c.as(gmRootAddress, gmRootSecret);
             
 			testRipple();

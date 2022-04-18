@@ -15,8 +15,11 @@ import java.security.cert.*;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.bouncycastle.openssl.*;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.Framedata;
@@ -46,6 +49,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.peersafe.base.client.transport.TransportEventHandler;
 import com.peersafe.base.client.transport.WebSocketTransport;
 import com.peersafe.base.crypto.X509CryptoSuite;
+import com.peersafe.chainsql.util.Util;
 
 class WS extends WebSocketClient {
 
@@ -214,11 +218,26 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             throw new RuntimeException("must call setEventHandler() before connect(...)");
         }
 
-        String certSigAlg = ((X509Certificate)readCert(trustCAsPath[0])).getSigAlgName();
-        if(certSigAlg.equals("SM3withSM2"))
-        {
-            isGM = true;
+        if(trustCAsPath.length != 0) {
+            String certSigAlg = ((X509Certificate)readCert(trustCAsPath[0])).getSigAlgName();
+            String certPubKeyAlg = "0608";
+            if(sslCertPath.length() != 0) {
+                PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(sslCertPath)));
+                byte[] subPubkeyInfo = org.bouncycastle.asn1.x509.Certificate.getInstance(pemReader.readPemObject()
+                                .getContent()).getSubjectPublicKeyInfo().getEncoded();
+                pemReader.close();
+                String subPubkeyAlg = Util.bytesToHex(subPubkeyInfo);
+                certPubKeyAlg = subPubkeyAlg.length() > 45 ? subPubkeyAlg.substring(26,46) : subPubkeyAlg;
+            }
+            if(certSigAlg.equals("SM3withSM2") || certPubKeyAlg.equals("06082A811CCF5501822D"))
+            {
+                isGM = true;
+            }
         }
+        else {
+            throw new RuntimeException("Must specify at least a trustCA");
+        }
+        
 
         KeyStore tks;
         tks = getKeyStore(trustCAsPath, null);

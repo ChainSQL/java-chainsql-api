@@ -48,9 +48,6 @@ public abstract class Submit {
 			new HashMap<GenericPair<String,String>,String>();
 	protected boolean transaction = false;
 
-	protected boolean schemaCreateTx = false;
-	protected boolean schemaModifyTx = false;
-
 	protected Integer needVerify = 1;
 	//严格模式
 	protected boolean strictMode = false;

@@ -229,4 +229,8 @@ public class TxFormat extends Format {
             Field.ClearFlag,            Requirement.OPTIONAL,
             Field.Destination,          Requirement.REQUIRED);
 
+    static public TxFormat FreezeAccount = new TxFormat(
+            TransactionType.FreezeAccount,
+            Field.Destination,          Requirement.REQUIRED);
+
 }

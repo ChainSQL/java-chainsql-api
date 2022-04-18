@@ -59,7 +59,9 @@ public class Chainsql extends Submit {
 	private Callback<JSONObject> reconnectedCB = null;
 
 	public static String MAIN_SCHEMA = "";
-	
+
+	private TransactionType txType_ = TransactionType.TableListSet;
+
 	/**
 	 * Assigning the operating user.
 	 * @param address Account address,start with a lower case 'z'.
@@ -427,61 +429,52 @@ public class Chainsql extends Submit {
 				String sCert = Util.toHexString(this.connection.userCert);
 				mTxJson.put("Certificate", sCert);
 			}
-
-			if(schemaCreateTx){
-
-				Transaction payment;
-				payment = toTransaction(mTxJson,TransactionType.SchemaCreate);
-				signed  = payment.sign(this.connection.secret);
-
-				schemaCreateTx = false;
-				return Util.successObject();
+			if(!mTxJson.has("Account")){
+				mTxJson.put("Account",this.connection.address);
 			}
 
-			if(schemaModifyTx){
+			Transaction payment;
+			switch(txType_){
+				case SchemaCreate:
+				case SchemaModify:
+				case FreezeAccount:
+				{
+					payment = toTransaction(mTxJson,txType_);
+					break;
+				}
+				case TableListSet:
+				{
+					if(mTxJson.toString().equals("{}")) {
+						return Util.errorObject("Exception occured");
+					}
 
-				Transaction payment;
-				payment = toTransaction(mTxJson,TransactionType.SchemaModify);
-				signed  = payment.sign(this.connection.secret);
+					//for cross chain
+					if(crossChainArgs != null){
+						mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+						mTxJson.put("OriginalAddress", crossChainArgs.originalAddress);
+						mTxJson.put("CurTxHash", crossChainArgs.curTxHash);
+						mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
+						crossChainArgs = null;
+					}
 
-				schemaModifyTx = false;
-				return Util.successObject();
+					JSONObject tx_json = this.connection.client.tablePrepare(mTxJson);
+					if(tx_json.has("error")){
+						return tx_json;
+					}else{
+						tx_json = tx_json.getJSONObject("tx_json");
+					}
+
+					if(this.transaction){
+						tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
+						payment = toTransaction(tx_json,TransactionType.SQLTransaction);
+					}else{
+						payment = toTransaction(tx_json,TransactionType.TableListSet);
+					}
+					break;
+				}
+				default:
+					return Util.errorObject("TransactionType will not be processed");
 			}
-
-
-			if(mTxJson.toString().equals("{}")) {
-				return Util.errorObject("Exception occured");
-			}
-			mTxJson.put("Account",this.connection.address);
-
-			//for cross chain
-			if(crossChainArgs != null){
-				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
-				mTxJson.put("OriginalAddress", crossChainArgs.originalAddress);
-				mTxJson.put("CurTxHash", crossChainArgs.curTxHash);
-				mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
-				crossChainArgs = null;
-			}
-
-
-
-
-
-			
-	    	JSONObject tx_json = this.connection.client.tablePrepare(mTxJson);
-	    	if(tx_json.has("error")){
-	    		return tx_json;
-	    	}else{
-	    		tx_json = tx_json.getJSONObject("tx_json");	    			
-	    	}
-	    	
-	    	Transaction payment;
-	    	if(this.transaction){
-	    		tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
-	    		payment = toTransaction(tx_json,TransactionType.SQLTransaction);
-	    	}else{
-	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
-	    	}
 
 			signed = payment.sign(this.connection.secret);
 
@@ -596,7 +589,7 @@ public class Chainsql extends Submit {
 			}
 		}
 
-		this.schemaCreateTx = true;
+		this.txType_ = TransactionType.SchemaCreate;
 
 		JSONArray validatorsArr = schemaInfo.getJSONArray("Validators");
 		JSONArray peerListArr   = schemaInfo.getJSONArray("PeerList");
@@ -643,7 +636,7 @@ public class Chainsql extends Submit {
 			throw new Exception("Invalid schemaInfo parameter");
 		}
 
-		this.schemaModifyTx = true;
+		this.txType_ = TransactionType.SchemaModify;
 
 		JSONObject params = new JSONObject();
 
@@ -2017,5 +2010,18 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject getSchemaInfo(String schemaID){
 		return connection.client.getSchemaInfo(schemaID);
+	}
+
+	public Chainsql freezeAccount(String accountID,boolean bFreeze) {
+		JSONObject params = new JSONObject();
+		params.put("Destination",accountID);
+		txType_ = TransactionType.FreezeAccount;
+		if(bFreeze){
+			params.put("Flags",1048576);
+		}else{
+			params.put("Flags",2097152);
+		}
+		mTxJson = params;
+		return this;
 	}
 }

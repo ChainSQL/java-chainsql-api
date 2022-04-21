@@ -331,6 +331,20 @@ public class Table extends Submit {
 		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		json.put("StrictMode", this.strictMode);
+
+		if(this.autoFillField != null){
+			json.put("AutoFillField", Util.toHexString(this.autoFillField));
+		}
+		if(this.txsHashFillField != null){
+			json.put("TxsHashFillField", Util.toHexString(this.txsHashFillField));
+		}
+		if(this.ledgerSeqField != null){
+			json.put("LedgerSeqField", Util.toHexString(this.ledgerSeqField));
+		}
+		if(this.ledgerTimeField != null){
+			json.put("LedgerTimeField", Util.toHexString(this.ledgerTimeField));
+		}
+
 		return json;
 	}
 	
@@ -384,19 +398,6 @@ public class Table extends Submit {
 		if (this.connection.userCert != null) {
 			String sCert = Util.toHexString(this.connection.userCert);
 			txjson.put("Certificate", sCert);
-		}
-
-		if(this.autoFillField != null){
-			txjson.put("AutoFillField", Util.toHexString(this.autoFillField));
-		}
-		if(this.txsHashFillField != null){
-			txjson.put("TxsHashFillField", Util.toHexString(this.txsHashFillField));
-		}
-		if(this.ledgerSeqField != null){
-			txjson.put("LedgerSeqField", Util.toHexString(this.ledgerSeqField));
-		}
-		if(this.ledgerTimeField != null){
-			txjson.put("LedgerTimeField", Util.toHexString(this.ledgerTimeField));
 		}
 
 		//for cross chain

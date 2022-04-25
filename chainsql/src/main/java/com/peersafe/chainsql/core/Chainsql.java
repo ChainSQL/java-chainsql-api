@@ -437,6 +437,7 @@ public class Chainsql extends Submit {
 			switch(txType_){
 				case SchemaCreate:
 				case SchemaModify:
+				case SchemaDelete:
 				case FreezeAccount:
 				{
 					payment = toTransaction(mTxJson,txType_);
@@ -627,7 +628,6 @@ public class Chainsql extends Submit {
 		return this;
 	}
 
-
 	public Chainsql modifySchema(SchemaOpType type,JSONObject schemaInfo)   throws Exception{
 
 		boolean bValid = schemaInfo.has("SchemaID")  && schemaInfo.has("Validators") && schemaInfo.has("PeerList");
@@ -679,6 +679,22 @@ public class Chainsql extends Submit {
 
 		params.put("Validators",jsonValidators);
 		params.put("PeerList",jsonPeerList);
+
+		this.mTxJson = params;
+		return this;
+	}
+
+	public Chainsql deleteSchema(String schemaID)   throws Exception{
+
+		if(schemaID == null || schemaID.equals(""))
+			throw new Exception("Invalid schemaInfo parameter");
+
+		this.txType_ = TransactionType.SchemaDelete;
+
+		JSONObject params = new JSONObject();
+		
+		params.put("Account", this.connection.address);
+		params.put("SchemaID",schemaID);
 
 		this.mTxJson = params;
 		return this;

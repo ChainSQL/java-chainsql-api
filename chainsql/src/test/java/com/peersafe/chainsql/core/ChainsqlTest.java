@@ -39,14 +39,14 @@ public class ChainsqlTest extends TestCase {
 
 
     public void setUp() throws Exception {
-//        try{
-//           c.connect("ws://192.168.29.69:16006");
-//           c.as(rootAddress, rootSecret);
-//        }catch (Exception e){
-//            c.disconnect();
-//            e.printStackTrace();
-//            Assert.fail();
-//        }
+        try{
+           c.connect("ws://localhost:6006");
+           c.as(rootAddress, rootSecret);
+        }catch (Exception e){
+            c.disconnect();
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     public void tearDown() throws Exception {
@@ -457,6 +457,24 @@ public class ChainsqlTest extends TestCase {
 
     }
 
+    public void testDeleteSchema() {
+
+        try{
+            String schemaID = "B4BC6A49F5A64AE0F4AA205DB92C2AD85EEE67F7D5977C83DB6D16F00A8FA08D";
+             // SchemaOpType
+            JSONObject obj =  c.deleteSchema(schemaID).submit(Submit.SyncCond.validate_success);
+
+            System.out.println(obj);
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+    }
+
+    
     public  void testGetSchemaList(){
         try{
 

@@ -222,6 +222,11 @@ public class TxFormat extends Format {
             Field.PeerList,            Requirement.REQUIRED,
             Field.SchemaID,            Requirement.REQUIRED);
     
+    static public TxFormat SchemaDelete = new TxFormat(
+            TransactionType.SchemaDelete,
+            Field.SchemaID,            Requirement.REQUIRED);
+    
+    
     static public TxFormat Authorize = new TxFormat(
             TransactionType.Authorize,
             Field.Account,              Requirement.REQUIRED,

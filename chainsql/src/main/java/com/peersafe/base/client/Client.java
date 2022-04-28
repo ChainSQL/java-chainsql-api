@@ -588,7 +588,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         if (runningOnClientThread()) {
             runnable.run();
         } else {
-            service.submit(errorHandling(runnable));
+            if(!service.isShutdown()){
+                service.submit(errorHandling(runnable));
+            }
         }
     }
 
@@ -598,7 +600,9 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param runnable Runnable object.
      */
     public void schedule(long ms, Runnable runnable) {
-        service.schedule(errorHandling(runnable), ms, TimeUnit.MILLISECONDS);
+        if(!service.isShutdown()) {
+            service.schedule(errorHandling(runnable), ms, TimeUnit.MILLISECONDS);
+        }
     }
 
     private boolean runningOnClientThread() {

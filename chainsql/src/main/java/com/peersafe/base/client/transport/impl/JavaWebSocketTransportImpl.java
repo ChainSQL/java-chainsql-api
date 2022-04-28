@@ -221,7 +221,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         if(trustCAsPath.length != 0) {
             String certSigAlg = ((X509Certificate)readCert(trustCAsPath[0])).getSigAlgName();
             String certPubKeyAlg = "0608";
-            if(sslCertPath.length() != 0) {
+            if(sslCertPath != null) {
                 PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(sslCertPath)));
                 byte[] subPubkeyInfo = org.bouncycastle.asn1.x509.Certificate.getInstance(pemReader.readPemObject()
                                 .getContent()).getSubjectPublicKeyInfo().getEncoded();

@@ -108,9 +108,16 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                     @Override
                     public void operationComplete(ChannelFuture future )
                     throws Exception {
-                        TransportEventHandler teHandler = tranEventh.get();
-                        if (teHandler != null) {
-                            teHandler.onDisconnected(false);
+                        if(future.isDone() && future.isSuccess()) {
+                            System.out.println("syn operation complete successfully");
+                        } else if(future.isDone() && future.isCancellable()) {
+                            System.out.println("syn operation complete cancellation");
+                        } else {
+                            future.cause().printStackTrace();
+                            TransportEventHandler teHandler = tranEventh.get();
+                            if (teHandler != null) {
+                                teHandler.onDisconnected(false);
+                            }
                         }
                     }
                 });
@@ -135,6 +142,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("WebSocket Client disconnected!");
+        TransportEventHandler teHandler = tranEventh.get();
+        if (teHandler != null) {
+            teHandler.onDisconnected(false);
+        }
     }
 
     @Override

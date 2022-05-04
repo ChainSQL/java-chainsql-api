@@ -186,7 +186,9 @@ public abstract class Contract extends Submit{
         }
 
         Object value = result.getValue();
-        if (returnType.isAssignableFrom(value.getClass())) {
+        if (returnType.isAssignableFrom(result.getClass())) {
+        	return (R) result;
+        } else if (returnType.isAssignableFrom(value.getClass())) {
             return (R) value;
         } else if (result.getClass().equals(Address.class) && returnType.equals(String.class)) {
             return (R) result.toString();  // cast isn't necessary
@@ -208,7 +210,9 @@ public abstract class Contract extends Submit{
 		        }
 
 		        Object value = result.getValue();
-		        if (returnType.isAssignableFrom(value.getClass())) {
+		        if (returnType.isAssignableFrom(result.getClass())) {
+		        	cb.called((R) result);
+		        } else if (returnType.isAssignableFrom(value.getClass())) {
 		            cb.called((R) value);
 		        } else if (result.getClass().equals(Address.class) && returnType.equals(String.class)) {
 		        	cb.called((R) result.toString());  // cast isn't necessary

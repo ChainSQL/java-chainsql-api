@@ -5,7 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 package com.peersafe.base.crypto;
 
-import sun.security.util.CurveDB;
+// import sun.security.util.CurveDB;
+// import sun.security.ec.CurveDB;
 import sun.security.util.ObjectIdentifier;
 import sun.security.x509.AlgorithmId;
 
@@ -26,8 +27,22 @@ public class X509CryptoSuite {
     private static final String CIPHER_GM = "ECDHE-SM2-WITH-SMS4-GCM-SM3";
 
     public static void enableX509CertificateWithGM() throws IllegalAccessException, InvocationTargetException,
-            NoSuchFieldException, ClassNotFoundException {
-        Method[] methods = CurveDB.class.getDeclaredMethods();
+            NoSuchFieldException, ClassNotFoundException ,Exception{
+
+        final String javaVer = System.getProperty("java.version");
+        if (!javaVer.contains("1.8.0")) {
+            throw new RuntimeException("jdk version don't support");
+        }
+        int javaVersion = Integer.parseInt(javaVer.substring(javaVer.length()-3, javaVer.length()));
+        ClassLoader classLoader = X509CryptoSuite.class.getClassLoader();
+        Class CurveDB;
+        if(javaVersion < 292){
+            CurveDB = classLoader.loadClass("sun.security.ec.CurveDB");
+        } else{
+            CurveDB = classLoader.loadClass("sun.security.util.CurveDB");
+        }
+        // Method[] methods = CurveDB.class.getDeclaredMethods();
+        Method[] methods = CurveDB.getDeclaredMethods();
         Method method = null;
         Method getNamesByOID = null;
         boolean notSeted = true;
@@ -43,7 +58,8 @@ public class X509CryptoSuite {
         }
         if(getNamesByOID != null) {
             getNamesByOID.setAccessible(true);
-            String[] nameArray = (String [])getNamesByOID.invoke(CurveDB.class, "1.2.156.10197.1.301");
+            // String[] nameArray = (String [])getNamesByOID.invoke(CurveDB.class, "1.2.156.10197.1.301");
+            String[] nameArray = (String [])getNamesByOID.invoke(CurveDB, "1.2.156.10197.1.301");
             if(nameArray.length != 0)
             {
                 notSeted = false;
@@ -56,7 +72,8 @@ public class X509CryptoSuite {
                 throw new NoSuchFieldException();
             }
             method.setAccessible(true);
-            method.invoke(CurveDB.class, "sm2p256v1", "1.2.156.10197.1.301", 1,
+            // method.invoke(CurveDB.class, "sm2p256v1", "1.2.156.10197.1.301", 1,
+            method.invoke(CurveDB, "sm2p256v1", "1.2.156.10197.1.301", 1,
                     "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFF",
                     "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFC",
                     "28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93",
@@ -65,11 +82,14 @@ public class X509CryptoSuite {
                     "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123",
                     1, splitPattern);
     
-            final Field specCollection = CurveDB.class.getDeclaredField("specCollection");
-            final Field oidMap = CurveDB.class.getDeclaredField("oidMap");
+            // final Field specCollection = CurveDB.class.getDeclaredField("specCollection");
+            final Field specCollection = CurveDB.getDeclaredField("specCollection");
+            // final Field oidMap = CurveDB.class.getDeclaredField("oidMap");
+            final Field oidMap = CurveDB.getDeclaredField("oidMap");
             oidMap.setAccessible(true);
             specCollection.setAccessible(true);
-            specCollection.set(CurveDB.class, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB.class)).values()));
+            // specCollection.set(CurveDB.class, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB.class)).values()));
+            specCollection.set(CurveDB, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB)).values()));
     
             Field nameTable = AlgorithmId.class.getDeclaredField("nameTable");
             nameTable.setAccessible(true);

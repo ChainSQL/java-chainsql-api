@@ -124,6 +124,19 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             }
         });
     }
+
+    public void disconnect() {
+        // System.out.println("Begin to disconnect");
+        if(channel_ != null && channel_.isActive()) {
+            channel_.write(new CloseWebSocketFrame());
+            // channel_.close();
+            channel_.disconnect();
+            // System.out.println("finish disconnect");
+        }
+        else {
+            System.out.println("no connection need close");
+        }
+    }
     public void sendMessage(String msg) {
         WebSocketFrame frame = new TextWebSocketFrame(msg);
         channel_.writeAndFlush(frame);
@@ -214,6 +227,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         } else if (frame instanceof CloseWebSocketFrame) {
             System.out.println("WebSocket Client received closing");
             ch.close();
+            TransportEventHandler teHandler = tranEventh.get();
+            if (teHandler != null) {
+                teHandler.onDisconnected(false);
+            }
         }
     }
 

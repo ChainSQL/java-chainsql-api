@@ -298,6 +298,14 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             client.close();
             client = null;
         }
+        if( wscHandler != null) {
+            wscHandler.disconnect();
+            TransportEventHandler handler = this.handler.get();
+            if (handler != null) {
+                handler.onDisconnected(false);
+            }
+            wscHandler = null;
+        }
     }
     private static Certificate readCert(String path) throws IOException, CertificateException {
         try (FileInputStream fin = new FileInputStream(path)) {

@@ -84,7 +84,6 @@ public class X509CryptoSuite {
             final Field oidMap = CurveDB.getDeclaredField("oidMap");
             oidMap.setAccessible(true);
             specCollection.setAccessible(true);
-            // specCollection.set(CurveDB.class, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB.class)).values()));
             specCollection.set(CurveDB, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB)).values()));
     
             Field nameTable = AlgorithmId.class.getDeclaredField("nameTable");

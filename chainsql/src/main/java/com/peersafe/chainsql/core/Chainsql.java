@@ -45,7 +45,7 @@ public class Chainsql extends Submit {
 	private JSONObject mTxJson;
 	
 	private static final int PASSWORD_LENGTH = 32;
-	private int timeout = 5; //unit:seconds
+	private int timeout = 10; //unit:seconds
 
 	
 	// Logger

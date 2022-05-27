@@ -278,7 +278,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
                 }
             });
             wscHandler.setEventHandler(curHandler);
-            wscHandler.doConnect(b, uri);
+            wscHandler.doConnect(b, uri, group);
         } catch (Exception e){
             e.printStackTrace();
             group.shutdownGracefully();

@@ -280,19 +280,33 @@ public abstract class Submit {
 					res.put("tx_hash", hash);
 
 					boolean bUnsubcribe = true;
-					if(condition == SyncCond.validate_success &&
-							(obj.get("status").equals("validate_success") || obj.get("status").equals("db_success"))){
-						res.put("status", "validate_success");
-					}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
-						res.put("status", "db_success");
-					}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
-						res.put("status", obj.get("status"));
-						if(obj.has("error_message"))
-							res.put("error_message", obj.get("error_message"));
-						if(obj.has("error"))
-							res.put("error", obj.get("error"));
-					}else {
-						bUnsubcribe = false;
+					String status = obj.getString("status");
+					switch (status) {
+						case "validate_success":
+							if (condition.compareTo(SyncCond.db_success) < 0) {
+								res.put("status", condition.toString());
+							} else {
+								bUnsubcribe = false;
+							}
+							break;
+						case "db_success":
+							res.put("status", condition.toString());
+							break;
+						default:	// validate_(*error) 或者 db_(*error) 错误情况
+							if (status.startsWith("validate_") &&
+									condition.compareTo(SyncCond.validate_success) < 0) {
+								res.put("status", condition.toString());
+							} else if (status.startsWith("db_") &&
+									condition.compareTo(SyncCond.db_success) < 0) {
+								res.put("status", condition.toString());
+							} else {
+								res.put("status", status);
+								if (obj.has("error"))
+									res.put("error", obj.get("error"));
+								if (obj.has("error_message"))
+									res.put("error_message", obj.get("error_message"));
+							}
+							break;
 					}
 
 					//unsubscribe tx

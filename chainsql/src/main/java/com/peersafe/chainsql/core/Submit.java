@@ -227,22 +227,25 @@ public abstract class Submit {
 			}
 		}
 
-		if(sync){
-			if(submit_state == SubmitState.submit_error ||
-				(submit_state == SubmitState.send_success && condition == SyncCond.send_success)){
+		if (sync) {
+			if (submit_state == SubmitState.submit_error) {
 				return submitRes;
-			}else{
+			} else if (submit_state == SubmitState.send_success && condition == SyncCond.send_success) {
+				unSubscribeTx(tx.hash.toString());
+				return submitRes;
+			} else {
 				count = sync_maxtime / wait_milli;
-				while(sync_state != SyncState.sync_response){
+				while (sync_state != SyncState.sync_response) {
 					Util.waiting();
-					if(--count <= 0){
-						syncRes = getError("waiting sync result timeout",tx.hash.toString());
+					if (--count <= 0) {
+						syncRes = getError("waiting sync result timeout", tx.hash.toString());
 						break;
 					}
 				}
+				unSubscribeTx(tx.hash.toString());
 				return syncRes;
 			}
-		}else{
+		} else {
 			return submitRes;
 		}
 	}
@@ -279,14 +282,11 @@ public abstract class Submit {
 
 					res.put("tx_hash", hash);
 
-					boolean bUnsubcribe = true;
 					String status = obj.getString("status");
 					switch (status) {
 						case "validate_success":
 							if (condition.compareTo(SyncCond.db_success) < 0) {
 								res.put("status", condition.toString());
-							} else {
-								bUnsubcribe = false;
 							}
 							break;
 						case "db_success":
@@ -309,12 +309,7 @@ public abstract class Submit {
 							break;
 					}
 
-					//unsubscribe tx
-					if(bUnsubcribe) {
-						unSubscribeTx(hash);
-					}
-
-					if(!res.isNull("status") && sync_state == SyncState.waiting_sync){
+					if (!res.isNull("status") && sync_state == SyncState.waiting_sync) {
 						syncRes = res;
 						sync_state = SyncState.sync_response;
 						submit_state = SubmitState.send_success;

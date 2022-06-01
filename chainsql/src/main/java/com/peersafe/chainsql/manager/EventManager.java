@@ -375,18 +375,18 @@ public class EventManager {
 //			makeCallback(key,data);	
 //		}
 		makeCallback(key,data);	
-		if(data.has("transaction") && data.getJSONObject("transaction").has("TransactionType"))
-		{
-			JSONObject tx = data.getJSONObject("transaction");
-			TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
-			if(Util.isChainsqlType(type)) {
-				if(!("validate_success".equals(data.getString("status")))){
-					mapCache.remove(key);
-				}
-			}else {
-				mapCache.remove(key);
-			}
-		}
+//		if(data.has("transaction") && data.getJSONObject("transaction").has("TransactionType"))
+//		{
+//			JSONObject tx = data.getJSONObject("transaction");
+//			TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
+//			if(Util.isChainsqlType(type)) {
+//				if(!("validate_success".equals(data.getString("status")))){
+//					mapCache.remove(key);
+//				}
+//			}else {
+//				mapCache.remove(key);
+//			}
+//		}
 	}
 	
 

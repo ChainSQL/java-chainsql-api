@@ -1751,7 +1751,7 @@ public class Chainsql extends Submit {
 			logger.log(Level.SEVERE, "PublicKey list is empty");
 			return "";
 		}
-		byte[] cipher = Ecies.encryptText(plainText,listPublicKey);
+		byte[] cipher = EncryptCommon.encryptText(plainText,listPublicKey);
 		if(cipher == null)
 			return "";
 		return Util.bytesToHex(cipher);
@@ -1765,7 +1765,7 @@ public class Chainsql extends Submit {
 	 */
 	public String decrypt(String cipher,String secret) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
-		return Ecies.decryptText(cipherBytes, secret);
+		return EncryptCommon.decryptText(cipherBytes, secret);
 	}
 	
 	/**

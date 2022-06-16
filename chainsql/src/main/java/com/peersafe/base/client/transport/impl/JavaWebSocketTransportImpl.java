@@ -221,7 +221,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         if(trustCAsPath.length != 0) {
             String certSigAlg = ((X509Certificate)readCert(trustCAsPath[0])).getSigAlgName();
             String certPubKeyAlg = "0608";
-            if(sslCertPath.length() != 0) {
+            if(sslCertPath != null) {
                 PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(sslCertPath)));
                 byte[] subPubkeyInfo = org.bouncycastle.asn1.x509.Certificate.getInstance(pemReader.readPemObject()
                                 .getContent()).getSubjectPublicKeyInfo().getEncoded();
@@ -278,7 +278,7 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
                 }
             });
             wscHandler.setEventHandler(curHandler);
-            wscHandler.doConnect(b, uri);
+            wscHandler.doConnect(b, uri, group);
         } catch (Exception e){
             e.printStackTrace();
             group.shutdownGracefully();
@@ -297,6 +297,14 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             client.muteEventHandler();
             client.close();
             client = null;
+        }
+        if( wscHandler != null) {
+            wscHandler.disconnect();
+            TransportEventHandler handler = this.handler.get();
+            if (handler != null) {
+                handler.onDisconnected(false);
+            }
+            wscHandler = null;
         }
     }
     private static Certificate readCert(String path) throws IOException, CertificateException {

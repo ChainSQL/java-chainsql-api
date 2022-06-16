@@ -42,6 +42,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
@@ -65,6 +66,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     private ChannelPromise handshakeFuture;
     WeakReference<TransportEventHandler> tranEventh;
     private Channel channel_;
+    private EventLoopGroup group_;
     String appendframeData_ = "";
 
     public WebSocketClientHandler(WebSocketClientHandshaker handshaker) {
@@ -75,6 +77,19 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         return handshakeFuture;
     }
 
+    private void onDisconnect(Throwable cause) {
+        channel_.close();
+        group_.shutdownGracefully();
+        TransportEventHandler teHandler = tranEventh.get();
+        if (teHandler != null) {
+            if(cause != null) {
+                cause.printStackTrace();
+                teHandler.onError((Exception)cause);
+            }
+            teHandler.onDisconnected(false);
+        }
+    }
+
     /**
      * setEventHandler
      * @param eventHandler eventHandler
@@ -83,21 +98,17 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         tranEventh = new WeakReference<TransportEventHandler>(eventHandler);
     }
 
-    public void doConnect(Bootstrap bs, URI uri) {
+    public void doConnect(Bootstrap bs, URI uri, EventLoopGroup group) {
+        group_ = group;
         ChannelFuture chf = bs.connect(uri.getHost(), uri.getPort());
+        channel_ = chf.channel();
         chf.addListener(new ChannelFutureListener() {
             @Override public void operationComplete(ChannelFuture future)
                 throws Exception {
-                TransportEventHandler teHandler = tranEventh.get();
                 if( !future.isSuccess() ) {
-                    future.channel().close();
+                    onDisconnect(future.cause());
                     // bs.connect(uri.getHost(), uri.getPort()).addListener(this);
-                    if (teHandler != null) {
-                        teHandler.onError((Exception)future.cause());
-                        teHandler.onDisconnected(false);
-                    }
                 } else {
-                    channel_ = future.channel();
                     //add a listener to detect the connection lost
                     addCloseDetectListener(future.channel());
                 }
@@ -108,14 +119,31 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                     @Override
                     public void operationComplete(ChannelFuture future )
                     throws Exception {
-                        TransportEventHandler teHandler = tranEventh.get();
-                        if (teHandler != null) {
-                            teHandler.onDisconnected(false);
+                        if(future.isDone() && future.isSuccess()) {
+                            System.out.println("syn operation complete successfully");
+                        } else if(future.isDone() && future.isCancellable()) {
+                            System.out.println("syn operation complete cancellation");
+                        } else {
+                            onDisconnect(future.cause());
                         }
                     }
                 });
             }
         });
+    }
+
+    public void disconnect() {
+        // System.out.println("Begin to disconnect");
+        if(channel_ != null && channel_.isActive()) {
+            channel_.write(new CloseWebSocketFrame());
+            // channel_.close();
+            channel_.disconnect();
+            group_.shutdownGracefully();
+            // System.out.println("finish disconnect");
+        }
+        else {
+            System.out.println("no connection need close");
+        }
     }
     public void sendMessage(String msg) {
         WebSocketFrame frame = new TextWebSocketFrame(msg);
@@ -135,6 +163,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("WebSocket Client disconnected!");
+        TransportEventHandler teHandler = tranEventh.get();
+        if (teHandler != null) {
+            teHandler.onDisconnected(false);
+        }
     }
 
     @Override
@@ -151,9 +183,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 handshakeFuture.setSuccess();
             } catch (WebSocketHandshakeException e) {
                 System.out.println("WebSocket Client failed to connect");
-                if (teHandler != null) {
-                    teHandler.onDisconnected(false);
-                }
+                // ch.close();
+                onDisconnect(null);
                 handshakeFuture.setFailure(e);
             }
             return;
@@ -202,7 +233,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             System.out.println("WebSocket Client received pong");
         } else if (frame instanceof CloseWebSocketFrame) {
             System.out.println("WebSocket Client received closing");
-            ch.close();
+            // ch.close();
+            onDisconnect(null);
         }
     }
 

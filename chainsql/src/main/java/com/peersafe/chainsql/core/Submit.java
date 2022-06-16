@@ -227,22 +227,25 @@ public abstract class Submit {
 			}
 		}
 
-		if(sync){
-			if(submit_state == SubmitState.submit_error ||
-				(submit_state == SubmitState.send_success && condition == SyncCond.send_success)){
+		if (sync) {
+			if (submit_state == SubmitState.submit_error) {
 				return submitRes;
-			}else{
+			} else if (submit_state == SubmitState.send_success && condition == SyncCond.send_success) {
+				unSubscribeTx(tx.hash.toString());
+				return submitRes;
+			} else {
 				count = sync_maxtime / wait_milli;
-				while(sync_state != SyncState.sync_response){
+				while (sync_state != SyncState.sync_response) {
 					Util.waiting();
-					if(--count <= 0){
-						syncRes = getError("waiting sync result timeout",tx.hash.toString());
+					if (--count <= 0) {
+						syncRes = getError("waiting sync result timeout", tx.hash.toString());
 						break;
 					}
 				}
+				unSubscribeTx(tx.hash.toString());
 				return syncRes;
 			}
-		}else{
+		} else {
 			return submitRes;
 		}
 	}
@@ -279,28 +282,34 @@ public abstract class Submit {
 
 					res.put("tx_hash", hash);
 
-					boolean bUnsubcribe = true;
-					if(condition == SyncCond.validate_success &&
-							(obj.get("status").equals("validate_success") || obj.get("status").equals("db_success"))){
-						res.put("status", "validate_success");
-					}else if(condition == SyncCond.db_success && obj.get("status").equals("db_success")){
-						res.put("status", "db_success");
-					}else if(!obj.get("status").equals("validate_success") && !obj.get("status").equals("db_success")){
-						res.put("status", obj.get("status"));
-						if(obj.has("error_message"))
-							res.put("error_message", obj.get("error_message"));
-						if(obj.has("error"))
-							res.put("error", obj.get("error"));
-					}else {
-						bUnsubcribe = false;
+					String status = obj.getString("status");
+					switch (status) {
+						case "validate_success":
+							if (condition.compareTo(SyncCond.db_success) < 0) {
+								res.put("status", condition.toString());
+							}
+							break;
+						case "db_success":
+							res.put("status", condition.toString());
+							break;
+						default:	// validate_(*error) 或者 db_(*error) 错误情况
+							if (status.startsWith("validate_") &&
+									condition.compareTo(SyncCond.validate_success) < 0) {
+								res.put("status", condition.toString());
+							} else if (status.startsWith("db_") &&
+									condition.compareTo(SyncCond.db_success) < 0) {
+								res.put("status", condition.toString());
+							} else {
+								res.put("status", status);
+								if (obj.has("error"))
+									res.put("error", obj.get("error"));
+								if (obj.has("error_message"))
+									res.put("error_message", obj.get("error_message"));
+							}
+							break;
 					}
 
-					//unsubscribe tx
-					if(bUnsubcribe) {
-						unSubscribeTx(hash);
-					}
-
-					if(!res.isNull("status") && sync_state == SyncState.waiting_sync){
+					if (!res.isNull("status") && sync_state == SyncState.waiting_sync) {
 						syncRes = res;
 						sync_state = SyncState.sync_response;
 						submit_state = SubmitState.send_success;

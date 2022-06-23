@@ -349,7 +349,10 @@ public abstract class Contract extends Submit{
             String contractAddress = null;
 
             if(obj.has("status") && obj.getString("status").equals("validate_success")) {
-            	JSONObject tx = c.connection.client.getTransaction(obj.getString("tx_hash"));
+                JSONObject option = new JSONObject();
+                option.put("hash", obj.getString("tx_hash"));
+                option.put("meta_chain", false);
+                JSONObject tx = c.connection.client.getTransaction(option);
             	contractAddress = Util.getNewAccountFromTx(tx);
                 contract.setContractAddress(contractAddress);
             }else if(obj.has("status") && obj.getString("status").equals("validate_timeout")){

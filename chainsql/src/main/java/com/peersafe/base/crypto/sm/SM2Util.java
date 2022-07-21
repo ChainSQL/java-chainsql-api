@@ -188,9 +188,17 @@ public class SM2Util extends GMBaseUtil {
         engine.init(true, pwr);
 
         byte[] rawBytes = engine.processBlock(srcData, 0, srcData.length);
-        byte[] ret;
+        byte[] ret = null;
         try {
             ret = encodeSM2CipherToDER(encryptMode, rawBytes);
+        }catch(IllegalArgumentException e) {
+        	rawBytes = engine.processBlock(srcData, 0, srcData.length);
+        	try {
+				ret = encodeSM2CipherToDER(encryptMode, rawBytes);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				ret = null;
+			}
         } catch (Exception e) {
             e.printStackTrace();
             ret = null;

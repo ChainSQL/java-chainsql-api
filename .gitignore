@@ -2,6 +2,8 @@
 
 */target/
 
+*.jar
+
 # VScode config files
 .vscode/
 

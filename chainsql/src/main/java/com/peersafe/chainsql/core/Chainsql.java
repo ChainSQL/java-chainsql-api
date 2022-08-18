@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.peersafe.chainsql.pool.ChainsqlPool;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
@@ -30,6 +32,7 @@ import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.encodings.base58.B58;
 import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.crypto.EncryptCommon;
@@ -1415,6 +1418,33 @@ public class Chainsql extends Submit {
 		return this.connection.client.getTransaction(hash);
 	}
 
+	/**
+	 * Get transaction identified by hash.the raw field is restored to plaintext
+	 * @param hash Transaction hash.
+	 * @return Transaction information.
+	 */
+	public JSONObject getExplicitTransaction(String hash, String privateKey){
+		JSONObject tx = getTransaction(hash);
+		if(tx.has("error")) {
+			System.err.println(tx.getString("error_message"));
+			return tx;
+		}
+		String token = "";
+		if(tx.has("Token")) {
+			token = tx.getString("Token");
+			try {
+				//token = Util.getUserToken(this.connection, this.connection.address, name);
+				if(token != "") {
+		   	 		String password = this.asymDecrypt(token, privateKey, false);
+		   	 		Util.decryptData(password.getBytes(), tx);
+		   	 	}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+			
+		return tx;
+	}
 
 
 
@@ -1829,11 +1859,16 @@ public class Chainsql extends Submit {
 	public String asymDecrypt(String cipher, String privateKey, boolean bSM) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
 		byte[] seedBytes = null;
-		if(bSM) {
-			seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
-		}else {
-			seedBytes   = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
-		}
+		
+		bSM = Utils.getAlgType(connection.secret).equals("softGMAlg");
+    	if(bSM){
+    		seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+    		bSM = true;
+        }
+    	else{
+    		seedBytes   = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+    		bSM = false;
+    	}
 		
         byte[] newBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, bSM);
 		return new String(newBytes);

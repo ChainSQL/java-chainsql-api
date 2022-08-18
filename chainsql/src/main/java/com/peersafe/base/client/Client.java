@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.manager.CallbackManager;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -2188,6 +2189,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	    waiting(request);
 	    return getResult(request);
     }
+    
     
     /**
      * Request for a transaction's information.

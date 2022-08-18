@@ -83,10 +83,8 @@ public class Seed {
             if(seedBytes.length == 32){
                 return SMKeyPair.from256Seed(seedBytes);
             }else{
-                //  软国密算法 暂不支持16字节的seed 生成公私钥对
                 return SMKeyPair.generateKeyPair();
             }
-
         }
         else {
             return createKeyPair(seedBytes, account);

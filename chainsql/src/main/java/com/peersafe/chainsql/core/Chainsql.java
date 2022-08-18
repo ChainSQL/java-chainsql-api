@@ -1519,16 +1519,14 @@ public class Chainsql extends Submit {
 					version = Seed.VER_SOFT_SM;
 					break;
 				default:
-					version = Seed.VER_ED25519;
+                    throw new IllegalArgumentException("Unknown algorithm, please check!");
 			}
 		}
 
 		Seed seed;
 		if(options.has("secret")){
-
 			String sSecret = options.getString("secret");
 			seed = Seed.fromBase58(sSecret);
-
 		}else{
 			seed = Seed.randomSeed(version);
 		}

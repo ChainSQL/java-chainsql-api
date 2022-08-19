@@ -210,7 +210,7 @@ public class SM2Util extends GMBaseUtil {
 
     /**
      * @param privBytes           私钥
-     * @param cipherData          密文
+     * @param cipherDataDer          密文
      * @return 根据mode不同，输出的密文C1C2C3排列顺序不同。C1为65字节第1字节为压缩标识，这里固定为0x04，后面64字节为xy分量各32字节。C3为32字节。C2长度与原文一致。
      * @throws InvalidCipherTextException
      */

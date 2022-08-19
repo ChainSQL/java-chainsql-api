@@ -52,9 +52,6 @@ public class Ecies {
 	/**
 	 * encrypt text with a publickey list,the cipher can be decrypted 
 	 * by every secret whose publickey is in this list.
-	 * @param plainText  plainText
-	 * @param listPublicKey listPublicKey
-	 * @return byte array
 	 */
 /*	public static byte[] encryptText(String plainText,List<String> listPublicKey) {
 		Security.addProvider(new BouncyCastleProvider());

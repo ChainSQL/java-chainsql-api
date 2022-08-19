@@ -139,7 +139,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Connect to a secure websocket url.
 	 * @param url url,e.g.:"ws://127.0.0.1:5006".
-	 * @param trustCAsPath all trust ca path
+	 * @param trustCAPath all trust ca path
 	 * @param sslKeyPath ssl key path
 	 * @param sslCertPath ssl cert path
 	 * @return Connection
@@ -152,7 +152,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Connect to a secure websocket url.
 	 * @param url url,e.g.:"ws://127.0.0.1:5006".
-	 * @param trustCAsPath all trust ca path
+	 * @param trustCAPath all trust ca path
 	 * @return Connection
 	 */
 	@SuppressWarnings("resource")
@@ -1349,7 +1349,6 @@ public class Chainsql extends Submit {
 	 * @param ledgerIndexMax query range
 	 * @param limit  limit Max transaction count to get.
 	 * @param marker Marker from previous call response.
-	 * @return cb Callback.
 	 */
 	public void getContractTransactions(String contractAddress,int ledgerIndexMin, int ledgerIndexMax, int limit, JSONObject marker, Callback<JSONObject> cb){
 		this.connection.client.getContractTransactions(contractAddress,ledgerIndexMin, ledgerIndexMax, limit, marker, cb);
@@ -1850,7 +1849,7 @@ public class Chainsql extends Submit {
 	/**
 	 * 非对称解密接口
 	 * @param cipher 密文
-	 * @param password 加密密钥
+	 * @param privateKey 加密密钥
 	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
 	 * @return 明文，解密失败返回""
 	 */

@@ -1726,7 +1726,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	 * @param ledgerIndexMax query range
 	 * @param limit  limit Max transaction count to get.
 	 * @param marker Marker from previous call response.
-	 * @return cb Callback.
 	 */
     public  void getContractTransactions(final String contractAddress,final int ledgerIndexMin, final int ledgerIndexMax, final int limit,final JSONObject marker,final Callback<JSONObject> cb){
     	makeManagedRequest(Command.contract_tx, new Manager<JSONObject>() {

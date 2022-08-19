@@ -23,7 +23,7 @@ import com.peersafe.abi.datatypes.generated.AbiTypes;
 
 /**
  * Type wrapper to get around limitations of Java's type erasure. This is so that we can pass around
- * Typed {@link org.web3j.abi.datatypes.Array} types.
+ * Typed {@link com.peersafe.abi.datatypes.Array} types.
  *
  * <p>See <a href="http://gafter.blogspot.com.au/2006/12/super-type-tokens.html">this blog post</a>
  * for further details.

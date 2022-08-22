@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.peersafe.chainsql.pool.ChainsqlPool;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
@@ -42,6 +40,7 @@ import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
+import com.peersafe.chainsql.util.Define;
 
 public class Chainsql extends Submit {
 
@@ -960,19 +959,7 @@ public class Chainsql extends Submit {
 		String newToken = "";
 		if(token.length() != 0){
 			try {
-				byte[] seedBytes = null;
-
-				boolean bSoftGM = Utils.getAlgType(this.connection.secret).equals("softGMAlg");
-				if(!this.connection.secret.isEmpty()){
-
-					if(bSoftGM){
-						seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
-					}else{
-						seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
-					}
-
-				}
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
+                byte[] password = this.asymDecrypt(token, this.connection.secret).getBytes();
 				if(password == null){
 					return null;
 				}
@@ -1434,7 +1421,7 @@ public class Chainsql extends Submit {
 			try {
 				//token = Util.getUserToken(this.connection, this.connection.address, name);
 				if(token != "") {
-		   	 		String password = this.asymDecrypt(token, privateKey, false);
+		   	 		String password = this.asymDecrypt(token, privateKey);
 		   	 		Util.decryptData(password.getBytes(), tx);
 		   	 	}
 			} catch (Exception e) {
@@ -1856,19 +1843,41 @@ public class Chainsql extends Submit {
 	public String asymDecrypt(String cipher, String privateKey, boolean bSM) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
 		byte[] seedBytes = null;
-		
-		bSM = Utils.getAlgType(connection.secret).equals("softGMAlg");
-    	if(bSM){
-    		seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
-    		bSM = true;
-        }
-    	else{
-    		seedBytes   = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
-    		bSM = false;
-    	}
+
+        if(bSM) {
+			seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+		}else {
+			seedBytes   = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+		}
 		
         byte[] newBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, bSM);
 		return new String(newBytes);
+	}
+
+    /**
+	 * 非对称解密接口
+	 * @param cipher 密文
+	 * @param privateKey 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 明文，解密失败返回""
+	 */
+	public String asymDecrypt(String cipher, String privateKey) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] seedBytes = null;
+        Define.algType priAlgType = Utils.getAlgType(privateKey);
+        switch(priAlgType) {
+            case gmalg:
+                seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+                break;
+            case secp256k1:
+                seedBytes = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+                break;
+            default:
+                return new String("");
+        }
+        byte[] plainBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, 
+                                                        priAlgType.equals(Define.algType.gmalg));
+		return new String(plainBytes);
 	}
 	
 	

@@ -473,29 +473,42 @@ public class Util {
 			return strRaw;
 		}
 		try {
-			byte[] seedBytes = null;
-
-			boolean bSoftGM = Utils.getAlgType(connection.secret).equals("softGMAlg");
-			if(!connection.secret.isEmpty()){
-
-				if(bSoftGM){
-					seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(connection.secret);
-				}else{
-					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(connection.secret);
-				}
-
-			}
-
-			byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
+            String password = asymDec(token, connection.secret);
+			boolean bSoftGM = Utils.getAlgType(connection.secret).equals(Define.algType.gmalg);
 			if(password == null){
 				throw new Exception("Exception: decrypt token failed");
 			}
-			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password,bSoftGM);
+			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(), password.getBytes(), bSoftGM);
 			strRaw = Util.bytesToHex(rawBytes);
 			return strRaw;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return strRaw;
 		}
+	}
+
+    /**
+	 * 非对称解密接口
+	 * @param cipher 密文
+	 * @param privateKey 加密密钥
+	 * @return 明文，解密失败返回""
+	 */
+	public static String asymDec(String cipher, String privateKey) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] seedBytes = null;
+        Define.algType priAlgType = Utils.getAlgType(privateKey);
+        switch(priAlgType) {
+            case gmalg:
+                seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+                break;
+            case secp256k1:
+                seedBytes = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+                break;
+            default:
+                return new String("");
+        }
+        byte[] plainBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, 
+                                                        priAlgType.equals(Define.algType.gmalg));
+		return new String(plainBytes);
 	}
 }

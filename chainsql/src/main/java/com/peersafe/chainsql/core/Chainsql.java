@@ -722,8 +722,7 @@ public class Chainsql extends Submit {
 		String strRaw = listRaw.toString();
 		String token = "";
 		if(confidential){
-
-			boolean bSM = ( Utils.getAlgType(this.connection.secret).equals("softGMAlg") );
+            boolean bSM = Utils.getAlgType(this.connection.secret).equals(Define.algType.gmalg);
 			int randomSize = bSM? PASSWORD_LENGTH /2 :PASSWORD_LENGTH ;
 
 			byte[] password = Util.getRandomBytes(randomSize);
@@ -1858,26 +1857,10 @@ public class Chainsql extends Submit {
 	 * 非对称解密接口
 	 * @param cipher 密文
 	 * @param privateKey 加密密钥
-	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
 	 * @return 明文，解密失败返回""
 	 */
 	public String asymDecrypt(String cipher, String privateKey) {
-		byte[] cipherBytes = Util.hexToBytes(cipher);
-		byte[] seedBytes = null;
-        Define.algType priAlgType = Utils.getAlgType(privateKey);
-        switch(priAlgType) {
-            case gmalg:
-                seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
-                break;
-            case secp256k1:
-                seedBytes = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
-                break;
-            default:
-                return new String("");
-        }
-        byte[] plainBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, 
-                                                        priAlgType.equals(Define.algType.gmalg));
-		return new String(plainBytes);
+		return Util.asymDec(cipher, privateKey);
 	}
 	
 	

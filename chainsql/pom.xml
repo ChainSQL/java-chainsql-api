@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>3.0.3</version>
+	<version>3.0.4</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
 	<url>https://github.com/chainsql/java-chainsql-api</url>
@@ -48,13 +48,13 @@
 		    <systemPath>${project.basedir}/libs/sansec_sdkey2.1.1.jar</systemPath>  
 		</dependency>
 	 -->
-	 	<dependency>
+	 	<!-- <dependency>
 			<groupId>io.netty.tcnative</groupId>
 			<artifactId>netty-tcnative</artifactId>
 			<version>2.0.44</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/libs/netty-tcnative-openssl-static-2.0.44.Final.jar</systemPath>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
@@ -112,7 +112,7 @@
         <profile>
             <id>release</id>
             <build>
-				<resources>
+				<!-- <resources>
 					<resource>
 						<directory>libs</directory>
       					<targetPath>./BOOT-INF/libs/</targetPath>
@@ -120,7 +120,7 @@
         					<include>**/*.jar</include>
       					</includes>
 					</resource>
-				</resources>
+				</resources> -->
                 <plugins>
                       <plugin>
 				        <groupId>org.apache.maven.plugins</groupId>

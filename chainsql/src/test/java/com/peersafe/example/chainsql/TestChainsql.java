@@ -12,7 +12,6 @@ import com.peersafe.chainsql.core.Ripple;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.util.Util;
-import com.peersafe.base.crypto.sm.SM2UtilTest;
 
 public class TestChainsql {
 	public static final Chainsql c = new Chainsql();
@@ -28,7 +27,8 @@ public class TestChainsql {
 	public static String userSecret = "xnnUqirFepEKzVdsoBKkMf577upwT";
 	public static String userAddress = "zpMZ2H58HFPB5QTycMGWSXUeF47eA8jyd4";
 	
-	
+	public static String gmUserSecret =  "pw5MLePoMLs1DA8y7CgRZWw6NfHik7ZARg8Wp2pr44vVKrpSeUV";
+	public static String gmUserAddress = "zKzpkRTZPtsaQ733G8aRRG5x5Z2bTqhGbt";
 	public static void main(String[] args) {
 
 		try{
@@ -38,7 +38,6 @@ public class TestChainsql {
 									"/Path/to/your/root2.crt"};
 			Connection con = c.connect("wss://127.0.0.1:6006", trustCAsPath, sslKeyPath, sslCertPath);
 			// c.connect("wss://127.0.0.1:6006", trustCAsPath);
-			// c.connect("ws://127.0.0.1:6006");
 			if(con == null)
 			{
 				System.out.println("can not connect");
@@ -109,10 +108,10 @@ public class TestChainsql {
 		// test.testModifyTable();
 	}
 	
-	private static void testGM() {
+/*	private static void testGM() {
         SM2UtilTest sm2utilTest = new SM2UtilTest();
         sm2utilTest.testEncryptAndDecrypt();
-    }
+    }*/
 
 	private static void testRipple() {
 		TestChainsql test = new TestChainsql();
@@ -176,7 +175,7 @@ public class TestChainsql {
 		JSONObject tx_json = new JSONObject();
 		tx_json.put("Account", gmRootAddress);
 		tx_json.put("Amount", "10000000");
-		tx_json.put("Destination", gmAddress);
+		tx_json.put("Destination", gmUserAddress);
 		tx_json.put("TransactionType", "Payment");
 		tx_json.put("Sequence", 18);
 		txObj.put("tx_json", tx_json);

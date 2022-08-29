@@ -71,7 +71,8 @@ public class X509CryptoSuite {
                 throw new NoSuchFieldException();
             }
             method.setAccessible(true);
-            method.invoke(CurveDB, "sm2p256v1", "1.2.156.10197.1.301", 1,
+            try {
+                method.invoke(CurveDB, "sm2p256v1", "1.2.156.10197.1.301", 1,
                     "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFF",
                     "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFC",
                     "28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93",
@@ -79,18 +80,25 @@ public class X509CryptoSuite {
                     "BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0",
                     "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123",
                     1, splitPattern);
-    
-            final Field specCollection = CurveDB.getDeclaredField("specCollection");
-            final Field oidMap = CurveDB.getDeclaredField("oidMap");
-            oidMap.setAccessible(true);
-            specCollection.setAccessible(true);
-            specCollection.set(CurveDB, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB)).values()));
-    
-            Field nameTable = AlgorithmId.class.getDeclaredField("nameTable");
-            nameTable.setAccessible(true);
-            Map<ObjectIdentifier, String> map = (HashMap) nameTable.get(AlgorithmId.class);
-            ObjectIdentifier objectIdentifier = ObjectIdentifier.newInternal(new int[]{1, 2, 156, 10197, 1, 501});
-            map.put(objectIdentifier, ALGORITHM_SM2_KEY);
+                
+                final Field specCollection = CurveDB.getDeclaredField("specCollection");
+                final Field oidMap = CurveDB.getDeclaredField("oidMap");
+                oidMap.setAccessible(true);
+                specCollection.setAccessible(true);
+                specCollection.set(CurveDB, Collections.unmodifiableCollection(((Map) oidMap.get(CurveDB)).values()));
+
+                Field nameTable = AlgorithmId.class.getDeclaredField("nameTable");
+                nameTable.setAccessible(true);
+                Map<ObjectIdentifier, String> map = (HashMap) nameTable.get(AlgorithmId.class);
+                ObjectIdentifier objectIdentifier = ObjectIdentifier
+                        .newInternal(new int[] { 1, 2, 156, 10197, 1, 501 });
+                map.put(objectIdentifier, ALGORITHM_SM2_KEY);
+            } catch (Exception e) {
+                if(e.getCause().getMessage().equals("Duplication oid: 1.2.156.10197.1.301")) {
+                    // It doesn't matter
+                    // System.out.print(e.getCause().getMessage());
+                }
+            }
         } 
 
         Class clazz = Class.forName("io.netty.handler.ssl.ExtendedOpenSslSession");

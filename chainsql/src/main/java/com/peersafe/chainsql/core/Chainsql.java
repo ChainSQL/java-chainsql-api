@@ -1660,7 +1660,16 @@ public class Chainsql extends Submit {
 	}
 	
 	public JSONObject getAccountInfo(String address) {
-		AccountID account = AccountID.fromAddress(address);
+        AccountID account;
+        String addrPrefix = address.substring(0,2);
+        if(addrPrefix.equals("0x"))
+        {
+            account = AccountID.fromString(address.substring(2));
+        }
+		else
+        {
+            account = AccountID.fromAddress(address);
+        }
 		return connection.client.accountInfo(account);
 	}
 	

@@ -15,6 +15,8 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.util.Util;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 /**
  * @author mail_
  *
@@ -81,6 +83,13 @@ public class Ripple extends Submit {
 	private Ripple pay(String accountId,Amount amount){
 		mTxJson = new JSONObject();
 		mTxJson.put("Account", this.connection.address);
+
+        String addrPrefix = accountId.substring(0,2);
+        if(addrPrefix.equals("0x"))
+        {
+            byte[] addrByte = Util.hexToBytes(accountId.substring(2));
+            accountId = getB58IdentiferCodecs().encodeAddress(addrByte);
+        }
 		if(amount.currency() != Currency.ZXC)
 		{
 			JSONObject result = this.connection.client.accountInfo(amount.issuer());

@@ -26,6 +26,7 @@ import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
+import com.peersafe.base.encodings.common.B16;
 
 
 public class Util {
@@ -115,11 +116,12 @@ public class Util {
 	 * @return Hexed byte array.
 	 */
 	public static byte[] hexToBytes(String bytes){
-	    ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
-	    //将每2位16进制整数组装成一个字节
-	    for(int i=0;i<bytes.length();i+=2)
-	    	baos.write((hexString.indexOf(bytes.charAt(i))<<4 |hexString.indexOf(bytes.charAt(i+1))));
-	    return baos.toByteArray();
+        return B16.decode(bytes);
+	    // ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
+	    // //将每2位16进制整数组装成一个字节
+	    // for(int i=0;i<bytes.length();i+=2)
+	    // 	baos.write((hexString.indexOf(bytes.charAt(i))<<4 |hexString.indexOf(bytes.charAt(i+1))));
+	    // return baos.toByteArray();
 	}
 	
 	/**

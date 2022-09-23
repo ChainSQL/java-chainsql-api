@@ -70,8 +70,6 @@ public class Chainsql extends Submit {
 	 * @param secret  Account secret,start with a lower case 'x'.
 	 */
 	public void as(String address, String secret) {
-
-
 		JSONObject retAddress = generateAddress(secret);
 		if(retAddress.has("address") && !address.equals( retAddress.getString("address") )){
 			System.err.println("Exception: address and secret not match !");
@@ -79,10 +77,9 @@ public class Chainsql extends Submit {
 
 		this.connection.address = address;
 		this.connection.secret  = secret;
-
-		if(this.connection.scope == null){
-			this.connection.scope   = address;
-		}
+        
+        //every time call as, will reset scope to as addr
+		this.connection.scope   = address;
 	}
 
 

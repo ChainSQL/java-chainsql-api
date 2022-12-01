@@ -15,7 +15,7 @@ public class TestSign {
 		testSignForTrustSet();
 		testSignSignerListSet();
 		testSignPathset();
-		
+
 		//签名任意数据
 		testSignSimple();
 	}
@@ -129,8 +129,6 @@ public class TestSign {
 	
 	private static void testSignForPayment(){
 		JSONObject obj = new JSONObject();
-		obj.put("secret", "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
-		obj.put("account","zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh");
 		JSONObject tx_json = new JSONObject();
 		tx_json.put("Account", "zKvHeBUtEoNRW1wtvA42tfJx1bh7pqxZmT");
 		tx_json.put("Amount", "1000000000");
@@ -145,9 +143,7 @@ public class TestSign {
 	
 	private static void testSignForTrustSet(){
 		JSONObject obj = new JSONObject();
-		obj.put("secret", "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
-		obj.put("account","zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh");
-		
+
 		JSONObject limitAmount = new JSONObject();
 		limitAmount.put("currency", "GRD");
 		limitAmount.put("issuer", "zMcXHEkD78T1pwAgG2pf6QWALyBKF1YvD1");

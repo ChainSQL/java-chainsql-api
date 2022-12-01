@@ -362,23 +362,29 @@ public class Chainsql extends Submit {
 	 * @param secret Secret used to sign
 	 * @return sign result form:
 	 {
-	    "Signer":{
-	        "Account":"rDsFXt1KRDNNckSh3exyTqkQeBKQCXawb2",
-	        "SigningPubKey":"02E37D565DF377D0C30D93163CF40F41BB81B966B11757821F25FBCDCFEA18E8A9",
-	        "TxnSignature":"3044022050903320FF924BCD7F55D3BE095A457BF2421E805C5B39DA77F006BB217D6398022024C51DECA25018D80CB16AB65674B71BFD20789D63EC47FD5EAD7FC75B880055"
-	    },
-	    "hash":""
+	    "tx_json":{
+			"Account":"zKvHeBUtEoNRW1wtvA42tfJx1bh7pqxZmT",
+			"Destination":"zMcXHEkD78T1pwAgG2pf6QWALyBKF1YvD1",
+			"TransactionType":"Payment",
+			"SigningPubKey":"",
+			"Amount":"1000000000",
+			"Fee":"50",
+			"Signers":[
+				{
+				"Signer":{
+					"Account":"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh",
+					"TxnSignature":"304402200ADA6EF13013EB3E71CBD66C75936128ED9C519794768D92D7859949B5CBDE3802200AFBC0CAF2CEBF03DF706D1F5D297B58D9CAA326126375E4B91390F162BC4385",
+					"SigningPubKey":"0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020"
+				}
+				}
+			],
+			"Sequence":2
+		},
+		"tx_blob":"120000240000000261400000003B9ACA0068400000000000003273008114CF863385CF26467C8C9E51C7A6985BF449C7BDCA8314DC6DDF45E62C3749F120DD9AB0E9B707EB84320EF3E01073210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD0207446304402200ADA6EF13013EB3E71CBD66C75936128ED9C519794768D92D7859949B5CBDE3802200AFBC0CAF2CEBF03DF706D1F5D297B58D9CAA326126375E4B91390F162BC43858114B5F762798A53D543A014CAF8B297CFF8F2F937E8E1F1",
+	    "hash":"F32A51E5B7871FE6F53427F4D3099F521BDBB3BB823BD7D66521287B70A011B8"
 	 }
 	 */
 	public JSONObject signFor(JSONObject tx,String secret){
-		if(!tx.has("secret")){
-			return Util.errorObject("no secret supplied");
-		}
-
-		if(!tx.has("account")){
-			return Util.errorObject("no account supplied");
-		}
-
 		JSONObject tx_json = tx.getJSONObject("tx_json");
 		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
 		Transaction transaction = new Transaction(type);
@@ -392,20 +398,12 @@ public class Chainsql extends Submit {
 		
 		SignedTransaction signed = transaction.multiSign(secret);
 		
-		String sJson = signed.txn.prettyJSON();
-//		System.out.println(sJson);
-		
-		IKeyPair keyPair = Seed.fromBase58(secret).keyPair();
-		String publicKey = Util.bytesToHex(keyPair.canonicalPubBytes());
-		
-		JSONObject json = new JSONObject(sJson);
-		JSONObject signer = new JSONObject();
-		signer.put("Account",tx.getString("account"));
-		signer.put("SigningPubKey", publicKey);
-		signer.put("TxnSignature", json.getString("TxnSignature"));
+		JSONObject json = signed.txn.toJSONObject();
 		JSONObject ret = new JSONObject();
-		ret.put("Signer", signer);
 		ret.put("hash", signed.hash.toString());
+		ret.put("tx_blob",signed.tx_blob);
+		ret.put("tx_json",json);
+
 		return ret;
 	}
 	
@@ -1158,7 +1156,12 @@ public class Chainsql extends Submit {
 		Ripple ripple = new Ripple(this);
 		return ripple.accountAuthorize(nFlag, bSet, account);
 	}
-	
+
+	public Ripple signerListSet(int quorum, List<Ripple.SignerEntry> signers)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.signerListSet(quorum,signers);
+	}
 	/**
 	 * Begin a sql-transaction type operation.
 	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
@@ -1555,6 +1558,7 @@ public class Chainsql extends Submit {
 		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
 		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
 		String address   = getB58IdentiferCodecs().encodeAddress(o);
+		String publieKeyHex = Util.bytesToHex(pubBytes);
 		
 		JSONObject obj = new JSONObject();
 		if(!Config.isUseGM()){
@@ -1562,6 +1566,7 @@ public class Chainsql extends Submit {
 		}
 		obj.put("address", address);
 		obj.put("publicKey", publicKey);
+		obj.put("publicKeyHex",publieKeyHex);
 		return obj;
 	}
 	/**

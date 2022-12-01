@@ -5,6 +5,7 @@ package com.peersafe.chainsql.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 import com.peersafe.base.core.coretypes.*;
 
@@ -435,5 +436,30 @@ public class Ripple extends Submit {
 		mTxJson.put("Destination", account);
 		return this;
 	}
-	
+
+	public static class SignerEntry{
+		public String address;
+		public int weight;
+		public SignerEntry(String address,int weight){
+			this.address = address;
+			this.weight = weight;
+		}
+	}
+	public Ripple signerListSet(int quorum, List<SignerEntry> signers){
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		mTxJson.put("TransactionType", TransactionType.SignerListSet.name());
+		mTxJson.put("SignerQuorum", quorum);
+		JSONArray arr = new JSONArray();
+		for(SignerEntry entry : signers){
+			JSONObject entryInner = new JSONObject();
+			entryInner.put("Account", entry.address);
+			entryInner.put("SignerWeight", entry.weight);
+			JSONObject entryOuter = new JSONObject();
+			entryOuter.put("SignerEntry", entryInner);
+			arr.put(entryOuter);
+		}
+		mTxJson.put("SignerEntries", arr);
+		return this;
+	}
 }

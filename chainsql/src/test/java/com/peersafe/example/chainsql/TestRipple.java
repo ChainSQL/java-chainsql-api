@@ -1,6 +1,7 @@
 package com.peersafe.example.chainsql;
 
 
+import com.peersafe.chainsql.core.Ripple;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,6 +11,9 @@ import com.peersafe.base.core.coretypes.STObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
 import com.peersafe.chainsql.util.Util;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestRipple {
 	
@@ -50,19 +54,20 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://localhost:6006");
+		c.connect("ws://10.100.0.78:6006");
 		//
 		String sCurrency = "abc";
 		JSONObject jsonObj;
 		boolean bGateWay = false;
 		boolean bEscrow = false;
-		boolean authorize = true;
+		boolean authorize = false;
+		boolean signerListSet = true;
 		if(bGateWay)
 		{
 			//
 			c.as(rootAddress, rootSecret);
 			//
-			boolean bActive = false;
+			boolean bActive = true;
 			boolean bTrust = false;
 			boolean bPay = false;
 			
@@ -184,6 +189,15 @@ public class TestRipple {
 	        // 12 转账的权限,  13 部署合约的权限, 14 创建表的权限, 15发行数字资产的权限, 16 admin权限
 			jsonObj = c.accountAuthorize(12, false, sUser1).submit(SyncCond.validate_success);
 	        System.out.println("accountAuthorize " + jsonObj);
+		}
+		else if(signerListSet){
+			c.as(rootAddress,rootSecret);
+			List<Ripple.SignerEntry> list = new ArrayList<Ripple.SignerEntry>();
+			list.add(new Ripple.SignerEntry(sUser,1));
+			list.add(new Ripple.SignerEntry(sUser1,2));
+//			list.add(new Ripple.SignerEntry(rootAddress,3));
+			JSONObject obj = c.signerListSet(3,list).submit(SyncCond.validate_success);
+			System.out.println("signerListSet: " + obj);
 		}
 		else
 			System.exit(1);

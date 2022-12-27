@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.peersafe.base.encodings.common.B16;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import com.peersafe.chainsql.util.Define.algType;
 
 import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
@@ -66,17 +67,18 @@ public class Utils {
 	}
 
 
-	public static String getAlgType(String secret){
-
+	public static algType getAlgType(String secret){
+        if(secret.isEmpty()) {
+            return algType.unknown;
+        }
 		String regEx = "^[a-zA-Z1-9]{51,51}";
 		Pattern pattern = Pattern.compile(regEx);
 		Matcher matcher = pattern.matcher(secret);
 
     	if(matcher.matches()){
-
-    		return "softGMAlg";
+    		return algType.gmalg;
 		}else{
-    		return "secp256k1";
+    		return algType.secp256k1;
 		}
 	}
 }

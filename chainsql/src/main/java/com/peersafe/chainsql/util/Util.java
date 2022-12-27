@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.peersafe.base.crypto.sm.SMKeyPair;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.json.JSONArray;
@@ -24,6 +25,8 @@ import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
 import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.EncryptCommon;
+import com.peersafe.chainsql.net.Connection;
+import com.peersafe.base.encodings.common.B16;
 
 
 public class Util {
@@ -113,11 +116,12 @@ public class Util {
 	 * @return Hexed byte array.
 	 */
 	public static byte[] hexToBytes(String bytes){
-	    ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
-	    //将每2位16进制整数组装成一个字节
-	    for(int i=0;i<bytes.length();i+=2)
-	    	baos.write((hexString.indexOf(bytes.charAt(i))<<4 |hexString.indexOf(bytes.charAt(i+1))));
-	    return baos.toByteArray();
+        return B16.decode(bytes);
+	    // ByteArrayOutputStream baos=new ByteArrayOutputStream(bytes.length()/2);
+	    // //将每2位16进制整数组装成一个字节
+	    // for(int i=0;i<bytes.length();i+=2)
+	    // 	baos.write((hexString.indexOf(bytes.charAt(i))<<4 |hexString.indexOf(bytes.charAt(i+1))));
+	    // return baos.toByteArray();
 	}
 	
 	/**
@@ -435,6 +439,13 @@ public class Util {
 		}else {
 			pubBytes = getB58IdentiferCodecs().decode(publicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
 		}
+
+		if(pubBytes.length == 65 && pubBytes[0] == 0x47){
+			// 软国密
+			SMKeyPair smKeyPair = new SMKeyPair(null,null,Utils.uBigInt(pubBytes));
+			return smKeyPair.verifySignature(message, signature);
+		}
+
         
         K256KeyPair keyPair = new K256KeyPair(null,Utils.uBigInt(pubBytes));
         return keyPair.verifySignature(message, signature);
@@ -445,5 +456,61 @@ public class Util {
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		return bytesToHex(pubBytes);
+	}
+	
+	public static String getUserToken(Connection connection,String address,String name) throws Exception{
+		JSONObject res = connection.client.getUserToken(connection.scope,address,name);
+		String token = "";
+		if(res.has("error")){
+			throw new Exception(res.getString("error_message"));
+		}else if(res.has("token")) {
+			token = res.getString("token");
+		}
+		return token;
+	}
+	
+	public static String encryptRaw(Connection connection,String token,String strRaw) throws Exception{
+		if(token.equals("")) {
+			strRaw = Util.toHexString(strRaw);
+			return strRaw;
+		}
+		try {
+            String password = asymDec(token, connection.secret);
+			boolean bSoftGM = Utils.getAlgType(connection.secret).equals(Define.algType.gmalg);
+			if(password == null){
+				throw new Exception("Exception: decrypt token failed");
+			}
+			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(), password.getBytes(), bSoftGM);
+			strRaw = Util.bytesToHex(rawBytes);
+			return strRaw;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return strRaw;
+		}
+	}
+
+    /**
+	 * 非对称解密接口
+	 * @param cipher 密文
+	 * @param privateKey 加密密钥
+	 * @return 明文，解密失败返回""
+	 */
+	public static String asymDec(String cipher, String privateKey) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] seedBytes = null;
+        Define.algType priAlgType = Utils.getAlgType(privateKey);
+        switch(priAlgType) {
+            case gmalg:
+                seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+                break;
+            case secp256k1:
+                seedBytes = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+                break;
+            default:
+                return new String("");
+        }
+        byte[] plainBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, 
+                                                        priAlgType.equals(Define.algType.gmalg));
+		return new String(plainBytes);
 	}
 }

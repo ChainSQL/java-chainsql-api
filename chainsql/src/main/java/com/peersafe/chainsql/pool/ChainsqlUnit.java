@@ -12,14 +12,17 @@ public class ChainsqlUnit {
 		this.using = using;
 	}
 	
-	public synchronized Chainsql lock() {
+	public synchronized void lock() {
 		this.using = true;
-		return c;
 	}
 	
 	public synchronized void unlock() {
+		this.unlock(false);
+	}
+
+	public synchronized void unlock(boolean disconnect) {
 		this.using = false;
-		if(extra) {
+		if (extra || disconnect) {
 			this.c.disconnect();
 		}
 	}
@@ -28,8 +31,8 @@ public class ChainsqlUnit {
 		extra = true;
 	}
 	
-	public boolean available() {
-		return this.using == false;
+	public synchronized boolean available() {
+		return !this.using;
 	}
 	
 	public Chainsql getChainsql() {

@@ -1,6 +1,7 @@
 package com.peersafe.abi.datatypes.generated;
 
 import java.util.List;
+
 import com.peersafe.abi.datatypes.StaticArray;
 import com.peersafe.abi.datatypes.Type;
 
@@ -11,12 +12,23 @@ import com.peersafe.abi.datatypes.Type;
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  */
 public class StaticArray15<T extends Type> extends StaticArray<T> {
+    @Deprecated
     public StaticArray15(List<T> values) {
         super(15, values);
     }
 
+    @Deprecated
     @SafeVarargs
     public StaticArray15(T... values) {
         super(15, values);
+    }
+
+    public StaticArray15(Class<T> type, List<T> values) {
+        super(type, 15, values);
+    }
+
+    @SafeVarargs
+    public StaticArray15(Class<T> type, T... values) {
+        super(type, 15, values);
     }
 }

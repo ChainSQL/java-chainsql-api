@@ -1,11 +1,11 @@
 package com.peersafe.abi;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.peersafe.abi.datatypes.Event;
 import com.peersafe.abi.datatypes.Type;
+
 import org.web3j.crypto.Hash;
 import org.web3j.utils.Numeric;
 
@@ -17,39 +17,32 @@ import org.web3j.utils.Numeric;
  */
 public class EventEncoder {
 
-    private EventEncoder() { }
+	  private EventEncoder() {}
 
-    public static String encode(Event function) {
-        List<TypeReference<Type>> indexedParameters = function.getIndexedParameters();
-        List<TypeReference<Type>> nonIndexedParameters = function.getNonIndexedParameters();
+	    public static String encode(Event event) {
 
-        String methodSignature = buildMethodSignature(function.getName(),
-                indexedParameters, nonIndexedParameters);
+	        String methodSignature = buildMethodSignature(event.getName(), event.getParameters());
 
-        return buildEventSignature(methodSignature);
-    }
+	        return buildEventSignature(methodSignature);
+	    }
 
-    static <T extends Type> String buildMethodSignature(
-            String methodName, List<TypeReference<T>> indexParameters,
-            List<TypeReference<T>> nonIndexedParameters) {
+	    static <T extends Type> String buildMethodSignature(
+	            String methodName, List<TypeReference<T>> parameters) {
+	    	
 
-        List<TypeReference<T>> parameters = new ArrayList<>(indexParameters);
-        parameters.addAll(nonIndexedParameters);
+	        StringBuilder result = new StringBuilder();
+	        result.append(methodName);
+	        result.append("(");
+	        String params =
+	                parameters.stream().map(p -> Utils.getTypeName(p)).collect(Collectors.joining(","));
+	        result.append(params);
+	        result.append(")");
+	        return result.toString();
+	    }
 
-        StringBuilder result = new StringBuilder();
-        result.append(methodName);
-        result.append("(");
-        String params = parameters.stream()
-                .map(p -> Utils.getTypeName(p))
-                .collect(Collectors.joining(","));
-        result.append(params);
-        result.append(")");
-        return result.toString();
-    }
-
-    public static String buildEventSignature(String methodSignature) {
-        byte[] input = methodSignature.getBytes();
-        byte[] hash = Hash.sha3(input);
-        return Numeric.toHexString(hash);
-    }
+	    public static String buildEventSignature(String methodSignature) {
+	        byte[] input = methodSignature.getBytes();
+	        byte[] hash = Hash.sha3(input);
+	        return Numeric.toHexString(hash);
+	    }
 }

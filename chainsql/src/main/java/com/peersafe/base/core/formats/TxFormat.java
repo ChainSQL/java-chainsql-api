@@ -77,7 +77,8 @@ public class TxFormat extends Format {
             Field.TransferFeeMin,  Requirement.OPTIONAL,
             Field.TransferFeeMax,  Requirement.OPTIONAL,
             Field.SetFlag,         Requirement.OPTIONAL,
-            Field.ClearFlag,       Requirement.OPTIONAL);
+            Field.ClearFlag,       Requirement.OPTIONAL,
+    		Field.WhiteLists,      Requirement.OPTIONAL);
 
     static public TxFormat TrustSet = new TxFormat(
             TransactionType.TrustSet,
@@ -171,7 +172,9 @@ public class TxFormat extends Format {
             Field.OriginalAddress,Requirement.OPTIONAL,
             Field.CurTxHash,	 Requirement.OPTIONAL,
             Field.FutureTxHash,	 Requirement.OPTIONAL,
-            Field.TxsHashFillField, Requirement.OPTIONAL);
+            Field.TxsHashFillField, Requirement.OPTIONAL,
+            Field.LedgerSeqField,Requirement.OPTIONAL,
+            Field.LedgerTimeField,Requirement.OPTIONAL);
     
     static public TxFormat SQLTransaction = new TxFormat(
             TransactionType.SQLTransaction,
@@ -201,4 +204,38 @@ public class TxFormat extends Format {
             Field.ReferenceFeeUnits,    Requirement.REQUIRED,
             Field.ReserveBase,          Requirement.REQUIRED,
             Field.ReserveIncrement,     Requirement.REQUIRED);
+
+
+    static public TxFormat SchemaCreate = new TxFormat(
+            TransactionType.SchemaCreate,
+            Field.SchemaName,           Requirement.REQUIRED,
+            Field.SchemaStrategy,       Requirement.REQUIRED,
+            Field.SchemaAdmin,          Requirement.OPTIONAL,
+            Field.AnchorLedgerHash,     Requirement.OPTIONAL,
+            Field.Validators,           Requirement.REQUIRED,
+            Field.PeerList,             Requirement.REQUIRED);
+
+    static public TxFormat SchemaModify = new TxFormat(
+            TransactionType.SchemaModify,
+            Field.OpType,              Requirement.REQUIRED,
+            Field.Validators,          Requirement.REQUIRED,
+            Field.PeerList,            Requirement.REQUIRED,
+            Field.SchemaID,            Requirement.REQUIRED);
+    
+    static public TxFormat SchemaDelete = new TxFormat(
+            TransactionType.SchemaDelete,
+            Field.SchemaID,            Requirement.REQUIRED);
+    
+    
+    static public TxFormat Authorize = new TxFormat(
+            TransactionType.Authorize,
+            Field.Account,              Requirement.REQUIRED,
+            Field.SetFlag,          	Requirement.OPTIONAL,
+            Field.ClearFlag,            Requirement.OPTIONAL,
+            Field.Destination,          Requirement.REQUIRED);
+
+    static public TxFormat FreezeAccount = new TxFormat(
+            TransactionType.FreezeAccount,
+            Field.Destination,          Requirement.REQUIRED);
+
 }

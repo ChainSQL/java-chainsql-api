@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.peersafe</groupId>
 	<artifactId>chainsql</artifactId>
-	<version>1.5.7</version>
+	<version>3.0.4</version>
 	<packaging>jar</packaging>
 	<name>ChainSQL JAVA API</name>
 	<url>https://github.com/chainsql/java-chainsql-api</url>
@@ -34,7 +34,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<web3j.version>3.4.0</web3j.version>
+		<web3j.version>4.8.1</web3j.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
@@ -47,7 +47,19 @@
 		    <scope>system</scope>  
 		    <systemPath>${project.basedir}/libs/sansec_sdkey2.1.1.jar</systemPath>  
 		</dependency>
-	 -->  
+	 -->
+	 	<!-- <dependency>
+			<groupId>io.netty.tcnative</groupId>
+			<artifactId>netty-tcnative</artifactId>
+			<version>2.0.44</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/netty-tcnative-openssl-static-2.0.44.Final.jar</systemPath>
+		</dependency> -->
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.70.Final</version>
+		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
@@ -67,17 +79,22 @@
         <dependency>    
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.65</version>
+            <version>1.70</version>
+        </dependency>
+		<dependency>    
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
         </dependency>
 		<dependency>  
 		    <groupId>com.google.protobuf</groupId>  
 		    <artifactId>protobuf-java</artifactId>  
-		    <version>2.5.0</version>  
+		    <version>4.0.0-rc-2</version>  
 		</dependency>
   		<dependency>
 		    <groupId>com.peersafe</groupId>
 		    <artifactId>abi_chainsql</artifactId>
-		    <version>1.4.5</version>
+		    <version>3.0.2</version>
 		</dependency><!-- 
 		<dependency>
 		    <groupId>io.reactivex</groupId>
@@ -85,32 +102,25 @@
 		    <version>1.2.4</version>
 		</dependency> -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.6.4</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.web3j</groupId>
-		    <artifactId>tuples</artifactId>
-		    <version>${web3j.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>RELEASE</version>
+			<scope>test</scope>
 		</dependency>
-				
 	</dependencies>
     <profiles>
         <profile>
             <id>release</id>
             <build>
+				<!-- <resources>
+					<resource>
+						<directory>libs</directory>
+      					<targetPath>./BOOT-INF/libs/</targetPath>
+      					<includes>
+        					<include>**/*.jar</include>
+      					</includes>
+					</resource>
+				</resources> -->
                 <plugins>
                       <plugin>
 				        <groupId>org.apache.maven.plugins</groupId>
@@ -176,11 +186,32 @@
                 </repository>
             </distributionManagement>
         </profile>
+		<profile>
+			<id>jdk-1.8</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+				<jdk>1.8</jdk>
+			</activation>
+			<properties>
+				<maven.compiler.source>1.8</maven.compiler.source>
+				<maven.compiler.target>1.8</maven.compiler.target>
+				<maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+			</properties>
+		</profile>
     </profiles>
-	<!-- 
+	
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+					<javadoc.skip>true</javadoc.skip>
+				</configuration>
+			</plugin>
+			
+			<!-- <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.6.1</version>
@@ -206,9 +237,9 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 
 		</plugins>
 	</build>
-	 -->
+	
 </project>

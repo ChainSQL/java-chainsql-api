@@ -1,13 +1,19 @@
 package com.peersafe.example.chainsql;
 
 
+import com.peersafe.chainsql.core.Ripple;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.core.coretypes.RippleDate;
+import com.peersafe.base.core.coretypes.STArray;
+import com.peersafe.base.core.coretypes.STObject;
 import com.peersafe.chainsql.core.Chainsql;
 import com.peersafe.chainsql.core.Submit.SyncCond;
+import com.peersafe.chainsql.util.Util;
 
-import java.nio.channels.ScatteringByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestRipple {
 	
@@ -16,20 +22,25 @@ public class TestRipple {
 	//account,secret
 	private static String[] sAddr = {
 			"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh", // root
-			"zLLV3G8RfBXY4EAYDvnSaAz4q4PQg8PEe6", // user1
+			"zLi3jhvjkJp32cKyNScQx6GXZaLoXuEJ2u", // user1
 			"zPcimjPjkhQk7a7uFHLKEv6fyGHwFGQjHa", // user
-			"zhRc343nqZk1wUEQFGXaoU76faJgYRrSBS"  // issuer
+			"zKXfeKXkTtLSTkEzaJyu2cRmRBFRvTW2zc", // issuer
+            "zN7TwUjJ899xcvNXZkNJ8eFFv2VLKdESsj" // gmRoot
 
 	};
 	private static String[] sSec = {
 			"xnoPBzXtMeMyMHUVTgbuqAfg1SUTb", // root sec
-			"xnBWT67xXecGGWPCrTYtE1MHjKQqW", // user1 sec
+			"xx3fkguaAC3dom5pVmx93Fxn8BdYN", // user1 sec
 			"xxCosoAJMADiy6kQFVgq1Nz8QewkU", // user sec
-			"xxRjxBvT7ABczPh2CMikpNUwjiuLU"  // issuer sec
+			"xhtBo8BLBZtTgc3LHnRspaFro5P4H",  // issuer sec
+            "p97evg5Rht7ZB7DbEpVqmV3yiSBMxR3pRBKJyLcRWt7SL5gEeBb" // gmRoot sec
 
 	};
 	public static String rootAddress = sAddr[0];
 	public static String rootSecret = sSec[0];
+
+    public static String gmRootAddress = sAddr[4];
+	public static String gmRootSecret = sSec[4];
 
 	public static String sUser1 = sAddr[1];
 	public static String sUserSec1 = sSec[1];
@@ -43,22 +54,26 @@ public class TestRipple {
 	public static void main(String[] args) throws Exception
 	{		
 		//
-		c.connect("ws://192.168.29.115:5217");
+		c.connect("ws://10.100.0.78:6006");
 		//
 		String sCurrency = "abc";
 		JSONObject jsonObj;
-		boolean bGateWay = true;
+		boolean bGateWay = false;
 		boolean bEscrow = false;
+		boolean authorize = false;
+		boolean signerListSet = true;
 		if(bGateWay)
 		{
 			//
 			c.as(rootAddress, rootSecret);
 			//
-			boolean bActive = false;
-			boolean bTrust = true;
+			boolean bActive = true;
+			boolean bTrust = false;
 			boolean bPay = false;
+			
 			if(bActive)
 			{
+				//c.connection.client.subscribeAccount(AccountID.fromString(rootAddress));
 				System.out.print("activate >>>>>>>>>>>>>>>\n");
 				jsonObj = c.pay(sGateWay, "100000000").submit(SyncCond.validate_success);
 				System.out.print("     gateWay:" + jsonObj + "\n");
@@ -82,6 +97,22 @@ public class TestRipple {
 				{
 					System.out.print(e);
 				}
+				JSONObject user = new JSONObject();
+				user.put("User", "zLi3jhvjkJp32cKyNScQx6GXZaLoXuEJ2u");
+				JSONObject whitelist = new JSONObject();
+				whitelist.put("WhiteList", user);
+				STObject object = STObject.fromJSONObject(whitelist);
+				STArray arry = new STArray();
+				arry.add(object);
+				
+				String tablestr = "{\"WhiteList\":{\"User\":\"" + sUser1+ "\"}}";
+				JSONArray array =  Util.strToJSONArray(tablestr);
+				jsonObj = c.whitelistSet(array, 10).submit(SyncCond.validate_success);
+				System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
+				
+				//jsonObj = c.whitelistSet(array, 11).submit(SyncCond.validate_success);
+				//System.out.print("set gateWay:" + jsonObj + "\ntrust gateWay ...\n");
+				
 				c.as(sUser, sUserSec);
 				jsonObj = c.trustSet("1000000000", sCurrency, sGateWay).submit(SyncCond.validate_success);
 				System.out.print("     user: " + jsonObj + "\n");
@@ -151,6 +182,22 @@ public class TestRipple {
 				System.exit(1);
 			}
 			System.exit(1);
+		}
+		else if (authorize) {
+			c.as(rootAddress, rootSecret);
+	        //参数： 授权/取消授权哪个权限、是否是授权、给谁授权
+	        // 12 转账的权限,  13 部署合约的权限, 14 创建表的权限, 15发行数字资产的权限, 16 admin权限
+			jsonObj = c.accountAuthorize(12, false, sUser1).submit(SyncCond.validate_success);
+	        System.out.println("accountAuthorize " + jsonObj);
+		}
+		else if(signerListSet){
+			c.as(rootAddress,rootSecret);
+			List<Ripple.SignerEntry> list = new ArrayList<Ripple.SignerEntry>();
+			list.add(new Ripple.SignerEntry(sUser,1));
+			list.add(new Ripple.SignerEntry(sUser1,2));
+//			list.add(new Ripple.SignerEntry(rootAddress,3));
+			JSONObject obj = c.signerListSet(3,list).submit(SyncCond.validate_success);
+			System.out.println("signerListSet: " + obj);
 		}
 		else
 			System.exit(1);

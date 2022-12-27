@@ -52,10 +52,12 @@ public class ServerInfo {
                 load_base = 256;
             if (fee_base == 0)
                 fee_base = 10;
+            if (load_factor == 0)
+            	load_factor = 256;
         }
 
         double fee_unit = (double) fee_base / fee_ref, fee;
-        fee_unit *= load_factor / load_base;
+        fee_unit *= (double)load_factor / load_base;
         fee = units * fee_unit * Config.getFeeCushion();
         String s = String.valueOf((long) Math.ceil(fee));
         return Amount.fromString(s);
@@ -79,6 +81,9 @@ public class ServerInfo {
     public void update(JSONObject json) {
         // TODO, this might asking for trouble, just assuming certain fields, it should BLOW UP
 
+    	if(updated && json.optLong("ledger_index", ledger_index) < ledger_index) {
+    		return;
+    	}
         fee_base = json.optInt("fee_base", fee_base);
         drops_per_byte = json.optInt("drops_per_byte", drops_per_byte);
         txn_count = json.optInt("txn_count", txn_count);
@@ -97,7 +102,6 @@ public class ServerInfo {
 
         txn_success = json.optInt("txn_success", txn_success);
         txn_failure = json.optInt("txn_failure", txn_failure);
-
 
         updated = true;
     }
@@ -118,6 +122,10 @@ public class ServerInfo {
      */
     public boolean primed() {
         return updated;
+    }
+    
+    public void unprime() {
+    	updated = false;
     }
 }
 

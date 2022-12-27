@@ -1,8 +1,8 @@
 package com.peersafe.abi.datatypes.generated;
 
 import java.math.BigInteger;
-import com.peersafe.abi.datatypes.Uint;
 
+import com.peersafe.abi.datatypes.Uint;
 /**
  * Auto generated code.
  * <p><strong>Do not modifiy!</strong>

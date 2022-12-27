@@ -20,17 +20,20 @@ import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
-public class Table extends Submit{
+public class Table extends Submit {
 	private String name;
 	private List<String> query = new ArrayList<>();
-	private String  exec;
-	private String  autoFillField;
-	private String  txsHashFillField;
-	private String  nameInDB;
+	private String exec;
+	private String autoFillField;
+	private String txsHashFillField;
+	private String ledgerSeqField;
+	private String ledgerTimeField;
+	private String nameInDB;
 	private boolean confidential = true;  // 标志是否为加密表
 
 	/**
 	 * Constructor for Table.
+	 *
 	 * @param name Tablename.
 	 */
 	public Table(String name) {
@@ -42,67 +45,86 @@ public class Table extends Submit{
 		super();
 	}
 */
+
 	/**
 	 * Insert data to a table.
+	 *
 	 * @param orgs Insert parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
-	public Table insert(List<String> orgs){
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
+	public Table insert(List<String> orgs) {
+		for (String s : orgs) {
+			if (!"".equals(s) && s != null) {
 				String json = Util.StrToJsonStr(s);
 				this.query.add(json);
 			}
 		}
-	    this.exec = "r_insert";
-	    return dealWithTransaction();
-	}
-
-	/**
-	 * Insert data to a table.
-	 * @param orgs  Insert parameters.
-	 * @param autoFillField AutoFillField filed.
-	 * @return Table object,can be used to operate Table continually.
-	 */
-	public Table insert(List<String> orgs,String autoFillField){
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = Util.StrToJsonStr(s);
-				this.query.add(json);
-			}
-		}
-		this.autoFillField = autoFillField;
 		this.exec = "r_insert";
 		return dealWithTransaction();
+	}
 
+	public Table insert(JSONArray jsonArray) {
+		for (Object json : jsonArray) {
+			if (!"".equals(json) && json != null) {
+				String jsonStr = json.toString();
+				this.query.add(jsonStr);
+			}
+		}
+		this.exec = "r_insert";
+		return dealWithTransaction();
+	}
+
+	/**
+	 * Insert data to a table.
+	 *
+	 * @param orgs          Insert parameters.
+	 * @param autoFillField AutoFillField filed.
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table insert(List<String> orgs, String autoFillField) {
+		this.autoFillField = autoFillField;
+		return insert(orgs);
 	}
 
 
 	/**
 	 * Insert data to a table.
-	 * @param orgs  Insert parameters.
+	 *
+	 * @param orgs          Insert parameters.
 	 * @param autoFillField AutoFillField filed.
 	 * @return Table object,can be used to operate Table continually.
 	 */
-	public Table insert(List<String> orgs,String autoFillField,String txsHashFillField){
-		for(String s: orgs){
-			if(!"".equals(s)&&s!=null){
-				String json = Util.StrToJsonStr(s);
-				this.query.add(json);
-			}
-		}
-
-		if(!autoFillField.isEmpty()){
+	public Table insert(List<String> orgs, String autoFillField, String txsHashFillField) {
+		if (!autoFillField.isEmpty()) {
 			this.autoFillField = autoFillField;
 		}
 
-		if(!txsHashFillField.isEmpty()){
+		if (!txsHashFillField.isEmpty()) {
 			this.txsHashFillField = txsHashFillField;
 		}
-
-		this.exec = "r_insert";
-		return dealWithTransaction();
-
+		return insert(orgs);
+	}
+	/**
+	 * Insert data to a table.
+	 *
+	 * @param orgs          Insert parameters.
+	 * @param autoFields 	Auto fill fields,supported fields:TxHashField,TxHashHistoryField,LedgerSeqField,LedgerTimeField
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table insert(List<String> orgs, JSONObject autoFields){
+		if(autoFields.has("TxHashField")){
+			this.autoFillField = autoFields.getString("TxHashField");
+		}
+		if(autoFields.has("TxHashHistoryField")){
+			this.txsHashFillField = autoFields.getString("TxHashHistoryField");
+		}
+		if(autoFields.has("LedgerSeqField")){
+			this.ledgerSeqField = autoFields.getString("LedgerSeqField");
+		}
+		if(autoFields.has("LedgerTimeField")){
+			this.ledgerTimeField = autoFields.getString("LedgerTimeField");
+		}
+		return insert(orgs);
 	}
 
 
@@ -127,15 +149,8 @@ public class Table extends Submit{
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table update(String orgs,String autoFillField){
-
-
-		String json = Util.StrToJsonStr(orgs);
-		this.query.add(0, json);
-
 		this.autoFillField = autoFillField;
-		this.exec = "r_update";
-		return dealWithTransaction();
-
+		return update(orgs);
 	}
 
 
@@ -147,23 +162,37 @@ public class Table extends Submit{
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table update(String orgs,String autoFillField,String txsHashFillField){
-
-
-		String json = Util.StrToJsonStr(orgs);
-		this.query.add(0, json);
-
 		if(!autoFillField.isEmpty()){
 			this.autoFillField = autoFillField;
 		}
-
 		if(!txsHashFillField.isEmpty()){
 			this.txsHashFillField = txsHashFillField;
 		}
-
-		this.exec = "r_update";
-		return dealWithTransaction();
-
+		return update(orgs);
 	}
+
+	/**
+	 * Update data to a table.
+	 * @param orgs  Update parameters.
+	 * @param autoFields 	Auto fill fields,supported fields:TxHashField,TxHashHistoryField,LedgerSeqField,LedgerTimeField
+	 * @return Table object,can be used to operate Table continually.
+	 */
+	public Table update(String orgs,JSONObject autoFields){
+		if(autoFields.has("TxHashField")){
+			this.autoFillField = autoFields.getString("TxHashField");
+		}
+		if(autoFields.has("TxHashHistoryField")){
+			this.txsHashFillField = autoFields.getString("TxHashHistoryField");
+		}
+		if(autoFields.has("LedgerSeqField")){
+			this.ledgerSeqField = autoFields.getString("LedgerSeqField");
+		}
+		if(autoFields.has("LedgerTimeField")){
+			this.ledgerTimeField = autoFields.getString("LedgerTimeField");
+		}
+		return update(orgs);
+	}
+
 
 
 
@@ -302,6 +331,20 @@ public class Table extends Submit{
 		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		json.put("StrictMode", this.strictMode);
+
+		if(this.autoFillField != null){
+			json.put("AutoFillField", Util.toHexString(this.autoFillField));
+		}
+		if(this.txsHashFillField != null){
+			json.put("TxsHashFillField", Util.toHexString(this.txsHashFillField));
+		}
+		if(this.ledgerSeqField != null){
+			json.put("LedgerSeqField", Util.toHexString(this.ledgerSeqField));
+		}
+		if(this.ledgerTimeField != null){
+			json.put("LedgerTimeField", Util.toHexString(this.ledgerTimeField));
+		}
+
 		return json;
 	}
 	
@@ -333,40 +376,12 @@ public class Table extends Submit{
 			}
 		}
 
-		if(token.equals("")) {
-			strRaw = Util.toHexString(strRaw);
-			return strRaw;
-		}
-
 		//有加密则不验证
 		if(this.transaction){
 			this.needVerify = 0;
 		}
-		try {
-			byte[] seedBytes = null;
 
-			boolean bSoftGM = Utils.getAlgType(this.connection.secret).equals("softGMAlg");
-			if(!this.connection.secret.isEmpty()){
-
-				if(bSoftGM){
-					seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
-				}else{
-					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
-				}
-
-			}
-
-			byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
-			if(password == null){
-				System.out.println("Exception: decrypt token failed");
-			}
-			byte[] rawBytes = EncryptCommon.symEncrypt( strRaw.getBytes(),password,bSoftGM);
-			strRaw = Util.bytesToHex(rawBytes);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return strRaw;
+		return Util.encryptRaw(this.connection,token,strRaw);
 	}
 	
 	private JSONObject prepareSQLStatement() {
@@ -383,14 +398,6 @@ public class Table extends Submit{
 		if (this.connection.userCert != null) {
 			String sCert = Util.toHexString(this.connection.userCert);
 			txjson.put("Certificate", sCert);
-		}
-
-		if(this.autoFillField != null){
-			txjson.put("AutoFillField", Util.toHexString(this.autoFillField));
-		}
-
-		if(this.txsHashFillField != null){
-			txjson.put("TxsHashFillField", Util.toHexString(this.txsHashFillField));
 		}
 
 		//for cross chain

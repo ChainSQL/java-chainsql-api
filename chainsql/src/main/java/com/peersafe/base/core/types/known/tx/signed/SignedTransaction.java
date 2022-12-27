@@ -3,14 +3,12 @@ package com.peersafe.base.core.types.known.tx.signed;
 import java.util.Arrays;
 
 import com.peersafe.base.config.Config;
-import com.peersafe.base.core.coretypes.AccountID;
-import com.peersafe.base.core.coretypes.Amount;
-import com.peersafe.base.core.coretypes.Blob;
-import com.peersafe.base.core.coretypes.STObject;
+import com.peersafe.base.core.coretypes.*;
 import com.peersafe.base.core.coretypes.hash.HalfSha512;
 import com.peersafe.base.core.coretypes.hash.Hash256;
 import com.peersafe.base.core.coretypes.hash.prefixes.HashPrefix;
 import com.peersafe.base.core.coretypes.uint.UInt32;
+import com.peersafe.base.core.fields.Field;
 import com.peersafe.base.core.serialized.BytesList;
 import com.peersafe.base.core.serialized.MultiSink;
 import com.peersafe.base.core.serialized.enums.TransactionType;
@@ -18,7 +16,10 @@ import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.crypto.sm.SM3Util;
+
 import com.peersafe.chainsql.util.Util;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class SignedTransaction {
     private SignedTransaction(Transaction of) {
@@ -33,6 +34,12 @@ public class SignedTransaction {
     	this.previousSigningData = st.previousSigningData;
     	this.tx_blob = st.tx_blob;
     	this.ca_pem  = st.ca_pem;
+        this.onlySubmitSigned = st.onlySubmitSigned;
+    }
+    public SignedTransaction(JSONObject signedRetObj) {
+        this.hash = Hash256.fromHex(signedRetObj.get("hash").toString());
+        this.tx_blob = signedRetObj.get("tx_blob").toString();
+        this.onlySubmitSigned = true;
     }
     // This will eventually be private
     @Deprecated
@@ -45,7 +52,13 @@ public class SignedTransaction {
     public byte[] previousSigningData;
     public String tx_blob;
 
+    protected boolean onlySubmitSigned = false;
+
     public String ca_pem;// CA
+
+    public boolean isOnlySubmitSigned(){
+        return onlySubmitSigned;
+    }
 
     public void multiSign(String base58Secret){
     	multiSign(Seed.fromBase58(base58Secret).keyPair());
@@ -81,11 +94,27 @@ public class SignedTransaction {
         signingData = txn.multiSigningData(account);
         
         try {
-            txn.txnSignature(new Blob(keyPair.signMessage(signingData)));
+            Blob newSig = new Blob(keyPair.signMessage(signingData));
 
             BytesList blob = new BytesList();
             HalfSha512 id = HalfSha512.prefixed256(HashPrefix.transactionID);
 
+            JSONObject signer = new JSONObject();
+            signer.put("Account",account.toString());
+            signer.put("SigningPubKey", keyPair.canonicalPubHex());
+            signer.put("TxnSignature", newSig.toHex());
+            STArray arr;
+            JSONArray jsonArray;
+            if(txn.has(Field.Signers)){
+                arr = (STArray) txn.get(Field.Signers);
+                jsonArray = arr.toJSONArray();
+            }else{
+                jsonArray = new JSONArray();
+            }
+            JSONObject signerObj = new JSONObject();
+            signerObj.put("Signer",signer);
+            jsonArray.put(signerObj);
+            txn.put(Field.Signers,STArray.translate.fromJSONArray(jsonArray));
 
             txn.toBytesSink(new MultiSink(blob, id));
             tx_blob = blob.bytesHex();

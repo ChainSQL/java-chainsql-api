@@ -19,10 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.peersafe.base.client.Client;
-import com.peersafe.base.client.Client.OnReconnected;
-import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
-import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.config.Config;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
@@ -31,9 +28,9 @@ import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
-import com.peersafe.base.crypto.ecdsa.K256KeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.base.encodings.base58.B58;
 import com.peersafe.base.utils.Utils;
 import com.peersafe.chainsql.crypto.Ecies;
 import com.peersafe.chainsql.crypto.EncryptCommon;
@@ -43,30 +40,36 @@ import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
+import com.peersafe.chainsql.util.Define;
 
 public class Chainsql extends Submit {
 
 	private JSONObject mTxJson;
 	
-	private static final int PASSWORD_LENGTH = 32;  
-	private static final int DEFAULT_TX_LIMIT = 20;
+	private static final int PASSWORD_LENGTH = 32;
+	private int timeout = 10; //unit:seconds
+
 	
 	// Logger
     public static final Logger logger = Logger.getLogger(Chainsql.class.getName());
+
+
     
 	private JSONObject mRetJson;
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
-	
+
+	public static String MAIN_SCHEMA = "";
+
+	private TransactionType txType_ = TransactionType.TableListSet;
+
 	/**
 	 * Assigning the operating user.
 	 * @param address Account address,start with a lower case 'z'.
 	 * @param secret  Account secret,start with a lower case 'x'.
 	 */
 	public void as(String address, String secret) {
-
-
 		JSONObject retAddress = generateAddress(secret);
 		if(retAddress.has("address") && !address.equals( retAddress.getString("address") )){
 			System.err.println("Exception: address and secret not match !");
@@ -74,18 +77,28 @@ public class Chainsql extends Submit {
 
 		this.connection.address = address;
 		this.connection.secret  = secret;
-
-		if(this.connection.scope == null){
-			this.connection.scope   = address;
-		}
+        
+        //every time call as, will reset scope to as addr
+		this.connection.scope   = address;
 	}
 
 
 	public void useCert(String userCert) {
 		this.connection.userCert = userCert;
-
 	}
 
+	/**
+	 * 设置操作链的ID
+	 * @param schemaID schemaID="" 代表操作的是主链;
+	 */
+	public void setSchema(String schemaID) {
+		if(!this.connection.client.schemaID.equals(schemaID)) 
+		{
+			this.connection.client.unsubscribeStreams();
+			this.connection.client.schemaID = schemaID;	
+			this.connection.client.resubscribeStreams();
+		}
+	}
 
 	/**
 	 * Assigning table owner.
@@ -105,8 +118,7 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url) {
 		connection = new Connection().connect(url);
-		doWhenConnect();
-		return connection;
+		return doWhenConnect();
 	}
 	/**
 	 * Connect to a secure websocket url.
@@ -118,8 +130,30 @@ public class Chainsql extends Submit {
 	@SuppressWarnings("resource")
 	public Connection connect(String url,String serverCertPath,String storePass) {
 		connection = new Connection().connect(url,serverCertPath,storePass);
-		doWhenConnect();
-		return connection;
+		return doWhenConnect();
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param trustCAPath all trust ca path
+	 * @param sslKeyPath ssl key path
+	 * @param sslCertPath ssl cert path
+	 * @return Connection
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url, String[] trustCAPath, String sslKeyPath, String sslCertPath) {
+		connection = new Connection().connect(url, trustCAPath, sslKeyPath, sslCertPath);
+		return doWhenConnect();
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param trustCAPath all trust ca path
+	 * @return Connection
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url, String[] trustCAPath) {
+		return connect(url, trustCAPath, null, null);
 	}
 	/**
 	 * Connect to a websocket url.
@@ -181,21 +215,25 @@ public class Chainsql extends Submit {
 		return connection;
 	}
 	
-	private void doWhenConnect(){
-		while (!connection.client.connected) {
+	private Connection doWhenConnect(){
+		long currentTime = System.currentTimeMillis()/1000;
+		while (!connection.client.connected && (System.currentTimeMillis()/1000 - currentTime < timeout)) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("connect success");
-		this.eventManager.init(this.connection);
-		//jdk1.8
-//		this.connection.client.onReconnecting(this::onReconnecting);
-//		this.connection.client.onReconnected(this::onReconnected);
-		this.connection.client.onReconnecting(this::onReconnecting);
-		this.connection.client.onReconnected(this::onReconnected);
+		if(connection.client.connected) {
+			System.out.println("connect success to " + connection.client.getConUrl());
+			this.eventManager.init(this.connection);
+			//jdk1.8
+			this.connection.client.onReconnecting(this::onReconnecting);
+			this.connection.client.onReconnected(this::onReconnected);
+		}
+		else connection = null;
+		
+		return connection;
 	}
 
 
@@ -268,6 +306,7 @@ public class Chainsql extends Submit {
 		tab.connection = this.connection;
 		tab.setCrossChainArgs(this.crossChainArgs);
 		tab.eventManager = this.eventManager;
+		tab.extraDrop    = this.extraDrop;
 		return tab;
 	}
 	
@@ -323,23 +362,29 @@ public class Chainsql extends Submit {
 	 * @param secret Secret used to sign
 	 * @return sign result form:
 	 {
-	    "Signer":{
-	        "Account":"rDsFXt1KRDNNckSh3exyTqkQeBKQCXawb2",
-	        "SigningPubKey":"02E37D565DF377D0C30D93163CF40F41BB81B966B11757821F25FBCDCFEA18E8A9",
-	        "TxnSignature":"3044022050903320FF924BCD7F55D3BE095A457BF2421E805C5B39DA77F006BB217D6398022024C51DECA25018D80CB16AB65674B71BFD20789D63EC47FD5EAD7FC75B880055"
-	    },
-	    "hash":""
+	    "tx_json":{
+			"Account":"zKvHeBUtEoNRW1wtvA42tfJx1bh7pqxZmT",
+			"Destination":"zMcXHEkD78T1pwAgG2pf6QWALyBKF1YvD1",
+			"TransactionType":"Payment",
+			"SigningPubKey":"",
+			"Amount":"1000000000",
+			"Fee":"50",
+			"Signers":[
+				{
+				"Signer":{
+					"Account":"zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh",
+					"TxnSignature":"304402200ADA6EF13013EB3E71CBD66C75936128ED9C519794768D92D7859949B5CBDE3802200AFBC0CAF2CEBF03DF706D1F5D297B58D9CAA326126375E4B91390F162BC4385",
+					"SigningPubKey":"0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020"
+				}
+				}
+			],
+			"Sequence":2
+		},
+		"tx_blob":"120000240000000261400000003B9ACA0068400000000000003273008114CF863385CF26467C8C9E51C7A6985BF449C7BDCA8314DC6DDF45E62C3749F120DD9AB0E9B707EB84320EF3E01073210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD0207446304402200ADA6EF13013EB3E71CBD66C75936128ED9C519794768D92D7859949B5CBDE3802200AFBC0CAF2CEBF03DF706D1F5D297B58D9CAA326126375E4B91390F162BC43858114B5F762798A53D543A014CAF8B297CFF8F2F937E8E1F1",
+	    "hash":"F32A51E5B7871FE6F53427F4D3099F521BDBB3BB823BD7D66521287B70A011B8"
 	 }
 	 */
 	public JSONObject signFor(JSONObject tx,String secret){
-		if(!tx.has("secret")){
-			return Util.errorObject("no secret supplied");
-		}
-
-		if(!tx.has("account")){
-			return Util.errorObject("no account supplied");
-		}
-
 		JSONObject tx_json = tx.getJSONObject("tx_json");
 		TransactionType type = TransactionType.valueOf(tx_json.getString("TransactionType"));
 		Transaction transaction = new Transaction(type);
@@ -353,20 +398,12 @@ public class Chainsql extends Submit {
 		
 		SignedTransaction signed = transaction.multiSign(secret);
 		
-		String sJson = signed.txn.prettyJSON();
-//		System.out.println(sJson);
-		
-		IKeyPair keyPair = Seed.fromBase58(secret).keyPair();
-		String publicKey = Util.bytesToHex(keyPair.canonicalPubBytes());
-		
-		JSONObject json = new JSONObject(sJson);
-		JSONObject signer = new JSONObject();
-		signer.put("Account",tx.getString("account"));
-		signer.put("SigningPubKey", publicKey);
-		signer.put("TxnSignature", json.getString("TxnSignature"));
+		JSONObject json = signed.txn.toJSONObject();
 		JSONObject ret = new JSONObject();
-		ret.put("Signer", signer);
 		ret.put("hash", signed.hash.toString());
+		ret.put("tx_blob",signed.tx_blob);
+		ret.put("tx_json",json);
+
 		return ret;
 	}
 	
@@ -384,51 +421,77 @@ public class Chainsql extends Submit {
 	protected
 	JSONObject prepareSigned() {
 		try {
-			if(mTxJson.toString().equals("{}")) {
-				return Util.errorObject("Exception occured");
-			}
-			mTxJson.put("Account",this.connection.address);
-
-			if(mTxJson.has("OpType") && mTxJson.getInt("OpType") == Constant.opType.get("t_grant") &&
-					!this.connection.address.equals(connection.scope)){
-				mTxJson.put("Owner",  connection.scope);
-			}
 
 			if (this.connection.userCert != null) {
 				String sCert = Util.toHexString(this.connection.userCert);
 				mTxJson.put("Certificate", sCert);
 			}
-
-			//for cross chain
-			if(crossChainArgs != null){
-				mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
-				mTxJson.put("OriginalAddress", crossChainArgs.originalAddress);
-				mTxJson.put("CurTxHash", crossChainArgs.curTxHash);
-				mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
-				crossChainArgs = null;
+			if(!mTxJson.has("Account")){
+				mTxJson.put("Account",this.connection.address);
 			}
-			
-	    	JSONObject tx_json = this.connection.client.tablePrepare(mTxJson);
-	    	if(tx_json.has("error")){
-	    		return tx_json;
-	    	}else{
-	    		tx_json = tx_json.getJSONObject("tx_json");	    			
-	    	}
-	    	
-	    	Transaction payment;
-	    	if(this.transaction){
-	    		tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
-	    		payment = toTransaction(tx_json,TransactionType.SQLTransaction);
-	    	}else{
-	    		payment = toTransaction(tx_json,TransactionType.TableListSet);
-	    	}
-			
+
+			Transaction payment;
+			switch(txType_){
+				case SchemaCreate:
+				case SchemaModify:
+				case SchemaDelete:
+				case FreezeAccount:
+				{
+					payment = toTransaction(mTxJson,txType_);
+					break;
+				}
+				case TableListSet:
+				{
+					if(mTxJson.toString().equals("{}")) {
+						return Util.errorObject("Exception occured");
+					}
+
+					//for cross chain
+					if(crossChainArgs != null){
+						mTxJson.put("TxnLgrSeq", crossChainArgs.txnLedgerSeq);
+						mTxJson.put("OriginalAddress", crossChainArgs.originalAddress);
+						mTxJson.put("CurTxHash", crossChainArgs.curTxHash);
+						mTxJson.put("FutureTxHash", crossChainArgs.futureHash);
+						crossChainArgs = null;
+					}
+
+					JSONObject tx_json = this.connection.client.tablePrepare(mTxJson);
+					if(tx_json.has("error")){
+						return tx_json;
+					}else{
+						tx_json = tx_json.getJSONObject("tx_json");
+					}
+
+					if(this.transaction){
+						tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
+						payment = toTransaction(tx_json,TransactionType.SQLTransaction);
+					}else{
+						payment = toTransaction(tx_json,TransactionType.TableListSet);
+					}
+					break;
+				}
+				default:
+					return Util.errorObject("TransactionType will not be processed");
+			}
+
 			signed = payment.sign(this.connection.secret);
-			
+
 			return Util.successObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Util.errorObject(e.getMessage());
+		}
+	}
+
+	/**
+	 * @param extraDrop 额外的费用,单位为drop
+	 * @throws Exception
+	 */
+	public void setExtraFee(int extraDrop) throws Exception {
+		if ((extraDrop <= 1000000) && (extraDrop > 0)) {
+			this.extraDrop = extraDrop;
+		} else {
+			throw new Exception("设置的额外费用超过1ZXC或低于0drop");
 		}
 	}
 
@@ -441,7 +504,7 @@ public class Chainsql extends Submit {
 	public Chainsql createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
-	
+
 	/**
 	 * Create table with operation-rule
 	 * @param name Table name
@@ -479,6 +542,162 @@ public class Chainsql extends Submit {
 	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
 		return createTable(name,rawList,null,confidential);
 	}
+
+
+	/**
+	 * SchemaName String
+	 *
+	 * withState  ture
+	 *
+	 * 锚定区块
+	 *
+	 * @return
+	 */
+	public Chainsql createSchema(JSONObject schemaInfo) throws Exception{
+
+		boolean bValid = schemaInfo.has("SchemaName") && schemaInfo.has("WithState") &&
+				 schemaInfo.has("Validators") && schemaInfo.has("PeerList");
+
+		if(!bValid){
+			throw new Exception("Invalid schemaInfo parameter");
+		}
+
+		JSONObject params = new JSONObject();
+		params.put("Account", this.connection.address);
+		params.put("SchemaName",Util.toHexString(schemaInfo.getString("SchemaName")));
+
+
+		if( schemaInfo.has("SchemaAdmin")){
+			params.put("SchemaAdmin",schemaInfo.getString("SchemaAdmin"));
+		}
+
+		if( schemaInfo.getBoolean("WithState")){
+
+			//继承主链的节点状态
+			if(! schemaInfo.has("AnchorLedgerHash")){
+				throw new Exception("Missing field AnchorLedgerHash");
+			}
+			params.put("AnchorLedgerHash",schemaInfo.getString("AnchorLedgerHash"));
+			params.put("SchemaStrategy",2);
+		}else{
+			// 不继承主链的节点状态
+			params.put("SchemaStrategy",1);
+			if(schemaInfo.has("AnchorLedgerHash")){
+				throw new Exception("Field 'AnchorLedgerHash' is unnecessary");
+			}
+		}
+
+		this.txType_ = TransactionType.SchemaCreate;
+
+		JSONArray validatorsArr = schemaInfo.getJSONArray("Validators");
+		JSONArray peerListArr   = schemaInfo.getJSONArray("PeerList");
+
+
+		JSONArray jsonValidators = new JSONArray();
+		for(int i=0; i<validatorsArr.length(); i++){
+			String validator = (String)validatorsArr.get(i);
+
+			//System.out.println(validator);
+			JSONObject subItem = new JSONObject();
+			subItem.put("PublicKey",validatorsArr.get(i));
+
+			JSONObject item = new JSONObject();
+			item.put("Validator",subItem);
+			jsonValidators.put(item);
+		}
+
+		JSONArray jsonPeerList = new JSONArray();
+
+		for(int i=0; i<peerListArr.length(); i++){
+			String Endpoint = (String)peerListArr.get(i);
+			JSONObject subItem = new JSONObject();
+			subItem.put("Endpoint",Util.toHexString(Endpoint));
+
+			JSONObject item = new JSONObject();
+			item.put("Peer",subItem);
+			jsonPeerList.put(item);
+		}
+
+		params.put("Validators",jsonValidators);
+		params.put("PeerList",jsonPeerList);
+
+		this.mTxJson = params;
+		return this;
+	}
+
+	public Chainsql modifySchema(SchemaOpType type,JSONObject schemaInfo)   throws Exception{
+
+		boolean bValid = schemaInfo.has("SchemaID")  && schemaInfo.has("Validators") && schemaInfo.has("PeerList");
+
+		if(!bValid){
+			throw new Exception("Invalid schemaInfo parameter");
+		}
+
+		this.txType_ = TransactionType.SchemaModify;
+
+		JSONObject params = new JSONObject();
+
+		if(type == SchemaOpType.schema_del){
+			params.put("OpType","2");
+		}else{
+			params.put("OpType","1");
+		}
+
+		JSONArray validatorsArr = schemaInfo.getJSONArray("Validators");
+		JSONArray peerListArr   = schemaInfo.getJSONArray("PeerList");
+
+		JSONArray jsonValidators = new JSONArray();
+		for(int i=0; i<validatorsArr.length(); i++){
+			String validator = (String)validatorsArr.get(i);
+
+			//System.out.println(validator);
+			JSONObject subItem = new JSONObject();
+			subItem.put("PublicKey",validatorsArr.get(i));
+
+			JSONObject item = new JSONObject();
+			item.put("Validator",subItem);
+			jsonValidators.put(item);
+		}
+
+		JSONArray jsonPeerList = new JSONArray();
+
+		for(int i=0; i<peerListArr.length(); i++){
+			String Endpoint = (String)peerListArr.get(i);
+			JSONObject subItem = new JSONObject();
+			subItem.put("Endpoint",Util.toHexString(Endpoint));
+
+			JSONObject item = new JSONObject();
+			item.put("Peer",subItem);
+			jsonPeerList.put(item);
+		}
+
+		params.put("Account", this.connection.address);
+		params.put("SchemaID",schemaInfo.getString("SchemaID"));
+
+		params.put("Validators",jsonValidators);
+		params.put("PeerList",jsonPeerList);
+
+		this.mTxJson = params;
+		return this;
+	}
+
+	public Chainsql deleteSchema(String schemaID)   throws Exception{
+
+		if(schemaID == null || schemaID.equals(""))
+			throw new Exception("Invalid schemaInfo parameter");
+
+		this.txType_ = TransactionType.SchemaDelete;
+
+		JSONObject params = new JSONObject();
+		
+		params.put("Account", this.connection.address);
+		params.put("SchemaID",schemaID);
+
+		this.mTxJson = params;
+		return this;
+	}
+
+
 	
 	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
@@ -498,8 +717,7 @@ public class Chainsql extends Submit {
 		String strRaw = listRaw.toString();
 		String token = "";
 		if(confidential){
-
-			boolean bSM = ( Utils.getAlgType(this.connection.secret).equals("softGMAlg") );
+            boolean bSM = Utils.getAlgType(this.connection.secret).equals(Define.algType.gmalg);
 			int randomSize = bSM? PASSWORD_LENGTH /2 :PASSWORD_LENGTH ;
 
 			byte[] password = Util.getRandomBytes(randomSize);
@@ -604,7 +822,78 @@ public class Chainsql extends Submit {
 		}
 		this.mTxJson = json;
 		return this;
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the new fields. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql addTableFields(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_add_fields"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the new fields. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql deleteTableFields(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_delete_fields"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the fields to modify. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql modifyTableFields(String name,List<String> rawList) throws Exception{
+		return modifyTable(Constant.opType.get("t_modify_fields"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Raw specifing the index to create. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql createIndex(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_create_index"),name,rawList);
+	}
+	
+	/**
+	 * Add fields for a table
+	 * @param name Table name
+	 * @param rawList Indexes name to delete. 
+	 * @return
+	 * @throws Exception
+	 */
+	public Chainsql deleteIndex(String name,List<String> rawList) throws Exception{		
+		return modifyTable(Constant.opType.get("t_delete_index"),name,rawList);
+	}
+	
+	private Chainsql modifyTable(int opType,String name,List<String> rawList)throws Exception{
+		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
+		String strRaw = listRaw.toString();
 		
+		String token = Util.getUserToken(this.connection, this.connection.address, name);
+		strRaw = Util.encryptRaw(connection,token,strRaw);
+
+		JSONObject json = new JSONObject();
+		json.put("OpType", opType);
+		json.put("Tables", getTableArray(name));
+		json.put("Raw", strRaw);
+		
+		this.mTxJson = json;
+		
+		return this;
 	}
 	/**
 	 * check if publickey matches user
@@ -664,19 +953,7 @@ public class Chainsql extends Submit {
 		String newToken = "";
 		if(token.length() != 0){
 			try {
-				byte[] seedBytes = null;
-
-				boolean bSoftGM = Utils.getAlgType(this.connection.secret).equals("softGMAlg");
-				if(!this.connection.secret.isEmpty()){
-
-					if(bSoftGM){
-						seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(this.connection.secret);
-					}else{
-						seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
-					}
-
-				}
-				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes,bSoftGM) ;
+                byte[] password = this.asymDecrypt(token, this.connection.secret).getBytes();
 				if(password == null){
 					return null;
 				}
@@ -854,6 +1131,12 @@ public class Chainsql extends Submit {
 		Ripple ripple = new Ripple(this);
 		return ripple.accountSet(transferRate, transferFeeMin, transferFeeMax);
 	}
+	
+	public Ripple whitelistSet(JSONArray whitelists, int setFlag) throws Exception
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.whitelistSet(whitelists, setFlag);
+	}
 
 	/**
 	 * 
@@ -868,6 +1151,17 @@ public class Chainsql extends Submit {
 		return ripple.trustSet(value, sCurrency, sIssuer);
 	}
 	
+	public Ripple accountAuthorize(int nFlag, boolean bSet, String account)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.accountAuthorize(nFlag, bSet, account);
+	}
+
+	public Ripple signerListSet(int quorum, List<Ripple.SignerEntry> signers)
+	{
+		Ripple ripple = new Ripple(this);
+		return ripple.signerListSet(quorum,signers);
+	}
 	/**
 	 * Begin a sql-transaction type operation.
 	 * Sql-transaction is like the transaction in db. Transactions in it will all success or all rollback. 
@@ -907,6 +1201,16 @@ public class Chainsql extends Submit {
 	public JSONObject getServerInfo(){
 		return connection.client.getServerInfo();
 	}
+
+	/**
+	 * Get server info.
+	 * @return Server's informations.
+	 */
+	public JSONObject getPeers(){
+		return connection.client.getPeers();
+	}
+
+
 	public JSONObject getChainInfo(){
 		JSONObject obj = new JSONObject();
 		try{
@@ -1010,6 +1314,32 @@ public class Chainsql extends Submit {
 	public JSONObject getAccountTransactions(String address,int limit){
 		return this.connection.client.getTransactions(address,limit);
 	}
+	
+	/**
+	 * Request for transaction information.
+	 * @param contractAddress 
+	 * @param ledgerIndexMin query range
+	 * @param ledgerIndexMax query range
+	 * @param limit  limit Max transaction count to get.
+	 * @param marker Marker from previous call response.
+	 * @return 
+	 */
+	public JSONObject getContractTransactions(String contractAddress,int ledgerIndexMin, int ledgerIndexMax, int limit, JSONObject marker){
+		return this.connection.client.getContractTransactions(contractAddress,ledgerIndexMin, ledgerIndexMax, limit, marker);
+	}
+	
+	/**
+	 * Request for transaction information.
+	 * @param contractAddress 
+	 * @param ledgerIndexMin query range
+	 * @param ledgerIndexMax query range
+	 * @param limit  limit Max transaction count to get.
+	 * @param marker Marker from previous call response.
+	 */
+	public void getContractTransactions(String contractAddress,int ledgerIndexMin, int ledgerIndexMax, int limit, JSONObject marker, Callback<JSONObject> cb){
+		this.connection.client.getContractTransactions(contractAddress,ledgerIndexMin, ledgerIndexMax, limit, marker, cb);
+	}
+	
 	/**
 	 * Get transactions from chain
 	 * @param hash Start tx hash(can be tx_hash,ledger_seq,or "",if "",get from start tx).
@@ -1045,7 +1375,7 @@ public class Chainsql extends Submit {
 	 * @return Result.
 	 */
 	public JSONObject getAccountTransactions(String address){
-		return getAccountTransactions(address,DEFAULT_TX_LIMIT);
+		return getAccountTransactions(address,Client.DEFAULT_TX_LIMIT);
 	}
 	/**
 	 * Get trasactions submitted by notified account,asynchronous.
@@ -1053,7 +1383,7 @@ public class Chainsql extends Submit {
 	 * @param cb Callback.
 	 */
 	public void getAccountTransactions(String address,Callback<JSONObject> cb){
-		this.connection.client.getTransactions(address,DEFAULT_TX_LIMIT,cb);	
+		this.connection.client.getTransactions(address,Client.DEFAULT_TX_LIMIT,cb);	
 	}
 	/**
 	 * Get trasactions submitted by notified account,asynchronous.
@@ -1073,6 +1403,33 @@ public class Chainsql extends Submit {
 		return this.connection.client.getTransaction(hash);
 	}
 
+	/**
+	 * Get transaction identified by hash.the raw field is restored to plaintext
+	 * @param hash Transaction hash.
+	 * @return Transaction information.
+	 */
+	public JSONObject getExplicitTransaction(String hash, String privateKey){
+		JSONObject tx = getTransaction(hash);
+		if(tx.has("error")) {
+			System.err.println(tx.getString("error_message"));
+			return tx;
+		}
+		String token = "";
+		if(tx.has("Token")) {
+			token = tx.getString("Token");
+			try {
+				//token = Util.getUserToken(this.connection, this.connection.address, name);
+				if(token != "") {
+		   	 		String password = this.asymDecrypt(token, privateKey);
+		   	 		Util.decryptData(password.getBytes(), tx);
+		   	 	}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+			
+		return tx;
+	}
 
 
 
@@ -1147,16 +1504,14 @@ public class Chainsql extends Submit {
 					version = Seed.VER_SOFT_SM;
 					break;
 				default:
-					version = Seed.VER_ED25519;
+                    throw new IllegalArgumentException("Unknown algorithm, please check!");
 			}
 		}
 
 		Seed seed;
 		if(options.has("secret")){
-
 			String sSecret = options.getString("secret");
 			seed = Seed.fromBase58(sSecret);
-
 		}else{
 			seed = Seed.randomSeed(version);
 		}
@@ -1203,6 +1558,7 @@ public class Chainsql extends Submit {
 		String secretKey = getB58IdentiferCodecs().encodeFamilySeed(seed.bytes());
 		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
 		String address   = getB58IdentiferCodecs().encodeAddress(o);
+		String publieKeyHex = Util.bytesToHex(pubBytes);
 		
 		JSONObject obj = new JSONObject();
 		if(!Config.isUseGM()){
@@ -1210,6 +1566,7 @@ public class Chainsql extends Submit {
 		}
 		obj.put("address", address);
 		obj.put("publicKey", publicKey);
+		obj.put("publicKeyHex",publieKeyHex);
 		return obj;
 	}
 	/**
@@ -1286,6 +1643,7 @@ public class Chainsql extends Submit {
 		JSONObject ret = new JSONObject();
 		ret.put("seed", secretKey);
 		ret.put("publickey", validationPub);
+		ret.put("validation_public_key_hex" , Util.bytesToHex(keyPair.canonicalPubBytes()));
 		return ret;
 	}
 
@@ -1304,7 +1662,16 @@ public class Chainsql extends Submit {
 	}
 	
 	public JSONObject getAccountInfo(String address) {
-		AccountID account = AccountID.fromAddress(address);
+        AccountID account;
+        String addrPrefix = address.substring(0,2);
+        if(addrPrefix.equals("0x"))
+        {
+            account = AccountID.fromString(address.substring(2));
+        }
+		else
+        {
+            account = AccountID.fromAddress(address);
+        }
 		return connection.client.accountInfo(account);
 	}
 	
@@ -1408,7 +1775,7 @@ public class Chainsql extends Submit {
 			logger.log(Level.SEVERE, "PublicKey list is empty");
 			return "";
 		}
-		byte[] cipher = Ecies.encryptText(plainText,listPublicKey);
+		byte[] cipher = EncryptCommon.encryptText(plainText,listPublicKey);
 		if(cipher == null)
 			return "";
 		return Util.bytesToHex(cipher);
@@ -1422,8 +1789,91 @@ public class Chainsql extends Submit {
 	 */
 	public String decrypt(String cipher,String secret) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
-		return Ecies.decryptText(cipherBytes, secret);
+		return EncryptCommon.decryptText(cipherBytes, secret);
 	}
+	
+	/**
+	 * 对称加密接口
+	 * @param plainText 明文
+	 * @param password 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 密文
+	 */
+	public String symEncrypt(String plainText, byte[] password, boolean bSM) {
+		if(password == null) {
+			logger.log(Level.SEVERE, "password is empty");
+			return "";
+		}
+		byte[] cipher = EncryptCommon.symEncrypt(plainText.getBytes(),password, bSM);
+		if(cipher == null)
+			return "";
+		return Util.bytesToHex(cipher);
+	}
+	
+	/**
+	 * 对称解密接口
+	 * @param cipher 密文
+	 * @param password 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 明文，解密失败返回""
+	 */
+	public String symDecrypt(String cipher, byte[] password, boolean bSM) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] newBytes = EncryptCommon.symDecrypt(cipherBytes, password, bSM);
+		return new String(newBytes);
+	}
+	
+	/**
+	 * 非对称加密接口
+	 * @param plainText 明文
+	 * @param publicKey 加密公钥
+	 * @param bSM 是否使用国密算法
+	 * @return 密文
+	 */
+	public String asymEncrypt(String plainText, String publicKey, boolean bSM) {
+		if(publicKey == null || publicKey.isEmpty()) {
+			logger.log(Level.SEVERE, "publicKey is empty");
+			return "";
+		}
+		byte [] pubKey = null;
+		pubKey = getB58IdentiferCodecs().decodeAccountPublic(publicKey);
+		byte[] cipher = EncryptCommon.asymEncrypt(plainText.getBytes(),pubKey);
+		if(cipher == null)
+			return "";
+		return Util.bytesToHex(cipher);
+	}
+	
+	/**
+	 * 非对称解密接口
+	 * @param cipher 密文
+	 * @param privateKey 加密密钥
+	 * @param bSM 是否使用国密算法。如果使用国密算法，注意密钥是16位。
+	 * @return 明文，解密失败返回""
+	 */
+	public String asymDecrypt(String cipher, String privateKey, boolean bSM) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		byte[] seedBytes = null;
+
+        if(bSM) {
+			seedBytes   = getB58IdentiferCodecs().decodeAccountPrivate(privateKey);
+		}else {
+			seedBytes   = getB58IdentiferCodecs().decodeFamilySeed(privateKey);
+		}
+		
+        byte[] newBytes = EncryptCommon.asymDecrypt(cipherBytes, seedBytes, bSM);
+		return new String(newBytes);
+	}
+
+    /**
+	 * 非对称解密接口
+	 * @param cipher 密文
+	 * @param privateKey 加密密钥
+	 * @return 明文，解密失败返回""
+	 */
+	public String asymDecrypt(String cipher, String privateKey) {
+		return Util.asymDec(cipher, privateKey);
+	}
+	
 	
 	/**
 	 * 获取账户建的表
@@ -1594,5 +2044,35 @@ public class Chainsql extends Submit {
 	public void getLedgerTxs(Integer ledgerSeq,boolean bIncludeSuccess,boolean bIncludefailure,Callback<JSONObject> cb)
 	{
 		connection.client.getLedgerTxs(ledgerSeq,bIncludeSuccess,bIncludefailure,cb);
+	}
+
+
+	/**
+	 * Get schema list.
+	 * @return schema information.
+	 */
+	public JSONObject getSchemaList(JSONObject params){
+		return connection.client.getSchemaList(params);
+	}
+
+	/**
+	 *  查询子链的信息
+	 * @param schemaID schemaID
+	 */
+	public JSONObject getSchemaInfo(String schemaID){
+		return connection.client.getSchemaInfo(schemaID);
+	}
+
+	public Chainsql freezeAccount(String accountID,boolean bFreeze) {
+		JSONObject params = new JSONObject();
+		params.put("Destination",accountID);
+		txType_ = TransactionType.FreezeAccount;
+		if(bFreeze){
+			params.put("Flags",1048576);
+		}else{
+			params.put("Flags",2097152);
+		}
+		mTxJson = params;
+		return this;
 	}
 }

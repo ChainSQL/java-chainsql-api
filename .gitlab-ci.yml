@@ -20,3 +20,4 @@ deployToGithub:
   only:
     refs:
       - master
+      - feature/shard

@@ -209,7 +209,11 @@ public class ManagedTxn extends SignedTransaction {
      * @return return value.
      */
     public boolean finalizedOrResponseIsToPriorSubmission(Response res) {
-        return isFinalized() || !responseWasToLastSubmission(res);
+        if(onlySubmitSigned) {
+            return false;
+        } else {
+            return isFinalized() || !responseWasToLastSubmission(res);
+        }
     }
 
     public ArrayList<Submission> submissions = new ArrayList<Submission>();

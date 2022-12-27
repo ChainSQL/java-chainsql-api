@@ -2,21 +2,54 @@ package com.peersafe.base.client.transport.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.security.KeyStore;
+import java.security.*;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.KeyManagerFactory;
+import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
+import org.bouncycastle.openssl.*;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
+import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import com.peersafe.base.client.transport.TransportEventHandler;
 import com.peersafe.base.client.transport.WebSocketTransport;
+import com.peersafe.base.crypto.X509CryptoSuite;
+import com.peersafe.chainsql.util.Util;
 
 class WS extends WebSocketClient {
 
@@ -88,10 +121,20 @@ class WS extends WebSocketClient {
 }
 
 public class JavaWebSocketTransportImpl implements WebSocketTransport {
-
     WeakReference<TransportEventHandler> handler;
     WS client = null;
+    WebSocketClientHandler wscHandler = null;
+    boolean isGM=false;
+    boolean isSSL = false;
 
+    public JavaWebSocketTransportImpl(){
+        try {
+            X509CryptoSuite.enableX509CertificateWithGM();
+            Security.addProvider(new BouncyCastleProvider());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     public void setHandler(TransportEventHandler events) {
         handler = new WeakReference<TransportEventHandler>(events);
@@ -102,7 +145,20 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 
     @Override
     public void sendMessage(JSONObject msg) {
-        client.send(msg.toString());
+        // System.out.println(msg.toString());
+        if(isSSL)
+        {
+            if(wscHandler != null) {
+                wscHandler.sendMessage(msg.toString());
+            }
+            else {
+                System.out.println("wscHandler is null");
+            }
+        }
+        else
+        {
+            client.send(msg.toString());
+        }
     }
 
     @Override
@@ -152,8 +208,83 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 		SSLSocketFactory factory = sslContext.getSocketFactory();
 
 		client.setSocket( factory.createSocket() );
-		client.connectBlocking();			
+		client.connectBlocking();
 	}
+    @Override
+	public void connectSSL(URI uri, String[] trustCAsPath, String sslKeyPath, String sslCertPath) throws Exception{
+        isSSL = true;
+        TransportEventHandler curHandler = handler.get();
+        if (curHandler == null) {
+            throw new RuntimeException("must call setEventHandler() before connect(...)");
+        }
+
+        if(trustCAsPath.length != 0) {
+            String certSigAlg = ((X509Certificate)readCert(trustCAsPath[0])).getSigAlgName();
+            String certPubKeyAlg = "0608";
+            if(sslCertPath != null) {
+                PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(sslCertPath)));
+                byte[] subPubkeyInfo = org.bouncycastle.asn1.x509.Certificate.getInstance(pemReader.readPemObject()
+                                .getContent()).getSubjectPublicKeyInfo().getEncoded();
+                pemReader.close();
+                String subPubkeyAlg = Util.bytesToHex(subPubkeyInfo);
+                certPubKeyAlg = subPubkeyAlg.length() > 45 ? subPubkeyAlg.substring(26,46) : subPubkeyAlg;
+            }
+            if(certSigAlg.equals("SM3withSM2") || certPubKeyAlg.equals("06082A811CCF5501822D"))
+            {
+                isGM = true;
+            }
+        }
+        else {
+            throw new RuntimeException("Must specify at least a trustCA");
+        }
+        
+
+        KeyStore tks;
+        tks = getKeyStore(trustCAsPath, null);
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(tks);
+    
+        EventLoopGroup group = new NioEventLoopGroup();
+        try {
+            final String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
+            final int port = uri.getPort();
+            SslContextBuilder sslCtxBuilder = SslContextBuilder.forClient().sslProvider(SslProvider.OPENSSL)
+                .trustManager(tmf);
+            if(isGM){
+                sslCtxBuilder = sslCtxBuilder.ciphers(Arrays.asList("ECDHE-SM2-WITH-SMS4-GCM-SM3"));
+            }
+            SslContext sslCtx = sslKeyPath == null ? sslCtxBuilder.build() : 
+                        sslCtxBuilder.keyManager(new File(sslCertPath), new File(sslKeyPath)).build();
+            wscHandler = new WebSocketClientHandler(
+                            WebSocketClientHandshakerFactory.newHandshaker(
+                                    uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders()));
+
+            Bootstrap b = new Bootstrap();
+            b.group(group)
+             .channel(NioSocketChannel.class)
+             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+             .handler(new ChannelInitializer<SocketChannel>() {
+                 @Override
+                 protected void initChannel(SocketChannel ch) {
+                     ChannelPipeline p = ch.pipeline();
+                     if (sslCtx != null) {
+                         p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
+                     }
+                     p.addLast(
+                             new HttpClientCodec(),
+                             new HttpObjectAggregator(8192),
+                             WebSocketClientCompressionHandler.INSTANCE,
+                             wscHandler);
+                }
+            });
+            wscHandler.setEventHandler(curHandler);
+            wscHandler.doConnect(b, uri, group);
+        } catch (Exception e){
+            e.printStackTrace();
+            group.shutdownGracefully();
+            curHandler.onError(e);
+        }
+    }
 
     @Override
     public void disconnect() {
@@ -166,6 +297,91 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
             client.muteEventHandler();
             client.close();
             client = null;
+        }
+        if( wscHandler != null) {
+            wscHandler.disconnect();
+            TransportEventHandler handler = this.handler.get();
+            if (handler != null) {
+                handler.onDisconnected(false);
+            }
+            wscHandler = null;
+        }
+    }
+    private static Certificate readCert(String path) throws IOException, CertificateException {
+        try (FileInputStream fin = new FileInputStream(path)) {
+            return CertificateFactory.getInstance("X.509").generateCertificate(fin);
+        }
+    }
+    private PrivateKey getPemPrivateKey(String filename) throws Exception {
+        if(filename == null)
+        {
+            throw new Exception("ssl key can not be null");
+        }
+        PEMParser pem = new PEMParser(new FileReader(filename));
+        PrivateKey priKey = new JcaPEMKeyConverter().getPrivateKey((PrivateKeyInfo)pem.readObject());
+        pem.close();
+        return priKey;
+    }
+    
+    private KeyStore getKeyStore(String certPath, String keyPath, String pwd) throws IOException {
+        try {
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            if(certPath == null)
+            {
+                throw new IOException("certPath can not be null");
+            }
+            // Reading the cert
+            Certificate cert = readCert(certPath);
+
+            // KeyStore keystore = KeyStore.getInstance("PKCS12");
+
+            if( pwd == null){
+                keystore.load(null, null);
+            } else {
+                keystore.load(null, pwd.toCharArray());
+            }
+            // Adding the cert to the keystore
+            keystore.setCertificateEntry("cert-alias", cert);
+
+            if(keyPath != null)
+            {
+                PrivateKey priKey = getPemPrivateKey(keyPath);
+                keystore.setKeyEntry("key-alias", priKey, null, new Certificate[] {cert});
+            }
+
+            return keystore;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private KeyStore getKeyStore(String[] certPaths, String pwd) throws IOException {
+        try {
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            if(certPaths.length == 0)
+            {
+                throw new IOException("certPath can not be null");
+            }
+
+            if( pwd == null){
+                keystore.load(null, null);
+            } else {
+                keystore.load(null, pwd.toCharArray());
+            }
+
+            // for(String certPath : certPaths)
+            for(int index = 0; index < certPaths.length; index ++)
+            {
+                // Reading the cert
+                Certificate cert = readCert(certPaths[index]);
+                // Adding the cert to the keystore
+                keystore.setCertificateEntry("cert-alias" + index, cert);
+            }
+
+            return keystore;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.peersafe.abi.datatypes.generated;
 
 import java.math.BigInteger;
+
 import com.peersafe.abi.datatypes.Int;
 
 /**

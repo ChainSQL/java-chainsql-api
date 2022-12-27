@@ -100,7 +100,7 @@ public class Transaction extends STObject {
     			return a.isSigningField();
     		}
     	});
-    	bl.add(account.toBytes());
+//    	bl.add(account.toBytes());
     	return bl.bytes();
     }
 

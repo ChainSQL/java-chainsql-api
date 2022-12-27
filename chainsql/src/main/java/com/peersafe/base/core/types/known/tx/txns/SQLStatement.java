@@ -19,7 +19,9 @@ public class SQLStatement  extends Transaction {
 		 super(TransactionType.SQLStatement);
 	}
 	public AccountID owner() {return get(AccountID.Owner);}
-    public STArray tables() {return get(STArray.Tables);}
+    public STArray tables() {
+	    return get(STArray.Tables);
+	}
     public Blob raw() {return get(Blob.Raw);}
     public UInt16 opType() {return get(UInt16.OpType);}
     public void owner(Blob val) {put(Field.Owner, val);}

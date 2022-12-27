@@ -5,17 +5,18 @@ package com.peersafe.chainsql.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.logging.Level;
+import java.util.List;
 
 import com.peersafe.base.core.coretypes.*;
-import org.bouncycastle.util.encoders.Hex;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.base.client.Client;
-import com.peersafe.base.client.requests.Request;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.util.Util;
+
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
 
 /**
  * @author mail_
@@ -28,8 +29,9 @@ public class Ripple extends Submit {
 	private JSONObject mTxJson;
 
 	public Ripple(Chainsql chainsql) {
-		this.connection = chainsql.connection;
+		this.connection   = chainsql.connection;
 		this.eventManager = chainsql.eventManager;
+		this.extraDrop    = chainsql.extraDrop;
 	}
 
 	public void setTxJson(JSONObject obj) {
@@ -82,6 +84,13 @@ public class Ripple extends Submit {
 	private Ripple pay(String accountId,Amount amount){
 		mTxJson = new JSONObject();
 		mTxJson.put("Account", this.connection.address);
+
+        String addrPrefix = accountId.substring(0,2);
+        if(addrPrefix.equals("0x"))
+        {
+            byte[] addrByte = Util.hexToBytes(accountId.substring(2));
+            accountId = getB58IdentiferCodecs().encodeAddress(addrByte);
+        }
 		if(amount.currency() != Currency.ZXC)
 		{
 			JSONObject result = this.connection.client.accountInfo(amount.issuer());
@@ -324,62 +333,49 @@ public class Ripple extends Submit {
 	/**
 	 * An AccountSet transaction modifies the properties of an account in the Ledger, can be used to setTransferFee.
 	 * @param transferRate    decimal number string
-	 * (1.0 - 2.0] : set transferRate
-	 * 0/1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
+	 * [1.0 - 2.0] : set transferRate
+	 * 1.0 : decimal number string, cancel tranferRate, no fee or charge fixed fee
 	 * @param transferFeeMin  decimal number string
 	 * @param transferFeeMax  decimal number string
 	 * @return You can use this to call other Ripple functions continually.
 	 */
 	public Ripple accountSet(String transferRate, String transferFeeMin, String transferFeeMax) throws Exception
 	{
-		//
+
 		double rate = 1.0;double feeMin;double feeMax;
-//		try {
-			rate = Double.parseDouble(transferRate);
-			if((rate != 0) && rate<1.0 || rate>2.0)
-			{
-				throw new Exception("TransferRate must be 0 or a number >= 1.0 && <= 2.0");
-//				Client.logger.log(Level.WARNING, "TransferRate must be 0 or a number >= 1.0 && <= 2.0");
-//				return null;
-			}
-			feeMin = Double.parseDouble(transferFeeMin);
-			feeMax = Double.parseDouble(transferFeeMax);
-			if(feeMin < 0 || feeMax <0)
-			{
-				throw new Exception("min or max cannot be less than 0");
-//				Client.logger.log(Level.WARNING, "min or max cannot be less than 0");
-//				return null;
-			}
-			if(feeMin > feeMax)
-			{
-				throw new Exception("min cannot be greater than max");
-//				Client.logger.log(Level.WARNING, "min cannot be greater than max");
-//				return null;
-			}
-			//
-			if(feeMin == feeMax && feeMin>0)
-			{
-				if(rate>PRECISION && rate-1.0 > PRECISION)
-				{
-					throw new Exception("fee mismatch transferRate");
-//					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
-//					return null;
-				}
-			}
-			if(feeMin < feeMax) {
-				if(rate<PRECISION || rate-1.0 < PRECISION)
-				{
-					throw new Exception("fee mismatch transferRate");
-//					Client.logger.log(Level.WARNING, "fee mismatch transferRate");
-//					return null;
-				}
-			}
-//		}
-//		catch(Exception e)
+
+		rate = Double.parseDouble(transferRate);
+		if( rate < 1.0 || rate > 2.0)
+		{
+			throw new Exception("TransferRate must be  a number >= 1.0 && <= 2.0");
+		}
+
+		feeMin = Double.parseDouble(transferFeeMin);
+		feeMax = Double.parseDouble(transferFeeMax);
+		if(feeMin < 0.0 || feeMax < 0.0)
+		{
+			throw new Exception("min or max cannot be less than 0");
+		}
+
+		if( feeMin > feeMax && feeMax  - 0.0 > PRECISION)
+		{
+			throw new Exception("min cannot be greater than max when max != 0.0");
+		}
+//
+//		if(feeMin == feeMax)
 //		{
-//			Client.logger.log(Level.WARNING, e + "\nTransferRate must be a number >= 1.0 && <= 2.0; TransferFeeMin and TransferFeeMax must be decimal number string.");
-//			return null;
+//			if(rate>PRECISION && rate-1.0 > PRECISION)
+//			{
+//				throw new Exception("fee mismatch transferRate");
+//			}
 //		}
+//		if(feeMin < feeMax) {
+//			if(rate<PRECISION || rate-1.0 < PRECISION)
+//			{
+//				throw new Exception("fee mismatch transferRate");
+//			}
+//		}
+
 		transferRate = transferRate.replace(".", "");
 		int nLen = 10 - transferRate.length();
 		while (nLen>0)
@@ -389,15 +385,23 @@ public class Ripple extends Submit {
 		}
 		transferFeeMin = Util.toHexString(transferFeeMin);
 		transferFeeMax = Util.toHexString(transferFeeMax);
-		
-		//
+
 		mTxJson = new JSONObject();
 		mTxJson.put("Account", this.connection.address);
 		mTxJson.put("TransferRate", transferRate);
 		mTxJson.put("TransferFeeMin", transferFeeMin);
 		mTxJson.put("TransferFeeMax", transferFeeMax);
 		mTxJson.put("TransactionType", "AccountSet");
-		//
+		return this;
+	}
+	
+	public Ripple whitelistSet(JSONArray whitelists, int setFlag) {
+		
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		mTxJson.put("WhiteLists", whitelists);
+		mTxJson.put("SetFlag", setFlag);
+		mTxJson.put("TransactionType", "AccountSet");
 		return this;
 	}
 
@@ -417,6 +421,45 @@ public class Ripple extends Submit {
 		mTxJson.put("Account", this.connection.address);
 		mTxJson.put("TransactionType", "TrustSet");
 		//
+		return this;
+	}
+	
+	public Ripple accountAuthorize(int nFlag, boolean bSet, String account)
+	{
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		if(bSet)
+			mTxJson.put("SetFlag", nFlag);
+		else
+			mTxJson.put("ClearFlag", nFlag);
+		mTxJson.put("TransactionType", "Authorize");
+		mTxJson.put("Destination", account);
+		return this;
+	}
+
+	public static class SignerEntry{
+		public String address;
+		public int weight;
+		public SignerEntry(String address,int weight){
+			this.address = address;
+			this.weight = weight;
+		}
+	}
+	public Ripple signerListSet(int quorum, List<SignerEntry> signers){
+		mTxJson = new JSONObject();
+		mTxJson.put("Account", this.connection.address);
+		mTxJson.put("TransactionType", TransactionType.SignerListSet.name());
+		mTxJson.put("SignerQuorum", quorum);
+		JSONArray arr = new JSONArray();
+		for(SignerEntry entry : signers){
+			JSONObject entryInner = new JSONObject();
+			entryInner.put("Account", entry.address);
+			entryInner.put("SignerWeight", entry.weight);
+			JSONObject entryOuter = new JSONObject();
+			entryOuter.put("SignerEntry", entryInner);
+			arr.put(entryOuter);
+		}
+		mTxJson.put("SignerEntries", arr);
 		return this;
 	}
 }

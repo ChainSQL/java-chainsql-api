@@ -26,6 +26,13 @@ public class EDKeyPair implements IKeyPair {
     public EDKeyPair(EdDSAPrivateKeySpec keySpec) {
         this.keySpec = keySpec;
     }
+
+
+    public String type(){
+        return "ed25519";
+    }
+
+
     /**
      * 
      * @param seedBytes seed bytes.

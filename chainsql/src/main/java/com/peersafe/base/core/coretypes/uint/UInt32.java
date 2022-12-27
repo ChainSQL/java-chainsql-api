@@ -120,7 +120,6 @@ public class UInt32 extends UInt<UInt32> {
     static public UInt32Field SignerQuorum = int32Field(Field.SignerQuorum);
     static public UInt32Field TxnLgrSeq = int32Field(Field.TxnLgrSeq);
     static public UInt32Field Gas = int32Field(Field.Gas);
-    static public UInt32Field Nonce = int32Field(Field.Nonce);
     
     @Override
     public Object toJSON() {

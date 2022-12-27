@@ -76,7 +76,7 @@ public class EventManager {
 			messageTx.put("owner", owner);
 			messageTx.put("tablename", name);
 			
-			this.connection.client.subscriptions.addMessage(messageTx);
+			this.connection.client.subscribe(messageTx);
 		}
 
 		for(String key : mapCache.keySet()){
@@ -84,7 +84,7 @@ public class EventManager {
 			JSONObject messageTx = new JSONObject();
 			messageTx.put("command", "subscribe");
 			messageTx.put("transaction", key);
-			this.connection.client.subscriptions.addMessage(messageTx);
+			this.connection.client.subscribe(messageTx);
 		}
 		
 		
@@ -96,7 +96,7 @@ public class EventManager {
 			arrAdd.put(address);
 			contractEv.put("accounts_contract", arrAdd);
 
-			this.connection.client.subscriptions.addMessage(contractEv);
+			this.connection.client.subscribe(contractEv);
 		}
 		
 	}
@@ -126,7 +126,7 @@ public class EventManager {
 		messageTx.put("command", "subscribe");
 		messageTx.put("owner", owner);
 		messageTx.put("tablename", name);
-		this.connection.client.subscriptions.addMessage(messageTx);
+		this.connection.client.subscribe(messageTx);
 		
 		if (!this.onTbMessage) {
 			//this.connection.client.OnTBMessage(this::onTBMessage);
@@ -152,9 +152,14 @@ public class EventManager {
 	 */
 	public void subscribeTx(String id,Callback<?> cb) {
 		JSONObject messageTx = new JSONObject();
+
+		if(this.connection.client.schemaID !=""){
+			messageTx.put("schema_id", this.connection.client.schemaID);
+		}
+
 		messageTx.put("command", "subscribe");
 		messageTx.put("transaction", id);
-		this.connection.client.subscriptions.addMessage(messageTx);
+		this.connection.client.subscribe(messageTx);
 		if (!this.onTxMessage) {
 			this.connection.client.OnTXMessage(new OnTXMessage(){
 				@Override
@@ -171,7 +176,7 @@ public class EventManager {
 		this.mapCache.put(id, cb);
 	}
 
-	public void subscribeContract(final String address,final Event event,Callback cb) {
+	public void subscribeContract(final String address,final Event event,Callback<?> cb) {
 		if(mapContractEvents.containsKey(address)) {
 			mapContractEvents.get(address).put(event, cb);
 		}else {
@@ -185,7 +190,7 @@ public class EventManager {
 			arr.put(address);
 			messageEv.put("accounts_contract", arr);
 			
-			this.connection.client.subscriptions.addMessage(messageEv);
+			this.connection.client.subscribe(messageEv);
 			if (!this.onContractMessage) {
 				this.connection.client.onContractEvent(new OnContractEvent() {
 
@@ -228,7 +233,7 @@ public class EventManager {
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("owner", owner);
 		messageTx.put("tablename", name);
-		this.connection.client.subscriptions.addMessage(messageTx);
+		this.connection.client.unsubscribe(messageTx);
 	
 		String key = name +";" + owner;
 
@@ -258,7 +263,7 @@ public class EventManager {
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("transaction", id);
 		
-		this.connection.client.subscriptions.addMessage(messageTx);
+		this.connection.client.unsubscribe(messageTx);
 		
 		JSONObject obj = new JSONObject();
 		if(this.mapCache.containsKey(id)) {
@@ -370,29 +375,35 @@ public class EventManager {
 //			makeCallback(key,data);	
 //		}
 		makeCallback(key,data);	
-		if(data.has("transaction") && data.getJSONObject("transaction").has("TransactionType"))
-		{
-			JSONObject tx = data.getJSONObject("transaction");
-			TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
-			if(Util.isChainsqlType(type)) {
-				if(!("validate_success".equals(data.getString("status")))){
-					mapCache.remove(key);
-				}
-			}else {
-				mapCache.remove(key);
-			}
-		}
+//		if(data.has("transaction") && data.getJSONObject("transaction").has("TransactionType"))
+//		{
+//			JSONObject tx = data.getJSONObject("transaction");
+//			TransactionType type = TransactionType.valueOf(tx.getString("TransactionType"));
+//			if(Util.isChainsqlType(type)) {
+//				if(!("validate_success".equals(data.getString("status")))){
+//					mapCache.remove(key);
+//				}
+//			}else {
+//				mapCache.remove(key);
+//			}
+//		}
 	}
 	
 
 	
 	private void makeCallback(String key,JSONObject data){
 		if (mapCache.containsKey(key)) {
-	    	 mapCache.get(key).called(data);
-	     }
+			if(mapCache.get(key) != null)
+				mapCache.get(key).called(data);
+			else
+				mapCache.remove(key);
+	    }
 
 		if (mapTableCache.containsKey(key)) {
-			mapTableCache.get(key).called(data);
+			if(mapTableCache.get(key) != null)
+				mapTableCache.get(key).called(data);
+			else
+				mapTableCache.remove(key);
 		}
 	}
 }

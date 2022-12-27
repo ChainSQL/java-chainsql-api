@@ -13,6 +13,19 @@ public class Utf8String implements Type<String> {
     public Utf8String(String value) {
         this.value = value;
     }
+	
+	/**
+     * Returns the Bytes32 Padded length. If the string is empty, we only encode its length. Else,
+     * we concatenate its length along of its value
+     */
+    @Override
+    public int bytes32PaddedLength() {
+        if (value.isEmpty()) {
+            return MAX_BYTE_LENGTH;
+        } else {
+            return 2 * MAX_BYTE_LENGTH;
+        }
+    }
 
     @Override
     public String getValue() {

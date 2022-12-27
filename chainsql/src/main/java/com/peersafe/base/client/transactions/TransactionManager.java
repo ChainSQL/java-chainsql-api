@@ -3,7 +3,6 @@ package com.peersafe.base.client.transactions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -133,13 +132,10 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		return !txn.isFinalized() && seenValidatedSequences.contains(txn.sequence().longValue());
 	}
 
-	public Request submitSigned(final ManagedTxn txn){
+	public Request submitSigned(final ManagedTxn txn, boolean isListen){
 		final Request req = client.newRequest(Command.submit);
 		// tx_blob is a hex string, right o' the bat
 		req.json("tx_blob", txn.tx_blob);
-		req.json("ca_pem",txn.ca_pem);
-
-		//System.out.println("before request");
 		req.once(Request.OnSuccess.class, new Request.OnSuccess() {
 			@Override
 			public void called(Response response) {
@@ -157,9 +153,12 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 			}
 		});
 
-		// Keep track of the submission, including the hash submitted
-		// to the network, and the ledger_index at that point in time.
-		txn.trackSubmitRequest(req, client.serverInfo.ledger_index);
+		if(isListen){
+			// Keep track of the submission, including the hash submitted
+			// to the network, and the ledger_index at that point in time.
+			txn.trackSubmitRequest(req, client.serverInfo.ledger_index);
+		}
+		
 		req.request();
 		return req;
 	}
@@ -346,7 +345,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		//txn.prepare(keyPair, fee, sequence, null);
 		//System.out.println("hash:" + txn.hash);
 		
-		return submitSigned(txn);
+		return submitSigned(txn, true);
 	}
 
 	/**
@@ -398,7 +397,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 		}catch(Exception e){
 			ter = EngineResult.telNormalFailure;
 		}
-		final UInt32 submitSequence = res.getSubmitSequence();
+//		final UInt32 submitSequence = res.getSubmitSequence();
 		switch (ter) {
 		case tesSUCCESS:
 			txn.emit(ManagedTxn.OnSubmitSuccess.class, res);

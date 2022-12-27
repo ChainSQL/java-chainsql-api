@@ -34,6 +34,7 @@ public class SubscriptionManager extends Publisher<SubscriptionManager.events> {
     public enum Stream {
         server,
         ledger,
+        view_change,
         transactions,
         transactions_propose
     }

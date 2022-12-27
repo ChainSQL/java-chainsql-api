@@ -6,6 +6,7 @@ public enum Command {
     account_lines,
     account_offers,
     account_tx,
+    contract_tx,
     blacklist,
     book_offers,
     connect,
@@ -69,5 +70,7 @@ public enum Command {
     validation_seed,
     wallet_accounts,
     wallet_propose,
-    wallet_seed
+    wallet_seed,
+    schema_list,
+    schema_info,
 }

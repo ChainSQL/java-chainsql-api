@@ -2,17 +2,16 @@ package com.peersafe.account;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 
 public class Sha512 {
     MessageDigest messageDigest;
     
     public Sha512() {
         try {
-            messageDigest = MessageDigest.getInstance("SHA-512", "BC");
+            messageDigest = MessageDigest.getInstance("SHA-512");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

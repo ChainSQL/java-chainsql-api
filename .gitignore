@@ -1,0 +1,10 @@
+# .gitignore
+
+*/target/
+
+*.jar
+
+# VScode config files
+.vscode/
+
+.DS_store

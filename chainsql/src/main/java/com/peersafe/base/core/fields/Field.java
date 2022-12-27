@@ -9,9 +9,13 @@ public enum Field {
     Generic(0, Type.Unknown),
     Invalid(-1, Type.Unknown),
 
+
+
+
     LedgerEntryType(1, Type.UInt16),
     TransactionType(2, Type.UInt16),
     SignerWeight(3, Type.UInt16),
+    TransactionResult(4,Type.UInt16),
     OpType(50, Type.UInt16),
     ContractOpType(51,Type.UInt16),
     
@@ -56,7 +60,6 @@ public enum Field {
     TxnLgrSeq(50,Type.UInt32),   
     CreateLgrSeq(51,Type.UInt32),
     NeedVerify(52,Type.UInt32),
-    Nonce(53,Type.UInt32),
     Gas(55,Type.UInt32),
 
 
@@ -89,6 +92,10 @@ public enum Field {
     TicketID(20, Type.Hash256),
     Digest(21, Type.Hash256),
     PayChannel(22,Type.Hash256),
+    ConsensusHash(23, Type.Hash256),
+    CheckID(24, Type.Hash256),
+    ValidatedHash(25,Type.Hash256),
+
     PrevTxnLedgerHash(50,Type.Hash256),
     TxnLedgerHash(51,Type.Hash256), 
     TxCheckHash(52,Type.Hash256),     
@@ -96,6 +103,12 @@ public enum Field {
     CreatedTxnHash(54,Type.Hash256),
     CurTxHash(55,Type.Hash256),
     FutureTxHash(56,Type.Hash256),
+    ChainId(57,Type.Hash256),
+    AnchorLedgerHash(58,Type.Hash256),
+    SchemaID(59,Type.Hash256),
+
+//    SF_U256 const sfChainId			 (access,  STI_HASH256, 57, "ChainId");
+//    SF_U256 const sfAnchorLedgerHash (access,  STI_HASH256, 58, "AnchorLedgerHash");
 
 
     
@@ -151,7 +164,14 @@ public enum Field {
     TransferFeeMax(63,Type.Blob),
     ContractCode(64,Type.Blob),
     ContractData(65,Type.Blob),
- 
+    ContractTxs(66,Type.Blob),
+    ContractLogs (67,Type.Blob),
+    SchemaName (68,Type.Blob),
+    Endpoint (69,Type.Blob),
+    TxsHashFillField(70,Type.Blob),
+    LedgerSeqField(76,Type.Blob),
+    LedgerTimeField(77,Type.Blob),
+
     Account(1, Type.AccountID),
     Owner(2, Type.AccountID),
     Destination(3, Type.AccountID),
@@ -161,7 +181,9 @@ public enum Field {
     User(50, Type.AccountID),
     OriginalAddress(51,Type.AccountID),
     ContractAddress(52,Type.AccountID),
-    
+    SchemaAdmin(53,Type.AccountID),
+
+
 
     ObjectEndMarker(1, Type.STObject),
     TransactionMetaData(2, Type.STObject),
@@ -178,6 +200,10 @@ public enum Field {
     // 17 unused
     Majority(18, Type.STObject),
     Table(50, Type.STObject),
+    Rule(51, Type.STObject),
+    Validator(52, Type.STObject),
+    Peer(53 , Type.STObject),
+    WhiteList(54,Type.STObject),
 
     ArrayEndMarker(1, Type.STArray),
 //    SigningAccounts(2, Type.STArray),
@@ -193,10 +219,16 @@ public enum Field {
     TableEntries(50, Type.STArray),
     Tables(51, Type.STArray),
     Users(52, Type.STArray),
+    Validators(53, Type.STArray),
+    PeerList(54, Type.STArray),
+    WhiteLists(56, Type.STArray),
 
     CloseResolution(1, Type.UInt8),
     Method(2, Type.UInt8),
-    TransactionResult(3, Type.UInt8),
+    TickSize(16,Type.UInt8),
+    UNLModifyDisabling(17,Type.UInt8),
+    SchemaStrategy(28, Type.UInt8),
+    Signed(29,Type.UInt8),
 
     TakerPaysCurrency(1, Type.Hash160),
     TakerPaysIssuer(2, Type.Hash160),

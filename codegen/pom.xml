@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.peersafe</groupId>
   <artifactId>codegen</artifactId>
-  <version>1.4.4</version>
+  <version>3.0.0</version>
   <build>
     <plugins>
       <plugin>
@@ -17,8 +17,8 @@
   </build>
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<web3j.version>3.4.0</web3j.version>
-		<chainsql.version>1.4.4</chainsql.version>
+		<web3j.version>4.8.1</web3j.version>
+		<chainsql.version>3.0.0</chainsql.version>
   </properties>
   <dependencies>
   		<dependency>
@@ -49,7 +49,7 @@
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-databind</artifactId>
-		    <version>2.9.10.5</version>
+		    <version>2.13.2.1</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.web3j</groupId>

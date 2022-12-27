@@ -10,17 +10,20 @@ import com.peersafe.abi.datatypes.Bytes;
 import com.peersafe.abi.datatypes.DynamicArray;
 import com.peersafe.abi.datatypes.DynamicBytes;
 import com.peersafe.abi.datatypes.StaticArray;
+import com.peersafe.abi.datatypes.Type;
 import com.peersafe.abi.datatypes.Utf8String;
 import com.peersafe.abi.datatypes.generated.Bytes1;
 import com.peersafe.abi.datatypes.generated.Bytes4;
 import com.peersafe.abi.datatypes.generated.Bytes6;
 import com.peersafe.abi.datatypes.generated.Int256;
 import com.peersafe.abi.datatypes.generated.Int64;
+import com.peersafe.abi.datatypes.generated.StaticArray2;
 import com.peersafe.abi.datatypes.generated.Uint256;
 import com.peersafe.abi.datatypes.generated.Uint64;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class TypeDecoderTest {
@@ -243,31 +246,47 @@ public class TypeDecoderTest {
                 is(new Utf8String("Hello, world!")));
     }
 
+
     @Test
-    public void testStaticArray() {
-        assertThat(TypeDecoder.decodeStaticArray(
-                "000000000000000000000000000000000000000000000000000000000000000a"
-                + "0000000000000000000000000000000000000000000000007fffffffffffffff",
-                0,
-                new TypeReference.StaticArrayTypeReference<StaticArray<Uint256>>(2) {},
-                2),
-                is(new StaticArray<Uint256>(
+    public void testStaticArray() throws Exception {
+        assertEquals(
+                TypeDecoder.decodeStaticArray(
+                        "000000000000000000000000000000000000000000000000000000000000000a"
+                                + "0000000000000000000000000000000000000000000000007fffffffffffffff",
+                        0,
+                        new TypeReference.StaticArrayTypeReference<StaticArray<Uint256>>(2) {},
+                        2),
+                (new StaticArray2<>(
+                        Uint256.class,
                         new Uint256(BigInteger.TEN),
                         new Uint256(BigInteger.valueOf(Long.MAX_VALUE)))));
 
-        assertThat(TypeDecoder.decodeStaticArray(
+        assertEquals(
+                TypeDecoder.decodeStaticArray(
                         "000000000000000000000000000000000000000000000000000000000000000d"
-                        + "48656c6c6f2c20776f726c642100000000000000000000000000000000000000"
-                        + "000000000000000000000000000000000000000000000000000000000000000d"
-                        + "776f726c64212048656c6c6f2c00000000000000000000000000000000000000",
-                0,
-                new TypeReference.StaticArrayTypeReference<StaticArray<Utf8String>>(2){},
-                2
-                ),
-                equalTo(new StaticArray<Utf8String>(
+                                + "48656c6c6f2c20776f726c642100000000000000000000000000000000000000"
+                                + "000000000000000000000000000000000000000000000000000000000000000d"
+                                + "776f726c64212048656c6c6f2c00000000000000000000000000000000000000",
+                        0,
+                        new TypeReference.StaticArrayTypeReference<StaticArray<Utf8String>>(2) {},
+                        2),
+                (new StaticArray2<>(
+                        Utf8String.class,
                         new Utf8String("Hello, world!"),
                         new Utf8String("world! Hello,"))));
+
+        Type arr = TypeDecoder.instantiateType("uint256[2]", new long[] {10, Long.MAX_VALUE});
+
+       // assertTrue(arr instanceof StaticArray2);
+        StaticArray2 staticArray2 = (StaticArray2) arr;
+
+        assertEquals(staticArray2.getComponentType(), Uint256.class);
+
+        assertEquals(staticArray2.getValue().get(0), (new Uint256(BigInteger.TEN)));
+        assertEquals(
+                staticArray2.getValue().get(1), (new Uint256(BigInteger.valueOf(Long.MAX_VALUE))));
     }
+
 
     @Test(expected = UnsupportedOperationException.class)
     public void testEmptyStaticArray() {
